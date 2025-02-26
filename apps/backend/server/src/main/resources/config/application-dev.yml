@@ -19,8 +19,10 @@ spring:
         options:
           model: ${OPEN_AI_CHAT_MODEL}
     ollama:
+      base-url: http://localhost:11434
       chat:
-        enabled: true
+        options:
+          model: llama3
   devtools:
     restart:
       enabled: true
