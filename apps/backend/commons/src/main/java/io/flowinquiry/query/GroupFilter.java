@@ -8,11 +8,6 @@ import lombok.Setter;
 @Setter
 public class GroupFilter {
 
-    public enum LogicalOperator {
-        AND,
-        OR
-    }
-
     private List<Filter> filters; // Simple filters in this group
 
     private List<GroupFilter> groups; // Nested groups

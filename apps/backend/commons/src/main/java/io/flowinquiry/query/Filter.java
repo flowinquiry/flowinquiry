@@ -17,12 +17,6 @@ public class Filter {
 
     @NotNull private Object value;
 
-    public Filter(String field, String operator, Object value) {
-        this.field = field;
-        this.operator = FilterOperator.fromValue(operator);
-        this.value = value;
-    }
-
     public Filter(String field, FilterOperator operator, Object value) {
         this.field = field;
         this.operator = operator;

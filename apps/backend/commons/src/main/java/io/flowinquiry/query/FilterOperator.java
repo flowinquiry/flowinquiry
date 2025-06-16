@@ -1,5 +1,8 @@
 package io.flowinquiry.query;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 /** Enum representing the available filter operators for query operations. */
 public enum FilterOperator {
     GT("gt"), // Greater Than
@@ -19,19 +22,18 @@ public enum FilterOperator {
         return value;
     }
 
-    /**
-     * Convert a string value to the corresponding enum value.
-     *
-     * @param value the string value to convert
-     * @return the corresponding enum value
-     * @throws IllegalArgumentException if the value doesn't match any enum value
-     */
+    @JsonCreator
     public static FilterOperator fromValue(String value) {
-        for (FilterOperator operator : FilterOperator.values()) {
-            if (operator.value.equals(value)) {
-                return operator;
+        for (FilterOperator op : values()) {
+            if (op.name().equalsIgnoreCase(value)) {
+                return op;
             }
         }
-        throw new IllegalArgumentException("Invalid operator value: " + value);
+        throw new IllegalArgumentException("Invalid FilterOperator: " + value);
+    }
+
+    @JsonValue
+    public String toValue() {
+        return name().toLowerCase(); // Output as "eq", "ne", etc.
     }
 }
