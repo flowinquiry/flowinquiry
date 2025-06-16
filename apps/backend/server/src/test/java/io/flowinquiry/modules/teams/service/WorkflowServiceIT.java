@@ -12,9 +12,13 @@ import io.flowinquiry.modules.teams.service.dto.WorkflowDetailedDTO;
 import io.flowinquiry.modules.teams.service.dto.WorkflowStateDTO;
 import io.flowinquiry.modules.teams.service.dto.WorkflowTransitionDTO;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
 @IntegrationTest
@@ -200,36 +204,164 @@ public class WorkflowServiceIT {
 
     @Test
     public void shouldFindWorkflowsSuccessfully() {
-        // Test for findWorkflows method
+        // When: Retrieving workflows with pagination
+        Page<WorkflowDTO> workflowsPage =
+                workflowService.findWorkflows(Optional.empty(), Pageable.unpaged());
+
+        // Then: Verify workflows are returned successfully
+        assertThat(workflowsPage).isNotNull();
+        assertThat(workflowsPage.getContent()).isNotEmpty();
+
+        // Verify some expected workflows are present
+        List<Long> expectedWorkflowIds = List.of(1L, 2L, 3L, 4L, 5L);
+        List<Long> actualWorkflowIds =
+                workflowsPage.getContent().stream()
+                        .map(WorkflowDTO::getId)
+                        .collect(Collectors.toList());
+
+        assertThat(actualWorkflowIds).containsAnyElementsOf(expectedWorkflowIds);
     }
 
     @Test
     public void shouldUpdateWorkflowDetailedSuccessfully() {
-        // Test for updateWorkflow(Long, WorkflowDetailedDTO) method
+        // Given: Get an existing workflow detail
+        WorkflowDetailedDTO workflowDetail = workflowService.getWorkflowDetail(1L).get();
+
+        // Update workflow properties
+        workflowDetail.setName("Updated Workflow Name");
+        workflowDetail.setDescription("Updated description");
+
+        // When: Update the workflow
+        WorkflowDetailedDTO updatedWorkflow = workflowService.updateWorkflow(1L, workflowDetail);
+
+        // Then: Verify the workflow is updated successfully
+        assertThat(updatedWorkflow).isNotNull();
+        assertThat(updatedWorkflow.getName()).isEqualTo("Updated Workflow Name");
+        assertThat(updatedWorkflow.getDescription()).isEqualTo("Updated description");
+
+        // Verify the ID remains the same
+        assertThat(updatedWorkflow.getId()).isEqualTo(1L);
     }
 
     @Test
     public void shouldCreateWorkflowByCloning() {
-        // Test for createWorkflowByCloning method
+        // Given: Create a workflow DTO for cloning
+        WorkflowDTO workflowDTO =
+                WorkflowDTO.builder()
+                        .name("Cloned Workflow")
+                        .requestName("Cloned Request")
+                        .description("Cloned from existing workflow")
+                        .build();
+
+        // When: Clone an existing workflow
+        WorkflowDetailedDTO clonedWorkflow =
+                workflowService.createWorkflowByCloning(1L, 2L, workflowDTO);
+
+        // Then: Verify the workflow is cloned successfully
+        assertThat(clonedWorkflow).isNotNull();
+        assertThat(clonedWorkflow.getName()).isEqualTo("Cloned Workflow");
+        assertThat(clonedWorkflow.getRequestName()).isEqualTo("Cloned Request");
+        assertThat(clonedWorkflow.getDescription()).isEqualTo("Cloned from existing workflow");
+
+        // Verify the ID is different from the source workflow
+        assertThat(clonedWorkflow.getId()).isNotEqualTo(2L);
+
+        // Verify the owner ID is set correctly
+        assertThat(clonedWorkflow.getOwnerId()).isEqualTo(1L);
+
+        // Verify states and transitions are cloned
+        assertThat(clonedWorkflow.getStates()).isNotEmpty();
+        assertThat(clonedWorkflow.getTransitions()).isNotEmpty();
     }
 
     @Test
     public void shouldDeleteWorkflowSuccessfully() {
-        // Test for deleteWorkflow method
+        // Test that attempting to delete a workflow used for project throws an exception
+        WorkflowDTO projectWorkflow = workflowService.getGlobalWorkflowUsedForProject();
+
+        // Verify the workflow exists and is used for project
+        assertThat(projectWorkflow).isNotNull();
+        assertThat(projectWorkflow.isUseForProject()).isTrue();
+
+        // When/Then: Attempting to delete a workflow used for project should throw an exception
+        assertThatThrownBy(() -> workflowService.deleteWorkflow(projectWorkflow.getId()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Cannot delete workflow is used for project");
     }
 
     @Test
     public void shouldGetValidTargetWorkflowStatesSuccessfully() {
-        // Test for getValidTargetWorkflowStates method
+        // Given: A workflow ID and a state ID
+        Long workflowId = 2L; // Refund Process Workflow
+        Long stateId = 6L; // "New" state
+
+        // When: Get valid target workflow states
+        List<WorkflowStateDTO> targetStates =
+                workflowService.getValidTargetWorkflowStates(workflowId, stateId, false);
+
+        // Then: Verify valid target states are returned
+        assertThat(targetStates).isNotEmpty();
+
+        // Verify the returned states are valid targets based on transitions
+        // For the "New" state in the Refund Process Workflow, the valid target should be "Request
+        // Evidence"
+        assertThat(targetStates)
+                .extracting(WorkflowStateDTO::getId, WorkflowStateDTO::getStateName)
+                .contains(tuple(7L, "Request Evidence"));
+
+        // Verify the source state is not included when includeSelf is false
+        assertThat(targetStates).extracting(WorkflowStateDTO::getId).doesNotContain(stateId);
+
+        // Test with includeSelf = true
+        List<WorkflowStateDTO> targetStatesWithSelf =
+                workflowService.getValidTargetWorkflowStates(workflowId, stateId, true);
+
+        // Verify the source state is included when includeSelf is true
+        assertThat(targetStatesWithSelf).extracting(WorkflowStateDTO::getId).contains(stateId);
     }
 
     @Test
     public void shouldGetInitialStatesOfWorkflowSuccessfully() {
-        // Test for getInitialStatesOfWorkflow method
+        // Given: A workflow ID
+        Long workflowId = 2L; // Refund Process Workflow
+
+        // When: Get initial states of the workflow
+        List<WorkflowStateDTO> initialStates =
+                workflowService.getInitialStatesOfWorkflow(workflowId);
+
+        // Then: Verify initial states are returned
+        assertThat(initialStates).isNotEmpty();
+
+        // Verify the returned states are marked as initial
+        assertThat(initialStates).allMatch(WorkflowStateDTO::getIsInitial);
+
+        // Verify the expected initial state is present
+        // For the Refund Process Workflow, the initial state should be "New"
+        assertThat(initialStates)
+                .extracting(WorkflowStateDTO::getId, WorkflowStateDTO::getStateName)
+                .contains(tuple(6L, "New"));
     }
 
     @Test
     public void shouldFindProjectWorkflowByTeamSuccessfully() {
-        // Test for findProjectWorkflowByTeam method
+        // Given: A team ID
+        Long teamId = 1L;
+
+        // When: Find project workflow by team
+        Optional<WorkflowDetailedDTO> projectWorkflow =
+                workflowService.findProjectWorkflowByTeam(teamId);
+
+        // Then: Verify project workflow is returned
+        assertThat(projectWorkflow).isPresent();
+
+        // Verify the workflow is marked for project use
+        assertThat(projectWorkflow.get().isUseForProject()).isTrue();
+
+        // Test with non-existent team
+        Optional<WorkflowDetailedDTO> nonExistentTeamWorkflow =
+                workflowService.findProjectWorkflowByTeam(999L);
+
+        // Verify no workflow is returned for non-existent team
+        assertThat(nonExistentTeamWorkflow).isEmpty();
     }
 }

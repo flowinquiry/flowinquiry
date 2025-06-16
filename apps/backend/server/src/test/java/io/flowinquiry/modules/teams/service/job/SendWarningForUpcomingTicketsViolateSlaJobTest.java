@@ -1,5 +1,6 @@
 package io.flowinquiry.modules.teams.service.job;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -31,22 +32,20 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
-/** Tests for {@link SendWarningForUpcomingTicketsViolateSlaJob}. */
 @ExtendWith(MockitoExtension.class)
 public class SendWarningForUpcomingTicketsViolateSlaJobTest {
 
-    @Mock private SimpMessagingTemplate messageTemplate;
-
-    @Mock private TeamService teamService;
+    private static final long PRIOR_SLA_WARNING_THRESHOLD_IN_SECONDS = 1800; // 30 minutes
 
     @Mock private WorkflowTransitionHistoryService workflowTransitionHistoryService;
 
+    @Mock private SimpMessagingTemplate messageTemplate;
+
     @Mock private DeduplicationCacheService deduplicationCacheService;
 
-    private SendWarningForUpcomingTicketsViolateSlaJob job;
+    @Mock private TeamService teamService;
 
-    // The threshold used in the job (30 minutes in seconds)
-    private static final int PRIOR_SLA_WARNING_THRESHOLD_IN_SECONDS = 1800;
+    private SendWarningForUpcomingTicketsViolateSlaJob job;
 
     @BeforeEach
     public void setup() {
@@ -59,7 +58,7 @@ public class SendWarningForUpcomingTicketsViolateSlaJobTest {
     }
 
     @Test
-    public void testRunWithUpcomingViolatingTickets() {
+    public void should_send_notification_when_ticket_approaching_sla_deadline() {
         // Given
         WorkflowState fromState = WorkflowState.builder().id(1L).stateName("From State").build();
 
@@ -72,9 +71,9 @@ public class SendWarningForUpcomingTicketsViolateSlaJobTest {
         User assignUser =
                 User.builder()
                         .id(5L)
-                        .firstName("John")
-                        .lastName("Doe")
-                        .email("john.doe@example.com")
+                        .firstName("Assigned")
+                        .lastName("User")
+                        .email("assigned@example.com")
                         .build();
 
         Ticket ticket =
@@ -99,7 +98,7 @@ public class SendWarningForUpcomingTicketsViolateSlaJobTest {
                         .eventName("Test Event")
                         .transitionDate(now.minusSeconds(3600)) // 1 hour ago
                         .slaDueDate(slaDueDate)
-                        .status(WorkflowTransitionHistoryStatus.In_Progress)
+                        .status(WorkflowTransitionHistoryStatus.IN_PROGRESS)
                         .build();
 
         List<WorkflowTransitionHistory> upcomingViolatingTickets = List.of(upcomingViolatingTicket);
@@ -129,18 +128,18 @@ public class SendWarningForUpcomingTicketsViolateSlaJobTest {
         Notification capturedNotification = notificationCaptor.getValue();
 
         // Verify notification properties
-        assert capturedUserId.equals(String.valueOf(assignUser.getId()));
-        assert capturedNotification.getType() == NotificationType.SLA_WARNING;
-        assert capturedNotification.getContent().contains("Test Ticket");
-        assert capturedNotification.getContent().contains("approaching its SLA deadline");
-        assert !capturedNotification.getIsRead();
+        assertEquals(String.valueOf(assignUser.getId()), capturedUserId);
+        assertEquals(NotificationType.SLA_WARNING, capturedNotification.getType());
+        assertTrue(capturedNotification.getContent().contains("Test Ticket"));
+        assertTrue(capturedNotification.getContent().contains("approaching its SLA deadline"));
+        assertFalse(capturedNotification.getIsRead());
 
         // Verify deduplication cache entry
         verify(deduplicationCacheService).put(anyString(), any(Duration.class));
     }
 
     @Test
-    public void testRunWithNoUpcomingViolatingTickets() {
+    public void should_not_send_notification_when_no_tickets_approaching_sla_deadline() {
         // Given
         when(workflowTransitionHistoryService.getViolatingTransitions(
                         PRIOR_SLA_WARNING_THRESHOLD_IN_SECONDS))
@@ -155,7 +154,7 @@ public class SendWarningForUpcomingTicketsViolateSlaJobTest {
     }
 
     @Test
-    public void testRunWithNullAssignUser() {
+    public void should_notify_team_managers_when_ticket_has_no_assigned_user() {
         // Given
         WorkflowState fromState = WorkflowState.builder().id(1L).stateName("From State").build();
 
@@ -188,7 +187,7 @@ public class SendWarningForUpcomingTicketsViolateSlaJobTest {
                         .eventName("Test Event")
                         .transitionDate(now.minusSeconds(3600)) // 1 hour ago
                         .slaDueDate(slaDueDate)
-                        .status(WorkflowTransitionHistoryStatus.In_Progress)
+                        .status(WorkflowTransitionHistoryStatus.IN_PROGRESS)
                         .build();
 
         List<WorkflowTransitionHistory> upcomingViolatingTickets = List.of(upcomingViolatingTicket);
@@ -215,18 +214,32 @@ public class SendWarningForUpcomingTicketsViolateSlaJobTest {
 
         // Then
         // Verify notification sent to team manager
+        ArgumentCaptor<String> userIdCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<Notification> notificationCaptor =
+                ArgumentCaptor.forClass(Notification.class);
+
         verify(messageTemplate)
                 .convertAndSendToUser(
-                        eq(String.valueOf(teamManager.getId())),
+                        userIdCaptor.capture(),
                         eq("/queue/notifications"),
-                        any(Notification.class));
+                        notificationCaptor.capture());
+
+        String capturedUserId = userIdCaptor.getValue();
+        Notification capturedNotification = notificationCaptor.getValue();
+
+        // Verify notification properties
+        assertEquals(String.valueOf(teamManager.getId()), capturedUserId);
+        assertEquals(NotificationType.SLA_WARNING, capturedNotification.getType());
+        assertTrue(capturedNotification.getContent().contains("Test Ticket"));
+        assertTrue(capturedNotification.getContent().contains("approaching its SLA deadline"));
+        assertFalse(capturedNotification.getIsRead());
 
         // Verify deduplication cache entry
         verify(deduplicationCacheService).put(anyString(), any(Duration.class));
     }
 
     @Test
-    public void testRunWithDuplicateNotification() {
+    public void should_not_send_duplicate_notifications_for_same_ticket() {
         // Given
         WorkflowState fromState = WorkflowState.builder().id(1L).stateName("From State").build();
 
@@ -239,9 +252,9 @@ public class SendWarningForUpcomingTicketsViolateSlaJobTest {
         User assignUser =
                 User.builder()
                         .id(5L)
-                        .firstName("John")
-                        .lastName("Doe")
-                        .email("john.doe@example.com")
+                        .firstName("Assigned")
+                        .lastName("User")
+                        .email("assigned@example.com")
                         .build();
 
         Ticket ticket =
@@ -266,7 +279,7 @@ public class SendWarningForUpcomingTicketsViolateSlaJobTest {
                         .eventName("Test Event")
                         .transitionDate(now.minusSeconds(3600)) // 1 hour ago
                         .slaDueDate(slaDueDate)
-                        .status(WorkflowTransitionHistoryStatus.In_Progress)
+                        .status(WorkflowTransitionHistoryStatus.IN_PROGRESS)
                         .build();
 
         List<WorkflowTransitionHistory> upcomingViolatingTickets = List.of(upcomingViolatingTicket);
@@ -283,7 +296,7 @@ public class SendWarningForUpcomingTicketsViolateSlaJobTest {
         job.run();
 
         // Then
-        // Verify no notifications are sent due to deduplication
+        // Verify no notifications are sent for duplicate warnings
         verify(messageTemplate, never()).convertAndSendToUser(anyString(), anyString(), any());
         verify(deduplicationCacheService, never()).put(anyString(), any(Duration.class));
     }

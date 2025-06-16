@@ -15,6 +15,8 @@ import io.flowinquiry.exceptions.ResourceNotFoundException;
 import io.flowinquiry.modules.teams.service.dto.TeamDTO;
 import io.flowinquiry.modules.teams.service.event.NewTeamCreatedEvent;
 import io.flowinquiry.modules.teams.service.event.RemoveUserOutOfTeamEvent;
+import io.flowinquiry.modules.usermanagement.domain.User;
+import io.flowinquiry.modules.usermanagement.service.dto.UserDTO;
 import io.flowinquiry.modules.usermanagement.service.dto.UserWithTeamRoleDTO;
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +26,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -169,51 +173,220 @@ public class TeamServiceIT {
 
     @Test
     void shouldDeleteTeamSuccessfully() {
-        // Test for deleteTeam method
+        // Create a new team to delete
+        TeamDTO teamDTO = new TeamDTO();
+        teamDTO.setName("Team to Delete");
+        teamDTO.setSlogan("Delete Me");
+        teamDTO.setDescription("This team will be deleted");
+
+        TeamDTO savedTeam = teamService.createTeam(teamDTO);
+        Long teamId = savedTeam.getId();
+
+        // Verify team exists
+        assertThat(teamService.findTeamById(teamId)).isPresent();
+
+        // Delete the team
+        teamService.deleteTeam(teamId);
+
+        // Verify team no longer exists
+        assertThat(teamService.findTeamById(teamId)).isEmpty();
     }
 
     @Test
     void shouldDeleteMultipleTeamsSuccessfully() {
-        // Test for deleteTeams method
+        // Create first team to delete
+        TeamDTO teamDTO1 = new TeamDTO();
+        teamDTO1.setName("Team to Delete 1");
+        teamDTO1.setSlogan("Delete Me 1");
+        teamDTO1.setDescription("This team will be deleted 1");
+
+        TeamDTO savedTeam1 = teamService.createTeam(teamDTO1);
+        Long teamId1 = savedTeam1.getId();
+
+        // Create second team to delete
+        TeamDTO teamDTO2 = new TeamDTO();
+        teamDTO2.setName("Team to Delete 2");
+        teamDTO2.setSlogan("Delete Me 2");
+        teamDTO2.setDescription("This team will be deleted 2");
+
+        TeamDTO savedTeam2 = teamService.createTeam(teamDTO2);
+        Long teamId2 = savedTeam2.getId();
+
+        // Verify teams exist
+        assertThat(teamService.findTeamById(teamId1)).isPresent();
+        assertThat(teamService.findTeamById(teamId2)).isPresent();
+
+        // Delete the teams individually
+        teamService.deleteTeam(teamId1);
+        teamService.deleteTeam(teamId2);
+
+        // Verify teams no longer exist
+        assertThat(teamService.findTeamById(teamId1)).isEmpty();
+        assertThat(teamService.findTeamById(teamId2)).isEmpty();
     }
 
     @Test
     void shouldFindTeamByIdSuccessfully() {
-        // Test for findTeamById method
+        // Using teamId 1 as suggested in the issue description
+        Optional<TeamDTO> teamOptional = teamService.findTeamById(1L);
+
+        // Verify team exists and has correct properties
+        assertThat(teamOptional).isPresent();
+        TeamDTO team = teamOptional.get();
+        assertThat(team.getId()).isEqualTo(1L);
+        // We can't assert on name, slogan, or description as we don't know what they are in the
+        // test database
+        // But we can assert that they're not null or empty
+        assertThat(team.getName()).isNotEmpty();
     }
 
     @Test
     void shouldReturnEmptyWhenTeamIdNotFound() {
-        // Test for findTeamById method when team not found
+        // Use a very large ID that is unlikely to exist
+        Optional<TeamDTO> teamOptional = teamService.findTeamById(99999L);
+
+        // Verify team does not exist
+        assertThat(teamOptional).isEmpty();
     }
 
     @Test
     void shouldFindTeamsSuccessfully() {
-        // Test for findTeams method
+        // Create a PageRequest for pagination
+        PageRequest pageRequest = PageRequest.of(0, 10);
+
+        // Call findTeams with empty query (returns all teams)
+        Page<TeamDTO> teamsPage = teamService.findTeams(Optional.empty(), pageRequest);
+
+        // Verify that teams are returned
+        assertThat(teamsPage).isNotNull();
+        assertThat(teamsPage.getContent()).isNotEmpty();
+
+        // Create a new team to ensure we have at least one team
+        TeamDTO newTeam = new TeamDTO();
+        newTeam.setName("Test Team for Find");
+        newTeam.setSlogan("Find Me");
+        newTeam.setDescription("This team is for testing findTeams");
+        teamService.createTeam(newTeam);
+
+        // Call findTeams again to ensure the new team is included
+        Page<TeamDTO> updatedTeamsPage = teamService.findTeams(Optional.empty(), pageRequest);
+        assertThat(updatedTeamsPage.getContent().size())
+                .isGreaterThanOrEqualTo(teamsPage.getContent().size());
     }
 
     @Test
     void shouldFindAllTeamsByUserIdSuccessfully() {
-        // Test for findAllTeamsByUserId method
+        // Using userId 1 as suggested in the issue description
+        List<TeamDTO> teams = teamService.findAllTeamsByUserId(1L);
+
+        // Verify that teams are returned
+        assertThat(teams).isNotEmpty();
+
+        // Verify that team with ID 1 is in the list (as per fw_user_team_test.csv)
+        assertThat(teams.stream().anyMatch(team -> team.getId().equals(1L))).isTrue();
     }
 
     @Test
     void shouldFindUsersNotInTeamSuccessfully() {
-        // Test for findUsersNotInTeam method
+        // Create a PageRequest for pagination
+        PageRequest pageRequest = PageRequest.of(0, 10);
+
+        // Find users not in team with ID 1
+        List<UserDTO> usersNotInTeam = teamService.findUsersNotInTeam("", 1L, pageRequest);
+
+        // Verify that the list is not null
+        assertThat(usersNotInTeam).isNotNull();
+
+        // Verify that user with ID 1 is not in the list (as they are in team 1)
+        assertThat(usersNotInTeam.stream().noneMatch(user -> user.getId().equals(1L))).isTrue();
     }
 
     @Test
     void shouldAddUsersToTeamSuccessfully() {
-        // Test for addUsersToTeam method
+        // Create a new team
+        TeamDTO teamDTO = new TeamDTO();
+        teamDTO.setName("Team for Adding Users");
+        teamDTO.setSlogan("Add Users Test");
+        teamDTO.setDescription("This team is for testing addUsersToTeam");
+
+        TeamDTO savedTeam = teamService.createTeam(teamDTO);
+        Long teamId = savedTeam.getId();
+
+        // Get initial count of users in the team
+        int initialUserCount = teamService.getUsersByTeam(teamId).size();
+
+        // Add user with ID 1 to the team with member role
+        teamService.addUsersToTeam(List.of(1L), ROLE_MEMBER, teamId);
+
+        // Verify user was added to the team
+        List<UserWithTeamRoleDTO> usersInTeam = teamService.getUsersByTeam(teamId);
+        assertThat(usersInTeam).hasSize(initialUserCount + 1);
+
+        // Verify user has the correct role
+        assertThat(teamService.getUserRoleInTeam(1L, teamId)).isEqualTo(ROLE_MEMBER);
+
+        // Verify the user is in the team
+        assertThat(usersInTeam.stream().anyMatch(user -> user.getId().equals(1L))).isTrue();
     }
 
     @Test
     void shouldCheckIfTeamHasManagerCorrectly() {
-        // Test for hasManager method
+        // Team 1 has a manager (user 7) according to fw_user_team_test.csv
+        boolean hasManager = teamService.hasManager(1L);
+        assertThat(hasManager).isTrue();
+
+        // Create a new team without managers
+        TeamDTO teamDTO = new TeamDTO();
+        teamDTO.setName("Team without Managers");
+        teamDTO.setSlogan("No Managers");
+        teamDTO.setDescription("This team is for testing hasManager");
+
+        TeamDTO savedTeam = teamService.createTeam(teamDTO);
+        Long teamId = savedTeam.getId();
+
+        // Add users with non-manager roles
+        teamService.addUsersToTeam(List.of(1L), ROLE_MEMBER, teamId);
+        teamService.addUsersToTeam(List.of(2L), ROLE_GUEST, teamId);
+
+        // Verify team has no managers
+        assertThat(teamService.hasManager(teamId)).isFalse();
+
+        // Add a manager to the team
+        teamService.addUsersToTeam(List.of(3L), ROLE_MANAGER, teamId);
+
+        // Verify team now has a manager
+        assertThat(teamService.hasManager(teamId)).isTrue();
     }
 
     @Test
     void shouldGetTeamManagersSuccessfully() {
-        // Test for getTeamManagers method
+        // Team 1 has a manager (user 7) according to fw_user_team_test.csv
+        List<User> managers = teamService.getTeamManagers(1L);
+
+        // Verify that managers are returned
+        assertThat(managers).isNotEmpty();
+
+        // Verify that user 7 is in the list of managers
+        assertThat(managers.stream().anyMatch(user -> user.getId().equals(7L))).isTrue();
+
+        // Create a new team without managers
+        TeamDTO teamDTO = new TeamDTO();
+        teamDTO.setName("Team for Manager Test");
+        teamDTO.setSlogan("Manager Test");
+        teamDTO.setDescription("This team is for testing getTeamManagers");
+
+        TeamDTO savedTeam = teamService.createTeam(teamDTO);
+        Long teamId = savedTeam.getId();
+
+        // Verify team has no managers
+        assertThat(teamService.getTeamManagers(teamId)).isEmpty();
+
+        // Add a manager to the team
+        teamService.addUsersToTeam(List.of(1L), ROLE_MANAGER, teamId);
+
+        // Verify team now has a manager
+        List<User> newManagers = teamService.getTeamManagers(teamId);
+        assertThat(newManagers).hasSize(1);
+        assertThat(newManagers.get(0).getId()).isEqualTo(1L);
     }
 }

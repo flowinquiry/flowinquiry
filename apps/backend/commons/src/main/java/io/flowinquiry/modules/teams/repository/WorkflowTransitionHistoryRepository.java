@@ -27,7 +27,7 @@ public interface WorkflowTransitionHistoryRepository
     @Query(
             """
     SELECT wth FROM WorkflowTransitionHistory wth
-    WHERE wth.status = 'In_Progress'
+    WHERE wth.status = io.flowinquiry.modules.teams.domain.WorkflowTransitionHistoryStatus.IN_PROGRESS
     AND wth.slaDueDate <= :checkTime
     """)
     List<WorkflowTransitionHistory> findViolatingTransitions(@Param("checkTime") Instant checkTime);

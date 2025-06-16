@@ -103,6 +103,7 @@ public class TeamService {
         teamRepository.delete(existingTeam);
     }
 
+    @Transactional
     public void deleteTeams(List<Long> ids) {
         teamRepository.deleteAllByIdInBatch(ids);
     }

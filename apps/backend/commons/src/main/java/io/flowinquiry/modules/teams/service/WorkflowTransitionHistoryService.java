@@ -1,8 +1,8 @@
 package io.flowinquiry.modules.teams.service;
 
-import static io.flowinquiry.modules.teams.domain.WorkflowTransitionHistoryStatus.Completed;
-import static io.flowinquiry.modules.teams.domain.WorkflowTransitionHistoryStatus.Escalated;
-import static io.flowinquiry.modules.teams.domain.WorkflowTransitionHistoryStatus.In_Progress;
+import static io.flowinquiry.modules.teams.domain.WorkflowTransitionHistoryStatus.COMPLETED;
+import static io.flowinquiry.modules.teams.domain.WorkflowTransitionHistoryStatus.ESCALATED;
+import static io.flowinquiry.modules.teams.domain.WorkflowTransitionHistoryStatus.IN_PROGRESS;
 
 import io.flowinquiry.exceptions.ResourceNotFoundException;
 import io.flowinquiry.modules.teams.domain.Ticket;
@@ -82,9 +82,9 @@ public class WorkflowTransitionHistoryService {
         history.setTransitionDate(Instant.now());
         history.setSlaDueDate(slaDueDate);
         if (transition.getTargetState().getIsFinal()) {
-            history.setStatus(Completed);
+            history.setStatus(COMPLETED);
         } else {
-            history.setStatus(In_Progress);
+            history.setStatus(IN_PROGRESS);
         }
 
         workflowTransitionHistoryRepository.save(history);
@@ -131,7 +131,7 @@ public class WorkflowTransitionHistoryService {
                                         new EntityNotFoundException(
                                                 "Transition not found: " + transitionId));
 
-        violatedTicket.setStatus(Escalated);
+        violatedTicket.setStatus(ESCALATED);
         workflowTransitionHistoryRepository.save(violatedTicket);
     }
 }

@@ -1,7 +1,5 @@
 package io.flowinquiry.web.rest;
 
-import static io.flowinquiry.security.domain.AuthorityAsserts.assertAuthorityAllPropertiesEquals;
-import static io.flowinquiry.security.domain.AuthorityAsserts.assertAuthorityAllUpdatablePropertiesEquals;
 import static io.flowinquiry.security.domain.AuthorityAsserts.assertAuthorityUpdatableFieldsEquals;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
@@ -216,15 +214,5 @@ class AuthorityControllerIT {
 
     protected Authority getPersistedAuthority(Authority authority) {
         return authorityRepository.findById(authority.getName()).orElseThrow();
-    }
-
-    protected void assertPersistedAuthorityToMatchAllProperties(Authority expectedAuthority) {
-        assertAuthorityAllPropertiesEquals(
-                expectedAuthority, getPersistedAuthority(expectedAuthority));
-    }
-
-    protected void assertPersistedAuthorityToMatchUpdatableProperties(Authority expectedAuthority) {
-        assertAuthorityAllUpdatablePropertiesEquals(
-                expectedAuthority, getPersistedAuthority(expectedAuthority));
     }
 }

@@ -60,6 +60,7 @@ public class ProjectIterationService {
                 .map(
                         existingIteration -> {
                             existingIteration.setName(updatedIteration.getName());
+                            existingIteration.setDescription(updatedIteration.getDescription());
                             existingIteration.setStartDate(updatedIteration.getStartDate());
                             existingIteration.setEndDate(updatedIteration.getEndDate());
                             return projectIterationRepository.save(existingIteration);

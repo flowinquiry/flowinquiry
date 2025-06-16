@@ -183,7 +183,7 @@ public class TicketController {
 
         DateRange dateRange = processDateRange(fromDate, toDate, range);
         return ticketService.countOverdueTickets(
-                teamId, WorkflowTransitionHistoryStatus.Completed, dateRange.from, dateRange.to);
+                teamId, WorkflowTransitionHistoryStatus.COMPLETED, dateRange.from, dateRange.to);
     }
 
     @GetMapping("/teams/{teamId}/ticket-creations-day-series")

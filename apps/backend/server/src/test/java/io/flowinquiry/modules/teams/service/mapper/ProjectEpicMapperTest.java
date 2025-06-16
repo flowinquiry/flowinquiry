@@ -118,7 +118,6 @@ public class ProjectEpicMapperTest {
                 () -> assertEquals(updateDTO.getDescription(), existingEpic.getDescription()),
                 () -> assertEquals(updateDTO.getStartDate(), existingEpic.getStartDate()),
                 () -> assertEquals(updateDTO.getEndDate(), existingEpic.getEndDate()),
-                // Status and priority should not be changed as they are not in the DTO
                 () -> assertEquals("ACTIVE", existingEpic.getStatus()),
                 () -> assertEquals(Integer.valueOf(1), existingEpic.getPriority()));
     }

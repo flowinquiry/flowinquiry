@@ -47,7 +47,7 @@ public class WorkflowTransitionHistoryMapperTest {
                         .eventName("Test Event")
                         .transitionDate(now)
                         .slaDueDate(dueDate)
-                        .status(WorkflowTransitionHistoryStatus.Completed)
+                        .status(WorkflowTransitionHistoryStatus.COMPLETED)
                         .build();
 
         // When
@@ -93,7 +93,7 @@ public class WorkflowTransitionHistoryMapperTest {
                         .toState(toState1)
                         .eventName("Event 1")
                         .transitionDate(now)
-                        .status(WorkflowTransitionHistoryStatus.Completed)
+                        .status(WorkflowTransitionHistoryStatus.COMPLETED)
                         .build();
 
         WorkflowState fromState2 = WorkflowState.builder().id(2L).stateName("From State 2").build();
@@ -108,7 +108,7 @@ public class WorkflowTransitionHistoryMapperTest {
                         .toState(toState2)
                         .eventName("Event 2")
                         .transitionDate(now.plusSeconds(3600)) // plus one hour
-                        .status(WorkflowTransitionHistoryStatus.In_Progress)
+                        .status(WorkflowTransitionHistoryStatus.IN_PROGRESS)
                         .build();
 
         List<WorkflowTransitionHistory> histories = Arrays.asList(history1, history2);

@@ -38,28 +38,18 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.MessageSource;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
-/**
- * Tests for {@link SendNotificationForTicketsViolateSlaJob}.
- *
- * <p>Note: These tests are currently disabled because they require a Spring context to run. The
- * {@link EmailContext} class used in the job requires access to the Spring context through {@link
- * io.flowinquiry.config.SpringContextProvider}, which is not available in unit tests.
- *
- * <p>To properly test this job, it should be tested as an integration test with a Spring context,
- * or the EmailContext creation should be refactored to allow for easier testing.
- */
 @ExtendWith(MockitoExtension.class)
 public class SendNotificationForTicketsViolateSlaJobTest {
 
-    @Mock private SimpMessagingTemplate messageTemplate;
-
-    @Mock private TeamService teamService;
-
     @Mock private WorkflowTransitionHistoryService workflowTransitionHistoryService;
+
+    @Mock private SimpMessagingTemplate messageTemplate;
 
     @Mock private MailService mailService;
 
     @Mock private DeduplicationCacheService deduplicationCacheService;
+
+    @Mock private TeamService teamService;
 
     @Mock private UserMapper userMapper;
 
@@ -94,9 +84,9 @@ public class SendNotificationForTicketsViolateSlaJobTest {
         User assignUser =
                 User.builder()
                         .id(5L)
-                        .firstName("John")
-                        .lastName("Doe")
-                        .email("john.doe@example.com")
+                        .firstName("Assigned")
+                        .lastName("User")
+                        .email("assigned@example.com")
                         .build();
 
         Ticket ticket =
@@ -120,7 +110,7 @@ public class SendNotificationForTicketsViolateSlaJobTest {
                         .eventName("Test Event")
                         .transitionDate(now.minusSeconds(7200)) // 2 hours ago
                         .slaDueDate(slaDueDate)
-                        .status(WorkflowTransitionHistoryStatus.In_Progress)
+                        .status(WorkflowTransitionHistoryStatus.IN_PROGRESS)
                         .build();
 
         List<WorkflowTransitionHistory> violatingTickets = List.of(violatingTicket);
@@ -237,7 +227,7 @@ public class SendNotificationForTicketsViolateSlaJobTest {
                         .eventName("Test Event")
                         .transitionDate(now.minusSeconds(7200)) // 2 hours ago
                         .slaDueDate(slaDueDate)
-                        .status(WorkflowTransitionHistoryStatus.In_Progress)
+                        .status(WorkflowTransitionHistoryStatus.IN_PROGRESS)
                         .build();
 
         List<WorkflowTransitionHistory> violatingTickets = List.of(violatingTicket);
@@ -270,14 +260,28 @@ public class SendNotificationForTicketsViolateSlaJobTest {
         // Verify escalation
         verify(workflowTransitionHistoryService).escalateTransition(violatingTicket.getId());
 
-        // Verify notifications sent only to team manager (not to assign user since it's null)
+        // Verify notifications sent to team manager only
+        ArgumentCaptor<String> userIdCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<Notification> notificationCaptor =
+                ArgumentCaptor.forClass(Notification.class);
+
+        // Should send 1 notification (to teamManager only)
         verify(messageTemplate, times(1))
                 .convertAndSendToUser(
-                        eq(String.valueOf(teamManager.getId())),
+                        userIdCaptor.capture(),
                         eq("/queue/notifications"),
-                        any(Notification.class));
+                        notificationCaptor.capture());
 
-        // Verify email sent only to team manager - just verify the method was called
+        String capturedUserId = userIdCaptor.getValue();
+        Notification capturedNotification = notificationCaptor.getValue();
+
+        // Verify notification properties
+        assert capturedUserId.equals(String.valueOf(teamManager.getId()));
+        assert capturedNotification.getType() == NotificationType.SLA_BREACH;
+        assert capturedNotification.getContent().contains("Test Ticket");
+        assert !capturedNotification.getIsRead();
+
+        // Verify email sent - just verify the method was called
         verify(mailService, times(1)).sendEmail(any(EmailContext.class));
 
         // Verify deduplication cache entry
@@ -298,9 +302,9 @@ public class SendNotificationForTicketsViolateSlaJobTest {
         User assignUser =
                 User.builder()
                         .id(5L)
-                        .firstName("John")
-                        .lastName("Doe")
-                        .email("john.doe@example.com")
+                        .firstName("Assigned")
+                        .lastName("User")
+                        .email("assigned@example.com")
                         .build();
 
         Ticket ticket =
@@ -324,7 +328,7 @@ public class SendNotificationForTicketsViolateSlaJobTest {
                         .eventName("Test Event")
                         .transitionDate(now.minusSeconds(7200)) // 2 hours ago
                         .slaDueDate(slaDueDate)
-                        .status(WorkflowTransitionHistoryStatus.In_Progress)
+                        .status(WorkflowTransitionHistoryStatus.IN_PROGRESS)
                         .build();
 
         List<WorkflowTransitionHistory> violatingTickets = List.of(violatingTicket);
@@ -354,7 +358,7 @@ public class SendNotificationForTicketsViolateSlaJobTest {
         // Verify escalation still happens
         verify(workflowTransitionHistoryService).escalateTransition(violatingTicket.getId());
 
-        // Verify no notifications or emails are sent due to deduplication
+        // Verify no notifications are sent for duplicate violations
         verify(messageTemplate, never()).convertAndSendToUser(anyString(), anyString(), any());
         verify(mailService, never()).sendEmail(any(EmailContext.class));
         verify(deduplicationCacheService, never()).put(anyString(), any(Duration.class));

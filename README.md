@@ -27,48 +27,33 @@
 
 ## What is FlowInquiry
 
-FlowInquiry is a free, open-source solution that embraces transparency as an alternative to Jira, ServiceNow, and Zendesk. Designed for managing cases, tickets, and requests, it streamlines communication, ensures timely resolutions, and supports customizable workflows with SLAs. By eliminating vendor lock-in and costly subscriptions, FlowInquiry enhances efficiency, accountability, and collaboration for teams handling internal and external inquiries.
+FlowInquiry is a free, open-source tool for managing projects, tickets, and requests. It helps teams track work, set clear steps, and meet deadlines. You can define workflows, set SLAs, and keep all updates in one place. FlowInquiry is built to be simple, reliable, and easy to adapt to your team’s process.
 
 ![FlowInquiry](assets/flowinquiry_slide.webp)
 
-## ✅ Real-World Use Cases Solved by FlowInquiry
-FlowInquiry helps teams manage requests, projects, and collaboration with clarity and control. Here are common ways organizations use it:
-
-* Project & Task Management
-Organize tasks, set priorities, track progress, and ensure deadlines with workflow automation and SLAs.
-
-* Cross-Team Collaboration
-Centralize communication across teams, reduce misalignment, and route requests through well-defined workflows.
-
-* IT & Internal Support
-Manage service desk tickets like access requests or software issues with automated handling and clear ownership.
-
-* Incident & On-Call Management
-Track incidents with SLAs, escalation rules, and accountability—ideal for rotating shifts and critical operations.
-
 ## ⚙️ Key Features of FlowInquiry
 
-* 📂 Projects – Organize tasks using a Kanban board, grouped by iterations and epics
+📂 Projects – Use a Kanban board to group tasks by iteration or epic
 
-* 🧩 Custom Workflows – Tailor request lifecycles with state transitions and actions
+🧩 Custom Workflows – Set request states and define how they move
 
-* ⏱ SLA Enforcement – Track deadlines, escalate overdue items
+⏱ SLA Tracking – Set due dates and handle items that run late
 
-* 🔄 Real-time Updates – Stay instantly informed of changes in your teams, projects, or organizations
+🔄 Live Updates – See changes in teams, projects, or requests as they happen
 
-* 👥 Comments & Watchers – Collaborate with full visibility
+👥 Comments and Watchers – Share updates and keep the right people informed
 
-* 📅 Timeline View – Visualize request history and changes
+📅 Timeline View – See the full history of a request at a glance
 
-* 🧵 Change History – Full audit trail of updates
+🧵 Change Log – Track what changed, when, and by whom
 
-* 🔐 Role-Based Access – Secure, granular permissions
+🔐 Role-Based Access – Control who can see or do what
 
-* 🌍 Multilingual Support – Serve global teams and users
+🌍 Language Support – Use in multiple languages for global teams
 
-* 🔄 Integrations – Connect with Email, Slack (upcoming), Github (upcoming) and more
+🔌 Integrations – Connect with email, with Slack and GitHub coming soon
 
-* 🚀 Flexible Deployment – Run on Docker, Kubernetes (upcoming), or your own infra
+🚀 Deployment Options – Run with Docker or on your own setup; Kubernetes coming soon
 
 ## Built With
 

@@ -1,6 +1,6 @@
 package io.flowinquiry.modules.teams.service;
 
-import static io.flowinquiry.modules.teams.domain.WorkflowTransitionHistoryStatus.Completed;
+import static io.flowinquiry.modules.teams.domain.WorkflowTransitionHistoryStatus.COMPLETED;
 import static io.flowinquiry.query.QueryUtils.createSpecification;
 
 import io.flowinquiry.exceptions.ResourceNotFoundException;
@@ -165,7 +165,7 @@ public class TicketService {
         history.setEventName("Created");
         history.setTransitionDate(Instant.now());
         history.setSlaDueDate(slaDueDate);
-        history.setStatus(WorkflowTransitionHistoryStatus.In_Progress);
+        history.setStatus(WorkflowTransitionHistoryStatus.IN_PROGRESS);
         workflowTransitionHistoryRepository.save(history);
 
         TicketDTO savedTicketDTO = ticketMapper.toDto(ticket);
@@ -307,13 +307,13 @@ public class TicketService {
 
     public Page<TicketDTO> getOverdueTicketsByTeam(Long teamId, Pageable pageable) {
         return ticketRepository
-                .findOverdueTicketsByTeamId(teamId, Completed, pageable)
+                .findOverdueTicketsByTeamId(teamId, COMPLETED, pageable)
                 .map(ticketMapper::toDto);
     }
 
     public Page<TicketDTO> getOverdueTicketsByUser(Long userId, Pageable pageable) {
         return ticketRepository
-                .findOverdueTicketsByUserId(userId, Completed, pageable)
+                .findOverdueTicketsByUserId(userId, COMPLETED, pageable)
                 .map(ticketMapper::toDto);
     }
 
