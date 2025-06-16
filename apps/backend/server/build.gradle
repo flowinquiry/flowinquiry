@@ -80,17 +80,26 @@ tasks.register('jacocoIntegrationTestReport', JacocoReport) {
     )
 
     reports {
-        xml.required = true
-        html.required = true
+        xml {
+            required = true
+            destination = file("${buildDir}/reports/jacoco/jacocoIntegrationTestReport/jacocoIntegrationTestReport.xml")
+        }
+        html {
+            required = true
+            destination = file("${buildDir}/reports/jacoco/jacocoIntegrationTestReport")
+        }
         csv.required = false
     }
 
-    finalizedBy jacocoCombinedReport
+    // No need to finalize with another report as jacocoTestReport will handle both test types
 }
 
 // Configure the main JaCoCo report task to include both test and integrationTest data
 jacocoTestReport {
-    dependsOn test
+    dependsOn test, integrationTest
+
+    // Include both test and integration test execution data
+    executionData files("${buildDir}/jacoco/test.exec", "${buildDir}/jacoco/integrationTest.exec")
 
     sourceDirectories.from = files(
         project.sourceSets.main.java.srcDirs,
@@ -103,64 +112,22 @@ jacocoTestReport {
     )
 
     reports {
-        xml.required = true
-        html.required = true
+        xml {
+            required = true
+            destination = file("${buildDir}/reports/jacoco/test/jacocoTestReport.xml")
+        }
+        html {
+            required = true
+            destination = file("${buildDir}/reports/jacoco/test")
+        }
         csv.required = false
     }
 }
 
-// Add a task to generate a combined report for both test and integrationTest
-tasks.register('jacocoCombinedReport', JacocoReport) {
-    description = 'Generates an aggregate JaCoCo report from both unit tests and integration tests'
-    group = 'Verification'
+// The jacocoCombinedReport task has been removed as jacocoTestReport now handles both test and integrationTest
 
-    // Create a directory to store copies of the execution data files
-    def jacocoMergeDir = "${buildDir}/jacoco/merge"
-    doFirst {
-        // Create the directory if it doesn't exist
-        file(jacocoMergeDir).mkdirs()
-
-        // Copy the test.exec file if it exists
-        def testExec = file("${buildDir}/jacoco/test.exec")
-        if (testExec.exists()) {
-            copy {
-                from testExec
-                into jacocoMergeDir
-            }
-        }
-
-        // Copy the integrationTest.exec file if it exists
-        def integrationTestExec = file("${buildDir}/jacoco/integrationTest.exec")
-        if (integrationTestExec.exists()) {
-            copy {
-                from integrationTestExec
-                into jacocoMergeDir
-            }
-        }
-    }
-
-    // Only include execution data files from the merge directory
-    executionData.setFrom(fileTree(jacocoMergeDir).include("*.exec"))
-
-    sourceDirectories.from = files(
-        project.sourceSets.main.java.srcDirs,
-        project(":apps:backend:commons").sourceSets.main.java.srcDirs
-    )
-
-    classDirectories.from = files(
-        project.sourceSets.main.output.classesDirs,
-        project(":apps:backend:commons").sourceSets.main.output.classesDirs
-    )
-
-    reports {
-        xml.required = true
-        html.required = true
-        csv.required = false
-    }
-}
-
-// Make the check task depend on the jacocoCombinedReport task
-check.dependsOn jacocoCombinedReport
+// Make the check task depend on the jacocoTestReport task
+check.dependsOn jacocoTestReport
 
 configurations {
     providedRuntime
