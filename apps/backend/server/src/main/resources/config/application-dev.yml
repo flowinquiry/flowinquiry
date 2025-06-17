@@ -48,6 +48,27 @@ spring:
 server:
   port: 8080
 
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+    groups:
+      enabled: true
+    yaml:
+      enabled: true
+      path: /v3/api-docs.yaml
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    display-request-duration: true
+    groups-order: DESC
+    operationsSorter: method
+    disable-swagger-default-url: true
+  show-actuator: true
+  default-produces-media-type: application/json
+  default-consumes-media-type: application/json
+  paths-to-match: /api/**
+
 
 flowinquiry:
   # CORS is only enabled by default with the "dev" profile

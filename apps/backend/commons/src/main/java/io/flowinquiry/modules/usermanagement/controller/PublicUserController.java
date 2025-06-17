@@ -15,6 +15,13 @@ import io.flowinquiry.modules.usermanagement.service.mapper.UserMapper;
 import io.flowinquiry.query.Filter;
 import io.flowinquiry.query.FilterOperator;
 import io.flowinquiry.query.QueryDTO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -53,6 +60,7 @@ import tech.jhipster.web.util.ResponseUtil;
 
 @RestController
 @RequestMapping("/api/users")
+@Tag(name = "User Management", description = "API endpoints for managing users")
 public class PublicUserController {
 
     private static final List<String> ALLOWED_ORDERED_PROPERTIES =
@@ -86,9 +94,26 @@ public class PublicUserController {
      * @param pageable the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all users.
      */
+    @Operation(
+            summary = "Search all public users",
+            description =
+                    "Get all users with only public information - calling this method is allowed for anyone")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully retrieved users",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema = @Schema(implementation = Page.class))),
+                @ApiResponse(responseCode = "400", description = "Bad request", content = @Content)
+            })
     @PostMapping("/search")
     public ResponseEntity<Page<UserDTO>> searchAllPublicUsers(
-            @Valid @RequestBody Optional<QueryDTO> queryDTO, Pageable pageable) {
+            @Parameter(description = "Query parameters for filtering users") @Valid @RequestBody
+                    Optional<QueryDTO> queryDTO,
+            @Parameter(description = "Pagination information") Pageable pageable) {
         LOG.debug("REST request to get all public User names");
 
         // Check for allowed properties in pageable
@@ -129,10 +154,33 @@ public class PublicUserController {
      *     user.
      * @throws EmailAlreadyUsedException {@code 400 (Bad Request)} if the email is already in use.
      */
+    @Operation(
+            summary = "Update an existing user",
+            description = "Updates an existing user's information and optionally their avatar")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully updated user",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema = @Schema(implementation = UserDTO.class))),
+                @ApiResponse(
+                        responseCode = "400",
+                        description = "Bad request or email already in use",
+                        content = @Content),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "User not found",
+                        content = @Content)
+            })
     @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UserDTO> updateUser(
-            @RequestPart("userDTO") UserDTO userDTO,
-            @RequestParam(value = "file", required = false) MultipartFile avatarFile)
+            @Parameter(description = "User data to update") @RequestPart("userDTO") UserDTO userDTO,
+            @Parameter(description = "Optional avatar file to upload")
+                    @RequestParam(value = "file", required = false)
+                    MultipartFile avatarFile)
             throws Exception {
         Optional<User> userByEmail = userRepository.findOneByEmailIgnoreCase(userDTO.getEmail());
         if (userByEmail.isPresent()
@@ -161,22 +209,80 @@ public class PublicUserController {
         return ResponseEntity.ok(updatedUser);
     }
 
+    @Operation(summary = "Get user by ID", description = "Retrieves a user by their ID")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully retrieved user",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema = @Schema(implementation = UserDTO.class))),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "User not found",
+                        content = @Content)
+            })
     @GetMapping("/{userId}")
-    public ResponseEntity<UserDTO> getUser(@PathVariable("userId") Long userId) {
+    public ResponseEntity<UserDTO> getUser(
+            @Parameter(description = "ID of the user to retrieve") @PathVariable("userId")
+                    Long userId) {
         return ResponseUtil.wrapOrNotFound(userService.getUserWithManagerById(userId));
     }
 
+    @Operation(
+            summary = "Get user permissions",
+            description = "Retrieves all resources with permissions for a specific user")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully retrieved permissions",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema =
+                                                @Schema(
+                                                        implementation =
+                                                                ResourcePermissionDTO.class))),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "User not found",
+                        content = @Content)
+            })
     @GetMapping("/permissions/{userId}")
     public ResponseEntity<List<ResourcePermissionDTO>> getUserResourcesWithPermissions(
-            @PathVariable("userId") Long userId) {
+            @Parameter(description = "ID of the user to retrieve permissions for")
+                    @PathVariable("userId")
+                    Long userId) {
         List<ResourcePermissionDTO> resourcesWithPermissions =
                 userService.getResourcesWithPermissionsByUserId(userId);
         return ResponseEntity.ok(resourcesWithPermissions);
     }
 
+    @Operation(
+            summary = "Get direct reports",
+            description = "Retrieves all users that directly report to a specific manager")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully retrieved direct reports",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema = @Schema(implementation = UserDTO.class))),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "Manager not found",
+                        content = @Content)
+            })
     @GetMapping("/{managerId}/direct-reports")
     public ResponseEntity<List<UserDTO>> getDirectReports(
-            @PathVariable("managerId") Long managerId) {
+            @Parameter(description = "ID of the manager to retrieve direct reports for")
+                    @PathVariable("managerId")
+                    Long managerId) {
         List<UserDTO> directReports = userService.getDirectReports(managerId);
         return ResponseEntity.ok(directReports);
     }
@@ -200,9 +306,32 @@ public class PublicUserController {
      * @throws IllegalArgumentException {@code 400 (Bad Request)} if the login or email is already
      *     in use.
      */
+    @Operation(
+            summary = "Create a new user",
+            description = "Creates a new user with the provided information (admin only)")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "201",
+                        description = "User successfully created",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema = @Schema(implementation = UserDTO.class))),
+                @ApiResponse(
+                        responseCode = "400",
+                        description = "Bad request or email/login already in use",
+                        content = @Content),
+                @ApiResponse(
+                        responseCode = "403",
+                        description = "Forbidden - requires admin privileges",
+                        content = @Content)
+            })
     @PostMapping
     @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
-    public ResponseEntity<UserDTO> createUser(@Valid @RequestBody UserDTO userDTO)
+    public ResponseEntity<UserDTO> createUser(
+            @Parameter(description = "User data to create", required = true) @Valid @RequestBody
+                    UserDTO userDTO)
             throws URISyntaxException {
         LOG.debug("REST request to save User : {}", userDTO);
 
@@ -224,18 +353,64 @@ public class PublicUserController {
      * @param userId the userId of the user to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
+    @Operation(summary = "Delete a user", description = "Deletes a user by their ID")
+    @ApiResponses(
+            value = {
+                @ApiResponse(responseCode = "204", description = "User successfully deleted"),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "User not found",
+                        content = @Content)
+            })
     @DeleteMapping("/{userId}")
-    public ResponseEntity<Void> deleteUser(@PathVariable("userId") Long userId) {
+    public ResponseEntity<Void> deleteUser(
+            @Parameter(description = "ID of the user to delete", required = true)
+                    @PathVariable("userId")
+                    Long userId) {
         LOG.debug("REST request to delete User: {}", userId);
         userService.softDeleteUserById(userId);
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(
+            summary = "Get user hierarchy",
+            description =
+                    "Retrieves the organizational hierarchy for a specific user with subordinates")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully retrieved user hierarchy",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema = @Schema(implementation = UserHierarchyDTO.class))),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "User not found",
+                        content = @Content)
+            })
     @GetMapping("/{userId}/hierarchy")
-    public ResponseEntity<UserHierarchyDTO> getUserHierarchy(@PathVariable("userId") Long userId) {
+    public ResponseEntity<UserHierarchyDTO> getUserHierarchy(
+            @Parameter(description = "ID of the user to retrieve hierarchy for", required = true)
+                    @PathVariable("userId")
+                    Long userId) {
         return ResponseEntity.ok(userService.getUserHierarchyWithSubordinates(userId));
     }
 
+    @Operation(
+            summary = "Get organization chart",
+            description = "Retrieves the complete organizational hierarchy chart")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully retrieved organization chart",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema = @Schema(implementation = UserHierarchyDTO.class)))
+            })
     @GetMapping("/orgChart")
     public ResponseEntity<UserHierarchyDTO> getOrgChart() {
         return ResponseEntity.ok(userService.getOrgChart());
@@ -248,16 +423,45 @@ public class PublicUserController {
      * @param userTerm The search term
      * @return List of up to 10 users matching the search criteria
      */
+    @Operation(
+            summary = "Search users by term",
+            description = "Searches for users matching the provided search term")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully retrieved matching users",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema = @Schema(implementation = UserDTO.class)))
+            })
     @GetMapping("/search-by-term")
-    public List<UserDTO> searchUsers(@RequestParam("term") String userTerm) {
+    public List<UserDTO> searchUsers(
+            @Parameter(
+                            description = "Search term to match against user properties",
+                            required = true)
+                    @RequestParam("term")
+                    String userTerm) {
         PageRequest pageRequest = PageRequest.of(0, 10, Sort.by("lastName").ascending());
         return userService.searchUsers(userTerm, pageRequest).getContent().stream()
                 .map(userMapper::toDto)
                 .toList();
     }
 
+    @Operation(
+            summary = "Update user locale",
+            description = "Updates the locale/language preference for the current user")
+    @ApiResponses(
+            value = {
+                @ApiResponse(responseCode = "200", description = "Successfully updated locale"),
+                @ApiResponse(responseCode = "400", description = "Bad request", content = @Content)
+            })
     @PatchMapping("/locale")
-    public void updateLocale(@RequestBody Map<String, String> body) {
+    public void updateLocale(
+            @Parameter(description = "Map containing locale information", required = true)
+                    @RequestBody
+                    Map<String, String> body) {
         String langKey = body.get("langKey");
         if (langKey == null || langKey.isBlank()) {
             return;
