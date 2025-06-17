@@ -7,13 +7,14 @@ import {
   DragOverlay,
   DragStartEvent,
 } from "@dnd-kit/core";
-import { ChevronDown, ChevronUp, Edit, Plus } from "lucide-react";
+import { ChevronDown, ChevronUp, Edit, Plus, Settings } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import ProjectEditDialog from "@/components/projects/project-edit-dialog";
 import { ProjectEpicDialog } from "@/components/projects/project-epic-dialog";
 import ProjectIterationDialog from "@/components/projects/project-iteration-dialog";
+import ProjectSettings from "@/components/projects/project-settings";
 import StateColumn from "@/components/projects/state-column";
 import TaskBlock from "@/components/projects/task-block";
 import TaskDetailSheet from "@/components/projects/task-detail-sheet";
@@ -29,6 +30,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePagePermission } from "@/hooks/use-page-permission";
 import { useAppClientTranslations } from "@/hooks/use-translations";
 import {
@@ -83,6 +85,11 @@ export default function ProjectView({
 
   // New state for header collapse
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
+
+  // State for view toggle
+  const [currentView, setCurrentView] = useState<"kanban" | "settings">(
+    "kanban",
+  );
 
   const t = useAppClientTranslations();
 
@@ -670,332 +677,391 @@ export default function ProjectView({
             )}
           </div>
 
-          {/* Keep the original filter section, just adding a bit more space efficiency */}
-          <div className="mb-4" data-testid="project-view-filters">
-            {/* Epic and Iteration Filters - Original design */}
-            <div
-              className="flex flex-wrap items-center gap-4 mb-4 p-3 bg-muted rounded-md"
-              data-testid="project-view-filter-bar"
+          <div id="toogle-view">
+            {/* View Toggle Tabs */}
+            <Tabs
+              defaultValue="kanban"
+              value={currentView}
+              onValueChange={(value) =>
+                setCurrentView(value as "kanban" | "settings")
+              }
+              className="mb-4"
             >
-              <div
-                className="flex items-center"
-                data-testid="project-view-iteration-filter"
-              >
-                <span className="text-sm font-medium mr-2">
-                  {t.teams.projects.view("iteration")}:
-                </span>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-8"
-                      testId="project-view-iteration-dropdown"
-                    >
-                      {selectedIteration
-                        ? iterations.find((i) => i.id === selectedIteration)
-                            ?.name
-                        : t.teams.projects.view("all_iterations")}
-                      <ChevronDown className="ml-2 h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start">
-                    <DropdownMenuItem
-                      onClick={() => setSelectedIteration(null)}
-                      className="cursor-pointer"
-                    >
-                      {t.teams.projects.view("all_iterations")}
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    {loadingIterations ? (
-                      <DropdownMenuItem disabled>
-                        {t.common.misc("loading_data")}
-                      </DropdownMenuItem>
-                    ) : iterations.length > 0 ? (
-                      iterations.map((iteration) => (
-                        <DropdownMenuItem
-                          key={iteration.id}
-                          onClick={() => setSelectedIteration(iteration.id!)}
-                          className="cursor-pointer"
-                        >
-                          <div>
-                            <div>{iteration.name}</div>
-                            <div className="text-xs text-muted-foreground">
-                              {getIterationStatus(iteration)} |{" "}
-                              {iteration.startDate
-                                ? new Date(
-                                    iteration.startDate,
-                                  ).toLocaleDateString()
-                                : "Not scheduled"}{" "}
-                              {iteration.startDate || iteration.endDate
-                                ? "- "
-                                : ""}
-                              {iteration.endDate
-                                ? new Date(
-                                    iteration.endDate,
-                                  ).toLocaleDateString()
-                                : iteration.startDate
-                                  ? "Ongoing"
-                                  : ""}
-                            </div>
-                          </div>
-                        </DropdownMenuItem>
-                      ))
-                    ) : (
-                      <DropdownMenuItem disabled>
-                        {t.teams.projects.view("no_iterations_found")}
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={handleAddNewIteration}
-                      className="cursor-pointer text-primary"
-                    >
-                      <Plus className="mr-2 h-4 w-4" />
-                      {t.teams.projects.view("add_new_iteration")}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+              <TabsList className="mb-2">
+                <TabsTrigger value="kanban" data-testid="kanban-view-tab">
+                  Kanban Board
+                </TabsTrigger>
+                <TabsTrigger value="settings" data-testid="settings-view-tab">
+                  <Settings className="mr-2 h-4 w-4" />
+                  Project Settings
+                </TabsTrigger>
+              </TabsList>
 
-              <div
-                className="flex items-center"
-                data-testid="project-view-epic-filter"
-              >
-                <span className="text-sm font-medium mr-2">
-                  {t.teams.projects.view("epic")}:
-                </span>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-8"
-                      testId="project-view-epic-dropdown"
-                    >
-                      {selectedEpic
-                        ? epics.find((e) => e.id === selectedEpic)?.name
-                        : t.teams.projects.view("all_epics")}
-                      <ChevronDown className="ml-2 h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start">
-                    <DropdownMenuItem
-                      onClick={() => setSelectedEpic(null)}
-                      className="cursor-pointer"
-                    >
-                      {t.teams.projects.view("all_epics")}
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    {loadingEpics ? (
-                      <DropdownMenuItem disabled>
-                        {t.common.misc("loading_data")}
-                      </DropdownMenuItem>
-                    ) : epics.length > 0 ? (
-                      epics.map((epic) => (
-                        <DropdownMenuItem
-                          key={epic.id}
-                          onClick={() => setSelectedEpic(epic.id!)}
-                          className="cursor-pointer"
-                          style={{
-                            borderLeft: `4px solid ${getEpicColor(epic.id!)}`,
-                          }}
-                        >
-                          <div>
-                            <div>{epic.name}</div>
-                            <div className="text-xs text-muted-foreground">
-                              {epic.description}
-                            </div>
-                          </div>
-                        </DropdownMenuItem>
-                      ))
-                    ) : (
-                      <DropdownMenuItem disabled>
-                        {t.teams.projects.view("no_epics_found")}
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={handleAddNewEpic}
-                      className="cursor-pointer text-primary"
-                    >
-                      <Plus className="mr-2 h-4 w-4" />
-                      {t.teams.projects.view("add_new_epic")}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-
-              {(selectedIteration !== null || selectedEpic !== null) && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleClearFilters}
-                  className="ml-auto"
-                  testId="project-view-clear-filters"
-                >
-                  {t.common.buttons("clear_filters")}
-                </Button>
-              )}
-            </div>
-
-            {/* Selected Filters Summary with Edit Options */}
-            {(selectedIteration !== null || selectedEpic !== null) && (
-              <div
-                className="mb-4 p-3 border rounded-md bg-background"
-                data-testid="project-view-active-filters"
-              >
-                <h3 className="text-sm font-medium mb-2">Active Filters:</h3>
-                <div
-                  className="space-y-3"
-                  data-testid="project-view-filter-list"
-                >
-                  {selectedIteration !== null && (
+              {/* Kanban View Content */}
+              <TabsContent value="kanban">
+                {/* Keep the original filter section, just adding a bit more space efficiency */}
+                <div className="mb-4" data-testid="project-view-filters">
+                  {/* Epic and Iteration Filters - Original design */}
+                  <div
+                    className="flex flex-wrap items-center gap-4 mb-4 p-3 bg-muted rounded-md"
+                    data-testid="project-view-filter-bar"
+                  >
                     <div
-                      className="flex flex-col sm:flex-row sm:items-center gap-2 p-2 bg-secondary/20 rounded-md"
-                      data-testid="project-view-iteration-details"
+                      className="flex items-center"
+                      data-testid="project-view-iteration-filter"
                     >
-                      <div className="flex-1">
-                        <div
-                          className="font-medium"
-                          data-testid="project-view-iteration-name"
-                        >
-                          {t.teams.projects.view("iteration")}:{" "}
-                          {
-                            iterations.find((i) => i.id === selectedIteration)
-                              ?.name
-                          }
-                        </div>
-                        <div
-                          className="text-xs text-muted-foreground mt-1"
-                          data-testid="project-view-iteration-dates"
-                        >
-                          {new Date(
-                            iterations.find((i) => i.id === selectedIteration)
-                              ?.startDate || "",
-                          ).toLocaleDateString()}{" "}
-                          -
-                          {new Date(
-                            iterations.find((i) => i.id === selectedIteration)
-                              ?.endDate || "",
-                          ).toLocaleDateString()}
-                        </div>
-                      </div>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        className="h-8 gap-1 self-start"
-                        onClick={() => handleEditIteration(selectedIteration)}
-                        testId="project-view-edit-iteration"
-                      >
-                        <Edit className="h-4 w-4" />
-                        {t.teams.projects.view("edit_iteration")}
-                      </Button>
+                      <span className="text-sm font-medium mr-2">
+                        {t.teams.projects.view("iteration")}:
+                      </span>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8"
+                            testId="project-view-iteration-dropdown"
+                          >
+                            {selectedIteration
+                              ? iterations.find(
+                                  (i) => i.id === selectedIteration,
+                                )?.name
+                              : t.teams.projects.view("all_iterations")}
+                            <ChevronDown className="ml-2 h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start">
+                          <DropdownMenuItem
+                            onClick={() => setSelectedIteration(null)}
+                            className="cursor-pointer"
+                          >
+                            {t.teams.projects.view("all_iterations")}
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          {loadingIterations ? (
+                            <DropdownMenuItem disabled>
+                              {t.common.misc("loading_data")}
+                            </DropdownMenuItem>
+                          ) : iterations.length > 0 ? (
+                            iterations.map((iteration) => (
+                              <DropdownMenuItem
+                                key={iteration.id}
+                                onClick={() =>
+                                  setSelectedIteration(iteration.id!)
+                                }
+                                className="cursor-pointer"
+                              >
+                                <div>
+                                  <div>{iteration.name}</div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {getIterationStatus(iteration)} |{" "}
+                                    {iteration.startDate
+                                      ? new Date(
+                                          iteration.startDate,
+                                        ).toLocaleDateString()
+                                      : "Not scheduled"}{" "}
+                                    {iteration.startDate || iteration.endDate
+                                      ? "- "
+                                      : ""}
+                                    {iteration.endDate
+                                      ? new Date(
+                                          iteration.endDate,
+                                        ).toLocaleDateString()
+                                      : iteration.startDate
+                                        ? "Ongoing"
+                                        : ""}
+                                  </div>
+                                </div>
+                              </DropdownMenuItem>
+                            ))
+                          ) : (
+                            <DropdownMenuItem disabled>
+                              {t.teams.projects.view("no_iterations_found")}
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={handleAddNewIteration}
+                            className="cursor-pointer text-primary"
+                          >
+                            <Plus className="mr-2 h-4 w-4" />
+                            {t.teams.projects.view("add_new_iteration")}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
-                  )}
 
-                  {selectedEpic !== null && (
                     <div
-                      className="flex flex-col sm:flex-row sm:items-center gap-2 p-2 rounded-md"
-                      style={{
-                        backgroundColor: `${getEpicColor(selectedEpic)}20`,
-                      }}
-                      data-testid="project-view-epic-details"
+                      className="flex items-center"
+                      data-testid="project-view-epic-filter"
                     >
-                      <div className="flex-1">
-                        <div
-                          className="font-medium"
-                          style={{
-                            color: getEpicColor(selectedEpic),
-                          }}
-                          data-testid="project-view-epic-name"
-                        >
-                          {t.teams.projects.view("epic")}:{" "}
-                          {epics.find((e) => e.id === selectedEpic)?.name}
-                        </div>
-                        <div
-                          className="text-xs text-muted-foreground mt-1"
-                          data-testid="project-view-epic-description"
-                        >
-                          {
-                            epics.find((e) => e.id === selectedEpic)
-                              ?.description
-                          }
-                        </div>
-                      </div>
+                      <span className="text-sm font-medium mr-2">
+                        {t.teams.projects.view("epic")}:
+                      </span>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8"
+                            testId="project-view-epic-dropdown"
+                          >
+                            {selectedEpic
+                              ? epics.find((e) => e.id === selectedEpic)?.name
+                              : t.teams.projects.view("all_epics")}
+                            <ChevronDown className="ml-2 h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start">
+                          <DropdownMenuItem
+                            onClick={() => setSelectedEpic(null)}
+                            className="cursor-pointer"
+                          >
+                            {t.teams.projects.view("all_epics")}
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          {loadingEpics ? (
+                            <DropdownMenuItem disabled>
+                              {t.common.misc("loading_data")}
+                            </DropdownMenuItem>
+                          ) : epics.length > 0 ? (
+                            epics.map((epic) => (
+                              <DropdownMenuItem
+                                key={epic.id}
+                                onClick={() => setSelectedEpic(epic.id!)}
+                                className="cursor-pointer"
+                                style={{
+                                  borderLeft: `4px solid ${getEpicColor(epic.id!)}`,
+                                }}
+                              >
+                                <div>
+                                  <div>{epic.name}</div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {epic.description}
+                                  </div>
+                                </div>
+                              </DropdownMenuItem>
+                            ))
+                          ) : (
+                            <DropdownMenuItem disabled>
+                              {t.teams.projects.view("no_epics_found")}
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={handleAddNewEpic}
+                            className="cursor-pointer text-primary"
+                          >
+                            <Plus className="mr-2 h-4 w-4" />
+                            {t.teams.projects.view("add_new_epic")}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+
+                    {(selectedIteration !== null || selectedEpic !== null) && (
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
-                        className="h-8 gap-1 self-start"
-                        style={{
-                          borderColor: getEpicColor(selectedEpic),
-                          color: getEpicColor(selectedEpic),
-                        }}
-                        onClick={() => handleEditEpic(selectedEpic)}
-                        testId="project-view-edit-epic"
+                        onClick={handleClearFilters}
+                        className="ml-auto"
+                        testId="project-view-clear-filters"
                       >
-                        <Edit className="h-4 w-4" />
-                        {t.teams.projects.view("edit_epic")}
+                        {t.common.buttons("clear_filters")}
                       </Button>
+                    )}
+                  </div>
+
+                  {/* Selected Filters Summary with Edit Options */}
+                  {(selectedIteration !== null || selectedEpic !== null) && (
+                    <div
+                      className="mb-4 p-3 border rounded-md bg-background"
+                      data-testid="project-view-active-filters"
+                    >
+                      <h3 className="text-sm font-medium mb-2">
+                        Active Filters:
+                      </h3>
+                      <div
+                        className="space-y-3"
+                        data-testid="project-view-filter-list"
+                      >
+                        {selectedIteration !== null && (
+                          <div
+                            className="flex flex-col sm:flex-row sm:items-center gap-2 p-2 bg-secondary/20 rounded-md"
+                            data-testid="project-view-iteration-details"
+                          >
+                            <div className="flex-1">
+                              <div
+                                className="font-medium"
+                                data-testid="project-view-iteration-name"
+                              >
+                                {t.teams.projects.view("iteration")}:{" "}
+                                {
+                                  iterations.find(
+                                    (i) => i.id === selectedIteration,
+                                  )?.name
+                                }
+                              </div>
+                              <div
+                                className="text-xs text-muted-foreground mt-1"
+                                data-testid="project-view-iteration-dates"
+                              >
+                                {new Date(
+                                  iterations.find(
+                                    (i) => i.id === selectedIteration,
+                                  )?.startDate || "",
+                                ).toLocaleDateString()}{" "}
+                                -
+                                {new Date(
+                                  iterations.find(
+                                    (i) => i.id === selectedIteration,
+                                  )?.endDate || "",
+                                ).toLocaleDateString()}
+                              </div>
+                            </div>
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              className="h-8 gap-1 self-start"
+                              onClick={() =>
+                                handleEditIteration(selectedIteration)
+                              }
+                              testId="project-view-edit-iteration"
+                            >
+                              <Edit className="h-4 w-4" />
+                              {t.teams.projects.view("edit_iteration")}
+                            </Button>
+                          </div>
+                        )}
+
+                        {selectedEpic !== null && (
+                          <div
+                            className="flex flex-col sm:flex-row sm:items-center gap-2 p-2 rounded-md"
+                            style={{
+                              backgroundColor: `${getEpicColor(selectedEpic)}20`,
+                            }}
+                            data-testid="project-view-epic-details"
+                          >
+                            <div className="flex-1">
+                              <div
+                                className="font-medium"
+                                style={{
+                                  color: getEpicColor(selectedEpic),
+                                }}
+                                data-testid="project-view-epic-name"
+                              >
+                                {t.teams.projects.view("epic")}:{" "}
+                                {epics.find((e) => e.id === selectedEpic)?.name}
+                              </div>
+                              <div
+                                className="text-xs text-muted-foreground mt-1"
+                                data-testid="project-view-epic-description"
+                              >
+                                {
+                                  epics.find((e) => e.id === selectedEpic)
+                                    ?.description
+                                }
+                              </div>
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-8 gap-1 self-start"
+                              style={{
+                                borderColor: getEpicColor(selectedEpic),
+                                color: getEpicColor(selectedEpic),
+                              }}
+                              onClick={() => handleEditEpic(selectedEpic)}
+                              testId="project-view-edit-epic"
+                            >
+                              <Edit className="h-4 w-4" />
+                              {t.teams.projects.view("edit_epic")}
+                            </Button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
-              </div>
-            )}
+
+                {/* Kanban Board with fixed height */}
+                <DndContext
+                  collisionDetection={closestCorners}
+                  onDragStart={handleDragStart}
+                  onDragEnd={handleDragEnd}
+                  data-testid="project-view-kanban"
+                >
+                  {/* Set a fixed height for the Kanban board container */}
+                  <div
+                    className="flex gap-4 pb-2"
+                    style={{
+                      height:
+                        "calc(100vh - 300px)" /* Fixed height calculation - adjust as needed */,
+                      minHeight:
+                        "400px" /* Minimum height for smaller screens */,
+                      overflowX: "auto",
+                      overflowY: "hidden",
+                      scrollbarWidth: "thin",
+                      WebkitOverflowScrolling: "touch",
+                      msOverflowStyle: "-ms-autohiding-scrollbar",
+                    }}
+                    data-testid="project-view-board"
+                  >
+                    {workflow?.states
+                      .sort((a, b) => {
+                        if (a.isInitial && !b.isInitial) return -1;
+                        if (!a.isInitial && b.isInitial) return 1;
+                        if (a.isFinal && !b.isFinal) return 1;
+                        if (!a.isFinal && b.isFinal) return -1;
+                        return 0;
+                      })
+                      .map((state) => (
+                        <StateColumn
+                          key={state.id}
+                          workflowState={state}
+                          tasks={filteredTasks[state.id!.toString()] || []}
+                          setIsSheetOpen={setIsSheetOpen}
+                          setSelectedWorkflowState={() =>
+                            setSelectedWorkflowState(state)
+                          }
+                          columnColor={getColumnColor(state.id!)}
+                        />
+                      ))}
+                    {/* Add an extra padding div that matches column width */}
+                    <div className="min-w-md shrink-0 opacity-0 pointer-events-none">
+                      {/* This invisible column ensures there's enough space at the end */}
+                    </div>
+                  </div>
+
+                  <DragOverlay>
+                    {activeTask ? (
+                      <TaskBlock task={activeTask} isDragging />
+                    ) : null}
+                  </DragOverlay>
+                </DndContext>
+              </TabsContent>
+
+              {/* Project Settings View Content */}
+              <TabsContent value="settings">
+                <ProjectSettings
+                  project={project!}
+                  iterations={iterations}
+                  epics={epics}
+                  loadingIterations={loadingIterations}
+                  loadingEpics={loadingEpics}
+                  permissionLevel={permissionLevel}
+                  teamRole={teamRole}
+                  handleAddNewIteration={handleAddNewIteration}
+                  handleEditIteration={handleEditIteration}
+                  handleAddNewEpic={handleAddNewEpic}
+                  handleEditEpic={handleEditEpic}
+                  setIsProjectEditDialogOpen={setIsProjectEditDialogOpen}
+                  getEpicColor={getEpicColor}
+                  getIterationStatus={getIterationStatus}
+                  t={t}
+                />
+              </TabsContent>
+            </Tabs>
           </div>
-
-          {/* Kanban Board with fixed height */}
-          <DndContext
-            collisionDetection={closestCorners}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-            data-testid="project-view-kanban"
-          >
-            {/* Set a fixed height for the Kanban board container */}
-            <div
-              className="flex gap-4 pb-2"
-              style={{
-                height:
-                  "calc(100vh - 300px)" /* Fixed height calculation - adjust as needed */,
-                minHeight: "400px" /* Minimum height for smaller screens */,
-                overflowX: "auto",
-                overflowY: "hidden",
-                scrollbarWidth: "thin",
-                WebkitOverflowScrolling: "touch",
-                msOverflowStyle: "-ms-autohiding-scrollbar",
-              }}
-              data-testid="project-view-board"
-            >
-              {workflow?.states
-                .sort((a, b) => {
-                  if (a.isInitial && !b.isInitial) return -1;
-                  if (!a.isInitial && b.isInitial) return 1;
-                  if (a.isFinal && !b.isFinal) return 1;
-                  if (!a.isFinal && b.isFinal) return -1;
-                  return 0;
-                })
-                .map((state) => (
-                  <StateColumn
-                    key={state.id}
-                    workflowState={state}
-                    tasks={filteredTasks[state.id!.toString()] || []}
-                    setIsSheetOpen={setIsSheetOpen}
-                    setSelectedWorkflowState={() =>
-                      setSelectedWorkflowState(state)
-                    }
-                    columnColor={getColumnColor(state.id!)}
-                  />
-                ))}
-              {/* Add an extra padding div that matches column width */}
-              <div className="min-w-md shrink-0 opacity-0 pointer-events-none">
-                {/* This invisible column ensures there's enough space at the end */}
-              </div>
-            </div>
-
-            <DragOverlay>
-              {activeTask ? <TaskBlock task={activeTask} isDragging /> : null}
-            </DragOverlay>
-          </DndContext>
         </>
       ) : (
         <p className="text-red-500" data-testid="project-view-not-found">
