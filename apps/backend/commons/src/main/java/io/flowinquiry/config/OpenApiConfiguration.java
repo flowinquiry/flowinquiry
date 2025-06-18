@@ -33,7 +33,7 @@ public class OpenApiConfiguration {
                                                 "x-logo",
                                                 Map.of(
                                                         "url",
-                                                                "https://docs.flowinquiry.io/images/logo.png",
+                                                                "https://docs.flowinquiry.io/api-docs/logo-light.svg",
                                                         "backgroundColor", "#FFFFFF",
                                                         "altText", "FlowInquiry logo")))
                                 .license(
