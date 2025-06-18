@@ -54,6 +54,7 @@ export default {
           },
           database_migration: "Database migration",
           integration_testing: "Integration Testing",
+          api_docs: "API-Docs",
         },
       },
       deployment: {

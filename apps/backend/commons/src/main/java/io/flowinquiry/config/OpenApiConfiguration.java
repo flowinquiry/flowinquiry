@@ -7,7 +7,6 @@ import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
-import java.util.Map;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -28,14 +27,17 @@ public class OpenApiConfiguration {
                                 .title("Flow Inquiry API")
                                 .description("Flow Inquiry REST API Documentation")
                                 .version("1.0.0")
-                                .extensions(
-                                        Map.of(
-                                                "x-logo",
-                                                Map.of(
-                                                        "url",
-                                                                "https://docs.flowinquiry.io/api-docs/logo-light.svg",
-                                                        "backgroundColor", "#FFFFFF",
-                                                        "altText", "FlowInquiry logo")))
+                                //                                .extensions(
+                                //                                        Map.of(
+                                //                                                "x-logo",
+                                //                                                Map.of(
+                                //                                                        "url",
+                                //
+                                // "https://docs.flowinquiry.io/api-docs/logo-light.svg",
+                                //
+                                // "backgroundColor", "#FFFFFF",
+                                //                                                        "altText",
+                                // "FlowInquiry logo")))
                                 .license(
                                         new License()
                                                 .name("AGPLv3")
