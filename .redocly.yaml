@@ -1,0 +1,6 @@
+theme:
+  menu:
+    backgroundColor: '#00FF00' # bright green for test
+  colors:
+    primary:
+      main: '#1a73e8'

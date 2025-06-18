@@ -1,6 +1,12 @@
 package io.flowinquiry.modules.fss.controller;
 
 import io.flowinquiry.modules.fss.service.StorageService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.ByteArrayOutputStream;
 import java.util.concurrent.TimeUnit;
@@ -16,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/files")
+@Tag(name = "File Download", description = "API for downloading files from the storage system")
 public class FileDownloadController {
 
     private final StorageService storageService;
@@ -24,8 +31,29 @@ public class FileDownloadController {
         this.storageService = storageService;
     }
 
+    @Operation(
+            summary = "Download file",
+            description = "Downloads a file from the storage system based on the file path")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "File downloaded successfully",
+                        content = @Content(mediaType = "application/octet-stream")),
+                @ApiResponse(
+                        responseCode = "400",
+                        description = "Invalid request - missing file container",
+                        content = @Content),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "File not found",
+                        content = @Content)
+            })
     @GetMapping(value = "/**")
-    public ResponseEntity<byte[]> downloadFile(HttpServletRequest request) throws Exception {
+    public ResponseEntity<byte[]> downloadFile(
+            @Parameter(description = "HTTP request containing the file path", required = true)
+                    HttpServletRequest request)
+            throws Exception {
         String requestUrl = request.getRequestURI();
         int fileIndex = requestUrl.lastIndexOf("/");
         if (fileIndex == -1) {

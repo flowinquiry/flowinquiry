@@ -9,6 +9,7 @@
   "devDependencies": {
     "@eslint/compat": "^1.3.0",
     "@eslint/js": "^9.29.0",
+    "@redocly/cli": "^1.34.3",
     "@typescript-eslint/parser": "^8.34.0",
     "auth": "^1.2.3",
     "eslint": "^9.29.0",
@@ -38,7 +39,8 @@
     "docker:down": "docker compose -f docker/services.yml down",
     "build:frontend": "turbo run build --filter=flowinquiry-frontend",
     "build:docs": "turbo run build --filter=flowinquiry-docs",
-    "docker:deploy": "sh -c './gradlew :apps:backend:server:jib -Djib.dockerClient.executable=/usr/local/bin/docker && tools/build-frontend-image.sh $TAG'"
+    "docker:deploy": "sh -c './gradlew :apps:backend:server:jib -Djib.dockerClient.executable=/usr/local/bin/docker && tools/build-frontend-image.sh $TAG'",
+    "generate-docs": "redocly build-docs http://localhost:8080/v3/api-docs.yaml --config .redocly.yaml -o build/redoc/index.html"
   },
   "packageManager": "pnpm@10.6.5+sha512.cdf928fca20832cd59ec53826492b7dc25dc524d4370b6b4adbf65803d32efaa6c1c88147c0ae4e8d579a6c9eec715757b50d4fa35eea179d868eada4ed043af"
 }

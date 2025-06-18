@@ -12,6 +12,13 @@ import io.flowinquiry.modules.teams.service.dto.TransitionItemCollectionDTO;
 import io.flowinquiry.modules.usermanagement.service.dto.TicketStatisticsDTO;
 import io.flowinquiry.query.QueryDTO;
 import io.flowinquiry.utils.DateUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.time.Duration;
 import java.time.Instant;
@@ -36,6 +43,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/tickets")
+@Tag(
+        name = "Ticket Management",
+        description = "API endpoints for managing tickets and ticket-related operations")
 public class TicketController {
 
     private final TicketService ticketService;
@@ -48,171 +58,522 @@ public class TicketController {
         this.workflowTransitionHistoryService = workflowTransitionHistoryService;
     }
 
+    @Operation(
+            summary = "Search tickets",
+            description = "Search for tickets based on query criteria with pagination")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully retrieved tickets",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema = @Schema(implementation = Page.class))),
+                @ApiResponse(responseCode = "400", description = "Bad request", content = @Content)
+            })
     @PostMapping("/search")
-    public Page<TicketDTO> findTickets(@Valid @RequestBody QueryDTO queryDTO, Pageable pageable) {
+    public Page<TicketDTO> findTickets(
+            @Parameter(description = "Query parameters for filtering tickets") @Valid @RequestBody
+                    QueryDTO queryDTO,
+            @Parameter(description = "Pagination information") Pageable pageable) {
         return ticketService.findTickets(queryDTO, pageable);
     }
 
+    @Operation(summary = "Get ticket by ID", description = "Retrieves a ticket by its ID")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully retrieved ticket",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema = @Schema(implementation = TicketDTO.class))),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "Ticket not found",
+                        content = @Content)
+            })
     @GetMapping("/{id}")
-    public TicketDTO getTicketById(@PathVariable("id") Long id) {
+    public TicketDTO getTicketById(
+            @Parameter(description = "ID of the ticket to retrieve", required = true)
+                    @PathVariable("id")
+                    Long id) {
         return ticketService.getTicketById(id);
     }
 
+    @Operation(
+            summary = "Create a new ticket",
+            description = "Creates a new ticket with the provided information")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "201",
+                        description = "Ticket successfully created",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema = @Schema(implementation = TicketDTO.class))),
+                @ApiResponse(
+                        responseCode = "400",
+                        description = "Bad request - invalid input",
+                        content = @Content)
+            })
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public TicketDTO createTicket(@Valid @RequestBody TicketDTO ticketDTO) {
+    public TicketDTO createTicket(
+            @Parameter(description = "Ticket data to create", required = true) @Valid @RequestBody
+                    TicketDTO ticketDTO) {
         return ticketService.createTicket(ticketDTO);
     }
 
+    @Operation(
+            summary = "Update an existing ticket",
+            description = "Updates an existing ticket with the provided information")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Ticket successfully updated",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema = @Schema(implementation = TicketDTO.class))),
+                @ApiResponse(
+                        responseCode = "400",
+                        description = "Bad request - invalid input or ID mismatch",
+                        content = @Content),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "Ticket not found",
+                        content = @Content)
+            })
     @PutMapping("/{id}")
-    public TicketDTO updateTicket(@PathVariable("id") Long id, @RequestBody TicketDTO ticketDTO) {
+    public TicketDTO updateTicket(
+            @Parameter(description = "ID of the ticket to update", required = true)
+                    @PathVariable("id")
+                    Long id,
+            @Parameter(description = "Updated ticket data", required = true) @RequestBody
+                    TicketDTO ticketDTO) {
         if (!id.equals(ticketDTO.getId())) {
             throw new IllegalArgumentException("Id in URL and payload do not match");
         }
         return ticketService.updateTicket(ticketDTO);
     }
 
+    @Operation(summary = "Delete a ticket", description = "Deletes a ticket by its ID")
+    @ApiResponses(
+            value = {
+                @ApiResponse(responseCode = "204", description = "Ticket successfully deleted"),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "Ticket not found",
+                        content = @Content)
+            })
     @DeleteMapping("/{id}")
-    public void deleteTicket(@PathVariable("id") Long id) {
+    public void deleteTicket(
+            @Parameter(description = "ID of the ticket to delete", required = true)
+                    @PathVariable("id")
+                    Long id) {
         ticketService.deleteTicket(id);
     }
 
+    @Operation(
+            summary = "Get next ticket",
+            description = "Retrieves the next ticket in sequence after the current ticket")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully retrieved next ticket",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema = @Schema(implementation = TicketDTO.class))),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "Next ticket not found",
+                        content = @Content)
+            })
     @GetMapping("/{currentId}/next")
     public ResponseEntity<TicketDTO> getNextEntity(
-            @PathVariable("currentId") Long currentId,
-            @RequestParam(value = "projectId", required = false) Long projectId) {
+            @Parameter(description = "ID of the current ticket", required = true)
+                    @PathVariable("currentId")
+                    Long currentId,
+            @Parameter(description = "Optional project ID filter")
+                    @RequestParam(value = "projectId", required = false)
+                    Long projectId) {
         return ticketService
                 .getNextTicket(currentId, projectId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @Operation(
+            summary = "Get previous ticket",
+            description = "Retrieves the previous ticket in sequence before the current ticket")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully retrieved previous ticket",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema = @Schema(implementation = TicketDTO.class))),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "Previous ticket not found",
+                        content = @Content)
+            })
     @GetMapping("/{currentId}/previous")
     public ResponseEntity<TicketDTO> getPreviousEntity(
-            @PathVariable("currentId") Long currentId,
-            @RequestParam(value = "projectId", required = false) Long projectId) {
+            @Parameter(description = "ID of the current ticket", required = true)
+                    @PathVariable("currentId")
+                    Long currentId,
+            @Parameter(description = "Optional project ID filter")
+                    @RequestParam(value = "projectId", required = false)
+                    Long projectId) {
         return ticketService
                 .getPreviousTicket(currentId, projectId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @Operation(
+            summary = "Get ticket distribution for a team",
+            description =
+                    "Retrieves the distribution of tickets for a specific team within a date range")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully retrieved ticket distribution",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema =
+                                                @Schema(
+                                                        implementation =
+                                                                TicketDistributionDTO.class)))
+            })
     @GetMapping("/teams/{teamId}/ticket-distribution")
     public List<TicketDistributionDTO> getTicketDistribution(
-            @PathVariable("teamId") Long teamId,
-            @RequestParam(value = "fromDate", required = false)
+            @Parameter(description = "ID of the team", required = true) @PathVariable("teamId")
+                    Long teamId,
+            @Parameter(description = "Start date for the distribution calculation")
+                    @RequestParam(value = "fromDate", required = false)
                     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
                     Instant fromDate,
-            @RequestParam(value = "toDate", required = false)
+            @Parameter(description = "End date for the distribution calculation")
+                    @RequestParam(value = "toDate", required = false)
                     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
                     Instant toDate,
-            @RequestParam(value = "range", required = false) String range) {
+            @Parameter(description = "Predefined date range (alternative to fromDate/toDate)")
+                    @RequestParam(value = "range", required = false)
+                    String range) {
 
         DateRange dateRange = processDateRange(fromDate, toDate, range);
         return ticketService.getTicketDistribution(teamId, dateRange.from, dateRange.to);
     }
 
-    // Endpoint to get unassigned tickets for a specific team
+    @Operation(
+            summary = "Get unassigned tickets for a team",
+            description = "Retrieves all unassigned tickets for a specific team with pagination")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully retrieved unassigned tickets",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema = @Schema(implementation = Page.class)))
+            })
     @GetMapping("/teams/{teamId}/unassigned-tickets")
     public Page<TicketDTO> getUnassignedTickets(
-            @PathVariable("teamId") Long teamId, Pageable pageable) {
+            @Parameter(description = "ID of the team", required = true) @PathVariable("teamId")
+                    Long teamId,
+            @Parameter(description = "Pagination information") Pageable pageable) {
         return ticketService.getUnassignedTickets(teamId, pageable);
     }
 
-    // Endpoint to get priority distribution for a specific team
+    @Operation(
+            summary = "Get priority distribution for a team",
+            description =
+                    "Retrieves the distribution of tickets by priority for a specific team within a date range")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully retrieved priority distribution",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema =
+                                                @Schema(
+                                                        implementation =
+                                                                PriorityDistributionDTO.class)))
+            })
     @GetMapping("/teams/{teamId}/priority-distribution")
     public List<PriorityDistributionDTO> getPriorityDistribution(
-            @PathVariable("teamId") Long teamId,
-            @RequestParam(value = "fromDate", required = false)
+            @Parameter(description = "ID of the team", required = true) @PathVariable("teamId")
+                    Long teamId,
+            @Parameter(description = "Start date for the distribution calculation")
+                    @RequestParam(value = "fromDate", required = false)
                     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
                     Instant fromDate,
-            @RequestParam(value = "toDate", required = false)
+            @Parameter(description = "End date for the distribution calculation")
+                    @RequestParam(value = "toDate", required = false)
                     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
                     Instant toDate,
-            @RequestParam(value = "range", required = false) String range) {
+            @Parameter(description = "Predefined date range (alternative to fromDate/toDate)")
+                    @RequestParam(value = "range", required = false)
+                    String range) {
 
         DateRange dateRange = processDateRange(fromDate, toDate, range);
         return ticketService.getPriorityDistribution(teamId, dateRange.from, dateRange.to);
     }
 
-    /**
-     * Fetch the workflow transition history for a specific ticket/request.
-     *
-     * @param ticketId the ID of the ticket
-     * @return a TicketHistoryDto containing workflow details and transitions
-     */
+    @Operation(
+            summary = "Get ticket state change history",
+            description = "Fetches the workflow transition history for a specific ticket")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully retrieved ticket state history",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema =
+                                                @Schema(
+                                                        implementation =
+                                                                TransitionItemCollectionDTO
+                                                                        .class))),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "Ticket not found",
+                        content = @Content)
+            })
     @GetMapping("/{ticketId}/states-history")
     public ResponseEntity<TransitionItemCollectionDTO> getTicketStateChangesHistory(
-            @PathVariable("ticketId") Long ticketId) {
+            @Parameter(description = "ID of the ticket", required = true) @PathVariable("ticketId")
+                    Long ticketId) {
         TransitionItemCollectionDTO ticketHistory =
                 workflowTransitionHistoryService.getTransitionHistoryByTicketId(ticketId);
         return ResponseEntity.ok(ticketHistory);
     }
 
+    @Operation(
+            summary = "Get ticket statistics for a team",
+            description = "Retrieves ticket statistics for a specific team within a date range")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully retrieved ticket statistics",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema =
+                                                @Schema(
+                                                        implementation =
+                                                                TicketStatisticsDTO.class)))
+            })
     @GetMapping("/teams/{teamId}/statistics")
     public TicketStatisticsDTO getTicketStatisticsByTeamId(
-            @PathVariable("teamId") Long teamId,
-            @RequestParam(value = "fromDate", required = false)
+            @Parameter(description = "ID of the team", required = true) @PathVariable("teamId")
+                    Long teamId,
+            @Parameter(description = "Start date for the statistics calculation")
+                    @RequestParam(value = "fromDate", required = false)
                     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
                     Instant fromDate,
-            @RequestParam(value = "toDate", required = false)
+            @Parameter(description = "End date for the statistics calculation")
+                    @RequestParam(value = "toDate", required = false)
                     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
                     Instant toDate,
-            @RequestParam(value = "range", required = false) String range) {
+            @Parameter(description = "Predefined date range (alternative to fromDate/toDate)")
+                    @RequestParam(value = "range", required = false)
+                    String range) {
 
         DateRange dateRange = processDateRange(fromDate, toDate, range);
         return ticketService.getTicketStatisticsByTeamId(teamId, dateRange.from, dateRange.to);
     }
 
+    @Operation(
+            summary = "Get overdue tickets for a team",
+            description = "Retrieves all overdue tickets for a specific team with pagination")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully retrieved overdue tickets",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema = @Schema(implementation = Page.class)))
+            })
     @GetMapping("/teams/{teamId}/overdue-tickets")
     public Page<TicketDTO> getOverdueTicketsByTeam(
-            @PathVariable("teamId") Long teamId, Pageable pageable) {
+            @Parameter(description = "ID of the team", required = true) @PathVariable("teamId")
+                    Long teamId,
+            @Parameter(description = "Pagination information") Pageable pageable) {
         return ticketService.getOverdueTicketsByTeam(teamId, pageable);
     }
 
+    @Operation(
+            summary = "Count overdue tickets for a team",
+            description =
+                    "Counts the number of overdue tickets for a specific team within a date range")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully counted overdue tickets",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema = @Schema(implementation = Long.class)))
+            })
     @GetMapping("/teams/{teamId}/overdue-tickets/count")
     public Long countOverdueTickets(
-            @PathVariable("teamId") Long teamId,
-            @RequestParam(value = "fromDate", required = false)
+            @Parameter(description = "ID of the team", required = true) @PathVariable("teamId")
+                    Long teamId,
+            @Parameter(description = "Start date for counting overdue tickets")
+                    @RequestParam(value = "fromDate", required = false)
                     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
                     Instant fromDate,
-            @RequestParam(value = "toDate", required = false)
+            @Parameter(description = "End date for counting overdue tickets")
+                    @RequestParam(value = "toDate", required = false)
                     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
                     Instant toDate,
-            @RequestParam(value = "range", required = false) String range) {
+            @Parameter(description = "Predefined date range (alternative to fromDate/toDate)")
+                    @RequestParam(value = "range", required = false)
+                    String range) {
 
         DateRange dateRange = processDateRange(fromDate, toDate, range);
         return ticketService.countOverdueTickets(
                 teamId, WorkflowTransitionHistoryStatus.COMPLETED, dateRange.from, dateRange.to);
     }
 
+    @Operation(
+            summary = "Get ticket creation time series",
+            description = "Retrieves a time series of ticket creations by day for a specific team")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully retrieved ticket creation time series",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema =
+                                                @Schema(
+                                                        implementation =
+                                                                TicketActionCountByDateDTO.class)))
+            })
     @GetMapping("/teams/{teamId}/ticket-creations-day-series")
     public List<TicketActionCountByDateDTO> getTicketCreationDaySeries(
-            @PathVariable("teamId") Long teamId,
-            @RequestParam(value = "days", required = false, defaultValue = "7") int days) {
+            @Parameter(description = "ID of the team", required = true) @PathVariable("teamId")
+                    Long teamId,
+            @Parameter(description = "Number of days to include in the time series", example = "7")
+                    @RequestParam(value = "days", required = false, defaultValue = "7")
+                    int days) {
         return ticketService.getTicketCreationTimeSeries(teamId, days);
     }
 
+    @Operation(
+            summary = "Get overdue tickets for a user",
+            description =
+                    "Retrieves all overdue tickets assigned to a specific user with pagination")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully retrieved overdue tickets",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema = @Schema(implementation = Page.class)))
+            })
     @GetMapping("/users/{userId}/overdue-tickets")
     public Page<TicketDTO> getOverdueTicketsByUser(
-            @PathVariable("userId") Long userId, Pageable pageable) {
+            @Parameter(description = "ID of the user", required = true) @PathVariable("userId")
+                    Long userId,
+            @Parameter(description = "Pagination information") Pageable pageable) {
         return ticketService.getOverdueTicketsByUser(userId, pageable);
     }
 
+    @Operation(
+            summary = "Get team ticket priority distribution for a user",
+            description =
+                    "Retrieves the distribution of tickets by priority across teams for a specific user within a date range")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully retrieved team ticket priority distribution",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema =
+                                                @Schema(
+                                                        implementation =
+                                                                TeamTicketPriorityDistributionDTO
+                                                                        .class)))
+            })
     @GetMapping("/users/{userId}/team-tickets-priority-distribution")
     public List<TeamTicketPriorityDistributionDTO> getTeamTicketPriorityDistributionForUser(
-            @PathVariable("userId") Long userId,
-            @RequestParam(value = "from", required = false) Instant fromDate,
-            @RequestParam(value = "to", required = false) Instant toDate,
-            @RequestParam(value = "range", required = false) String range) {
+            @Parameter(description = "ID of the user", required = true) @PathVariable("userId")
+                    Long userId,
+            @Parameter(description = "Start date for the distribution calculation")
+                    @RequestParam(value = "from", required = false)
+                    Instant fromDate,
+            @Parameter(description = "End date for the distribution calculation")
+                    @RequestParam(value = "to", required = false)
+                    Instant toDate,
+            @Parameter(description = "Predefined date range (alternative to fromDate/toDate)")
+                    @RequestParam(value = "range", required = false)
+                    String range) {
 
         DateRange dateRange = processDateRange(fromDate, toDate, range);
         return ticketService.getPriorityDistributionForUser(userId, dateRange.from, dateRange.to);
     }
 
+    @Operation(
+            summary = "Update ticket state",
+            description = "Updates the state of a ticket to a new state")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Ticket state successfully updated",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema = @Schema(implementation = TicketDTO.class))),
+                @ApiResponse(
+                        responseCode = "400",
+                        description = "Bad request - missing newStateId",
+                        content = @Content),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "Ticket not found",
+                        content = @Content)
+            })
     @PatchMapping("/{ticketId}/state")
     public TicketDTO updateTicketState(
-            @PathVariable("ticketId") Long ticketId, @RequestBody Map<String, Long> requestBody) {
+            @Parameter(description = "ID of the ticket to update", required = true)
+                    @PathVariable("ticketId")
+                    Long ticketId,
+            @Parameter(
+                            description = "Request body containing the new state ID",
+                            required = true,
+                            schema = @Schema(example = "{\"newStateId\": 123}"))
+                    @RequestBody
+                    Map<String, Long> requestBody) {
 
         Long newStateId = requestBody.get("newStateId");
         if (newStateId == null) {

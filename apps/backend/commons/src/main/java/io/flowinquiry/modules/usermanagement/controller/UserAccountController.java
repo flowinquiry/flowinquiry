@@ -11,6 +11,13 @@ import io.flowinquiry.modules.usermanagement.service.dto.UserDTO;
 import io.flowinquiry.modules.usermanagement.service.dto.UserKey;
 import io.flowinquiry.modules.usermanagement.service.mapper.UserMapper;
 import io.flowinquiry.security.SecurityUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import java.util.Optional;
@@ -29,6 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api")
+@Tag(name = "User Account", description = "User account management API")
 public class UserAccountController {
 
     private static class AccountResourceException extends RuntimeException {
@@ -66,6 +74,17 @@ public class UserAccountController {
      * @throws InvalidPasswordException {@code 400 (Bad Request)} if the password is incorrect.
      * @throws EmailAlreadyUsedException {@code 400 (Bad Request)} if the email is already used.
      */
+    @Operation(
+            summary = "Register a new user account",
+            description = "Creates a new user account and sends activation email")
+    @ApiResponses(
+            value = {
+                @ApiResponse(responseCode = "201", description = "User registered successfully"),
+                @ApiResponse(
+                        responseCode = "400",
+                        description = "Invalid password or email already in use",
+                        content = @Content(schema = @Schema(implementation = Error.class)))
+            })
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public void registerAccount(@Valid @RequestBody ManagedUserVM managedUserVM) {
@@ -78,8 +97,19 @@ public class UserAccountController {
         mailService.sendActivationEmail(user);
     }
 
+    @Operation(
+            summary = "Resend activation email",
+            description = "Resends the activation email to the specified email address")
+    @ApiResponses(
+            value = {
+                @ApiResponse(responseCode = "200", description = "Email sent successfully"),
+                @ApiResponse(responseCode = "404", description = "User not found")
+            })
     @GetMapping("/{email}/resend-activation-email")
-    public void resendActivationEmail(@Valid @PathVariable("email") @Email String email) {
+    public void resendActivationEmail(
+            @Parameter(description = "Email address of the user", required = true)
+                    @Valid @PathVariable("email")
+                    @Email String email) {
         Optional<User> user = userRepository.findUserByEmailEqualsIgnoreCase(email);
         if (user.isEmpty()) {
             log.warn("User with email {} not found", email);
@@ -96,8 +126,21 @@ public class UserAccountController {
      * @throws RuntimeException {@code 500 (Internal Server Error)} if the user couldn't be
      *     activated.
      */
+    @Operation(
+            summary = "Activate user account",
+            description = "Activates a registered user account using the provided activation key")
+    @ApiResponses(
+            value = {
+                @ApiResponse(responseCode = "200", description = "Account activated successfully"),
+                @ApiResponse(
+                        responseCode = "500",
+                        description = "User not found for the provided activation key")
+            })
     @GetMapping("/activate")
-    public void activateAccount(@RequestParam("key") String key) {
+    public void activateAccount(
+            @Parameter(description = "Activation key sent to the user's email", required = true)
+                    @RequestParam("key")
+                    String key) {
         Optional<User> user = userService.activateRegistration(key);
         if (user.isEmpty()) {
             throw new AccountResourceException("No user was found for this activation key");
@@ -111,6 +154,17 @@ public class UserAccountController {
      * @throws RuntimeException {@code 500 (Internal Server Error)} if the user couldn't be
      *     returned.
      */
+    @Operation(
+            summary = "Get current user account",
+            description = "Returns the authenticated user's account information")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "User account information retrieved successfully",
+                        content = @Content(schema = @Schema(implementation = UserDTO.class))),
+                @ApiResponse(responseCode = "500", description = "User could not be found")
+            })
     @GetMapping("/account")
     public UserDTO getAccount() {
         return userService
@@ -125,8 +179,24 @@ public class UserAccountController {
      * @throws EmailAlreadyUsedException {@code 400 (Bad Request)} if the email is already used.
      * @throws RuntimeException {@code 500 (Internal Server Error)} if the user login wasn't found.
      */
+    @Operation(
+            summary = "Update user account",
+            description = "Updates the current user's account information")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "User account updated successfully"),
+                @ApiResponse(
+                        responseCode = "400",
+                        description = "Email already in use or cannot be changed"),
+                @ApiResponse(responseCode = "500", description = "User could not be found")
+            })
     @PostMapping("/account")
-    public void saveAccount(@Valid @RequestBody UserDTO userDTO) {
+    public void saveAccount(
+            @Parameter(description = "Updated user information", required = true)
+                    @Valid @RequestBody
+                    UserDTO userDTO) {
         String userLogin =
                 SecurityUtils.getCurrentUserLogin()
                         .map(UserKey::getEmail)
@@ -153,8 +223,16 @@ public class UserAccountController {
      * @param passwordChangeDto current and new password.
      * @throws InvalidPasswordException {@code 400 (Bad Request)} if the new password is incorrect.
      */
+    @Operation(summary = "Change password", description = "Changes the current user's password")
+    @ApiResponses(
+            value = {
+                @ApiResponse(responseCode = "200", description = "Password changed successfully"),
+                @ApiResponse(responseCode = "400", description = "Invalid new password")
+            })
     @PostMapping(path = "/account/change-password")
-    public void changePassword(@RequestBody PasswordChangeDTO passwordChangeDto) {
+    public void changePassword(
+            @Parameter(description = "Current and new password", required = true) @RequestBody
+                    PasswordChangeDTO passwordChangeDto) {
         if (isPasswordLengthInvalid(passwordChangeDto.getNewPassword())) {
             throw new InvalidPasswordException();
         }
@@ -167,8 +245,18 @@ public class UserAccountController {
      *
      * @param email the mail of the user.
      */
+    @Operation(
+            summary = "Request password reset",
+            description = "Sends an email with a link to reset the user's password")
+    @ApiResponses(
+            value = {
+                @ApiResponse(responseCode = "200", description = "Reset email sent successfully")
+            })
     @GetMapping(path = "/account/reset-password/init")
-    public void requestPasswordReset(@RequestParam("email") @Email String email) {
+    public void requestPasswordReset(
+            @Parameter(description = "Email address of the user", required = true)
+                    @RequestParam("email")
+                    @Email String email) {
         Optional<UserDTO> user = userService.requestPasswordReset(email);
         if (user.isPresent()) {
             mailService.sendPasswordResetMail(user.orElseThrow());
@@ -187,8 +275,20 @@ public class UserAccountController {
      * @throws RuntimeException {@code 500 (Internal Server Error)} if the password could not be
      *     reset.
      */
+    @Operation(
+            summary = "Complete password reset",
+            description =
+                    "Completes the password reset process using the provided key and new password")
+    @ApiResponses(
+            value = {
+                @ApiResponse(responseCode = "200", description = "Password reset successfully"),
+                @ApiResponse(responseCode = "400", description = "Invalid new password"),
+                @ApiResponse(responseCode = "500", description = "No user found for the reset key")
+            })
     @PostMapping(path = "/account/reset-password/finish")
-    public void finishPasswordReset(@RequestBody KeyAndPasswordVM keyAndPassword) {
+    public void finishPasswordReset(
+            @Parameter(description = "Reset key and new password", required = true) @RequestBody
+                    KeyAndPasswordVM keyAndPassword) {
         if (isPasswordLengthInvalid(keyAndPassword.getNewPassword())) {
             throw new InvalidPasswordException();
         }

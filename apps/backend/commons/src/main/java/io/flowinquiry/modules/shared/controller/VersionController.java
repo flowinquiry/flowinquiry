@@ -2,6 +2,12 @@ package io.flowinquiry.modules.shared.controller;
 
 import io.flowinquiry.config.FlowInquiryProperties;
 import io.flowinquiry.modules.shared.service.dto.EditionType;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -19,6 +25,7 @@ import org.springframework.web.client.RestTemplate;
 
 @RestController
 @RequestMapping("/api/versions")
+@Tag(name = "Version", description = "API for retrieving application version information")
 public class VersionController {
 
     private final FlowInquiryProperties flowInquiryProperties;
@@ -39,6 +46,23 @@ public class VersionController {
         restTemplate.setMessageConverters(messageConverters);
     }
 
+    @Operation(
+            summary = "Get application version",
+            description = "Returns the current version and edition of the application")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Version information retrieved successfully",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema =
+                                                @Schema(
+                                                        type = "object",
+                                                        example =
+                                                                "{\"version\":\"1.0.0\",\"edition\":\"community\"}")))
+            })
     @GetMapping
     public Map<String, String> getVersion() {
         return Map.of(
@@ -46,6 +70,38 @@ public class VersionController {
                 "edition", flowInquiryProperties.getEdition().name().toLowerCase());
     }
 
+    @Operation(
+            summary = "Check for newer versions",
+            description =
+                    "Checks if a newer version of the application is available (not applicable for cloud edition)")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Version check completed successfully",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema =
+                                                @Schema(
+                                                        type = "object",
+                                                        example =
+                                                                "{\"currentVersion\":\"1.0.0\",\"isOutdated\":true,\"latestVersion\":\"1.1.0\"}"))),
+                @ApiResponse(
+                        responseCode = "403",
+                        description = "Not applicable for cloud-hosted users",
+                        content =
+                                @Content(
+                                        mediaType = "text/plain",
+                                        schema = @Schema(type = "string"))),
+                @ApiResponse(
+                        responseCode = "503",
+                        description = "Unable to fetch latest version info",
+                        content =
+                                @Content(
+                                        mediaType = "text/plain",
+                                        schema = @Schema(type = "string")))
+            })
     @GetMapping("/check")
     public ResponseEntity<?> checkVersion() {
         if (flowInquiryProperties.getEdition() == EditionType.CLOUD) {

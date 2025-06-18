@@ -2,6 +2,12 @@ package io.flowinquiry.modules.usermanagement.controller;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.flowinquiry.security.service.JwtService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -23,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 /** Controller to authenticate users. */
 @RestController
 @RequestMapping("/api")
+@Tag(name = "Authentication", description = "API endpoints for user authentication")
 public class AuthenticateController {
 
     private static final Logger LOG = LoggerFactory.getLogger(AuthenticateController.class);
@@ -39,7 +46,23 @@ public class AuthenticateController {
     }
 
     @PostMapping("/authenticate")
-    public ResponseEntity<JWTToken> authorize(@Valid @RequestBody LoginVM loginVM) {
+    @Operation(
+            summary = "Authenticate user",
+            description = "Authenticates a user and returns a JWT token",
+            responses = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully authenticated",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema = @Schema(implementation = JWTToken.class))),
+                @ApiResponse(responseCode = "401", description = "Bad credentials"),
+                @ApiResponse(responseCode = "400", description = "Invalid input")
+            })
+    public ResponseEntity<JWTToken> authorize(
+            @Parameter(description = "Login credentials", required = true) @Valid @RequestBody
+                    LoginVM loginVM) {
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(loginVM.getEmail(), loginVM.getPassword());
 
@@ -58,14 +81,30 @@ public class AuthenticateController {
      * @return the login if the user is authenticated.
      */
     @GetMapping("/authenticate")
-    public String isAuthenticated(HttpServletRequest request) {
+    @Operation(
+            summary = "Check authentication status",
+            description = "Checks if the current user is authenticated and returns the username",
+            responses = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description =
+                                "Returns the username if authenticated or null if not authenticated",
+                        content =
+                                @Content(
+                                        mediaType = "text/plain",
+                                        schema = @Schema(type = "string")))
+            })
+    public String isAuthenticated(
+            @Parameter(description = "HTTP request", hidden = true) HttpServletRequest request) {
         LOG.debug("REST request to check if the current user is authenticated");
         return request.getRemoteUser();
     }
 
     /** Object to return as body in JWT Authentication. */
+    @Schema(description = "JWT token response")
     static class JWTToken {
 
+        @Schema(description = "JWT token for authentication")
         private String idToken;
 
         JWTToken(String idToken) {

@@ -23,7 +23,7 @@ benManesVersionsVersion="0.52.0"
 greenmailJunit5Version="2.1.3"
 testcontainersVersion="0.9.1"
 postgres="42.7.7"
-springdocVersion="2.5.0"
+springdocVersion="2.8.9"
 
 [libraries]
 caffeine = {module="com.github.ben-manes.caffeine:caffeine", version.ref="caffeineVersion"}

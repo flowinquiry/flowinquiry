@@ -5,6 +5,12 @@ import io.flowinquiry.modules.usermanagement.repository.UserRepository;
 import io.flowinquiry.modules.usermanagement.service.UserService;
 import io.flowinquiry.modules.usermanagement.service.dto.UserDTO;
 import io.flowinquiry.security.service.JwtService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.time.Instant;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -22,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api")
+@Tag(name = "Login", description = "API endpoints for user login")
 public class LoginController {
 
     private final JwtService jwtService;
@@ -44,7 +51,24 @@ public class LoginController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserDTO> authorize(@Valid @RequestBody LoginVM loginVM) {
+    @Operation(
+            summary = "Login user",
+            description =
+                    "Authenticates a user, returns user details with JWT token in header, and updates last login time",
+            responses = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully authenticated",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema = @Schema(implementation = UserDTO.class))),
+                @ApiResponse(responseCode = "401", description = "Bad credentials"),
+                @ApiResponse(responseCode = "400", description = "Invalid input")
+            })
+    public ResponseEntity<UserDTO> authorize(
+            @Parameter(description = "Login credentials", required = true) @Valid @RequestBody
+                    LoginVM loginVM) {
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(loginVM.getEmail(), loginVM.getPassword());
 
