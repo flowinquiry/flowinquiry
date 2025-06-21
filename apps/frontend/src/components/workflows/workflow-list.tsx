@@ -188,17 +188,17 @@ const WorkflowsView = () => {
             >
               {/* Ribbon for visibility */}
               {workflow.visibility === "PUBLIC" && (
-                <div className="absolute bottom-0 right-0 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-br-2xl rounded-tl-md shadow-md border border-gray-200">
+                <div className="absolute bottom-0 right-0 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-br-2xl rounded-tl-md shadow-md border">
                   PUBLIC
                 </div>
               )}
               {workflow.visibility === "PRIVATE" && (
-                <div className="absolute bottom-0 right-0 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-br-2xl rounded-tl-md shadow-md border border-gray-200">
+                <div className="absolute bottom-0 right-0 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-br-2xl rounded-tl-md shadow-md border">
                   PRIVATE
                 </div>
               )}
               {workflow.visibility === "TEAM" && (
-                <div className="absolute bottom-0 right-0 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-br-2xl rounded-tl-md shadow-md border border-gray-200">
+                <div className="absolute bottom-0 right-0 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-br-2xl rounded-tl-md shadow-md border">
                   TEAM
                 </div>
               )}
@@ -223,7 +223,7 @@ const WorkflowsView = () => {
                 !workflow.useForProject && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Ellipsis className="cursor-pointer absolute top-2 right-2 text-gray-400" />
+                      <Ellipsis className="cursor-pointer absolute top-2 right-2" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56">
                       <TooltipProvider>

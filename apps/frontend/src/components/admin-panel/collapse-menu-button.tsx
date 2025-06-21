@@ -66,7 +66,7 @@ export function CollapseMenuButton({
         asChild
       >
         <Button
-          variant={isSubmenuActive ? "default" : "ghost"}
+          variant={active ? "default" : "ghost"}
           className="w-full justify-start h-10"
         >
           <div className="w-full items-center flex justify-between">

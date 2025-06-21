@@ -344,7 +344,7 @@ const TicketAdvancedSearch: React.FC<TicketAdvancedSearchProps> = ({
   };
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 shadow-xs">
+    <div className="bg-gray-50 dark:bg-gray-900 rounded-lg border shadow-xs">
       <div className="p-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-center">
           {/* Search input with icon */}
@@ -535,7 +535,7 @@ const TicketAdvancedSearch: React.FC<TicketAdvancedSearchProps> = ({
           {statuses?.map((status) => (
             <Badge
               key={status}
-              variant="secondary"
+              variant="default"
               className="flex items-center gap-1"
             >
               {statusIcons[status]}
