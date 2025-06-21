@@ -1,62 +1,114 @@
+/* Theme variants that work with both light and dark modes */
+
+/* Dark theme - extends the default dark mode */
 .theme-dark {
-  --sidebar: 222.2 84% 4.9%;
+  --sidebar-background: 222.2 84% 4.9%;
   --header: 222.2 84% 4.9%;
+  --primary: 217.2 91.2% 59.8%;
+  --primary-foreground: 210 40% 98%;
 }
+
+/* Rose theme */
 .theme-rose {
-  --sidebar: 341, 64%, 43%;
-  --header: 341, 64%, 43%;
-  --secondary: 339, 60%, 51%;
-  --menu-arrow: 339, 60%, 51%;
-  --menu-arrow-active: 336, 67%, 60%;
+  --sidebar-background: 341 64% 43%;
+  --header: 341 64% 43%;
+  --primary: 336 80% 58%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 339 60% 51%;
+  --secondary-foreground: 210 40% 98%;
+  --menu-arrow: 339 60% 51%;
+  --menu-arrow-active: 336 67% 60%;
 }
 
+/* Gray theme */
 .theme-gray {
-  --sidebar: 210, 10%, 23%;
-  --header: 210, 10%, 23%;
-
-  --secondary: 207, 14%, 31%;
-  --menu-arrow: 207, 14%, 31%;
-  --menu-arrow-active: 203, 16%, 43%;
+  --sidebar-background: 210 10% 23%;
+  --header: 210 10% 23%;
+  --primary: 210 50% 40%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 207 14% 31%;
+  --secondary-foreground: 210 40% 98%;
+  --menu-arrow: 207 14% 31%;
+  --menu-arrow-active: 203 16% 43%;
 }
+
+/* Steel Blue theme */
 .theme-steel-blue {
-  --sidebar: 226, 36%, 39%;
-  --header: 226, 36%, 39%;
-  --secondary: 224, 40%, 48%;
-  --menu-arrow: 224, 40%, 48%;
-  --menu-arrow-active: 216, 47%, 60%;
+  --sidebar-background: 226 36% 39%;
+  --header: 226 36% 39%;
+  --primary: 220 70% 50%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 224 40% 48%;
+  --secondary-foreground: 210 40% 98%;
+  --menu-arrow: 224 40% 48%;
+  --menu-arrow-active: 216 47% 60%;
 }
+
+/* Purple theme */
 .theme-purple {
-  --sidebar: 299, 56%, 19%;
-  --header: 299, 56%, 19%;
-  --secondary: 299, 40%, 28%;
-  --menu-arrow: 299, 40%, 28%;
-  --menu-arrow-active: 298, 44%, 33%;
+  --sidebar-background: 299 56% 19%;
+  --header: 299 56% 19%;
+  --primary: 280 75% 60%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 299 40% 28%;
+  --secondary-foreground: 210 40% 98%;
+  --menu-arrow: 299 40% 28%;
+  --menu-arrow-active: 298 44% 33%;
 }
 
+/* Redwood theme */
 .theme-redwood {
-  --sidebar: 345, 24%, 29%;
-  --header: 345, 24%, 29%;
-  --secondary: 346, 26%, 35%;
-  --menu-arrow: 346, 26%, 35%;
-  --menu-arrow-active: 344, 27%, 42%;
+  --sidebar-background: 345 24% 29%;
+  --header: 345 24% 29%;
+  --primary: 0 65% 45%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 346 26% 35%;
+  --secondary-foreground: 210 40% 98%;
+  --menu-arrow: 346 26% 35%;
+  --menu-arrow-active: 344 27% 42%;
 }
+
+/* Green theme */
 .theme-green {
-  --sidebar: 164, 64%, 21%;
-  --header: 164, 64%, 21%;
-
-  --secondary: 164, 68%, 24%;
-  --menu-arrow: 164, 68%, 24%;
-  --menu-arrow-active: 163, 69%, 30%;
+  --sidebar-background: 164 64% 21%;
+  --header: 164 64% 21%;
+  --primary: 150 80% 40%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 164 68% 24%;
+  --secondary-foreground: 210 40% 98%;
+  --menu-arrow: 164 68% 24%;
+  --menu-arrow-active: 163 69% 30%;
 }
+
+/* Ocean Blue theme */
 .theme-ocean-blue {
-  --sidebar: 206, 92%, 35%;
-  --header: 206, 92%, 35%;
-
-  --secondary: 205, 94%, 39%;
-  --menu-arrow: 205, 94%, 39%;
-  --menu-arrow-active: 203, 85%, 48%;
+  --sidebar-background: 206 92% 35%;
+  --header: 206 92% 35%;
+  --primary: 195 100% 50%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 205 94% 39%;
+  --secondary-foreground: 210 40% 98%;
+  --menu-arrow: 205 94% 39%;
+  --menu-arrow-active: 203 85% 48%;
 }
+
+/* Transparent theme */
 .theme-transparent {
   --header: transparent;
   box-shadow: none;
+}
+
+/* Dark mode adjustments for themes */
+.dark .theme-rose,
+.dark .theme-gray,
+.dark .theme-steel-blue,
+.dark .theme-purple,
+.dark .theme-redwood,
+.dark .theme-green,
+.dark .theme-ocean-blue {
+  --sidebar-foreground: 240 4.8% 95.9%;
+  --sidebar-accent: 240 3.7% 15.9%;
+  --sidebar-accent-foreground: 240 4.8% 95.9%;
+  --sidebar-border: 240 3.7% 15.9%;
+  /* Primary foreground is already set appropriately for dark mode */
 }
