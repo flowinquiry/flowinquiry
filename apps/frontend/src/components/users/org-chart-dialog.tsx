@@ -102,9 +102,9 @@ const OrgChartContent = ({
   const t = useAppClientTranslations();
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full w-full">
       {/* Org Chart */}
-      <div className="relative grow h-full">
+      <div className="relative grow h-full w-full">
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -293,11 +293,11 @@ const OrgChartDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-400 w-full">
+      <DialogContent className="!max-w-7xl w-full sm:!max-w-7xl md:!max-w-7xl lg:!max-w-7xl">
         <DialogHeader>
           <DialogTitle>{t.users.common("org_chart")}</DialogTitle>
         </DialogHeader>
-        <div className="h-200">
+        <div className="h-[500px] w-full">
           {isOpen && (
             <ReactFlowProvider>
               <OrgChartContent
