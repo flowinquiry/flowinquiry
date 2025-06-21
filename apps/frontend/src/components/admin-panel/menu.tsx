@@ -69,7 +69,10 @@ export function Menu({ isOpen }: MenuProps) {
                             <Button
                               variant={
                                 (active === undefined &&
-                                  pathname.startsWith(href)) ||
+                                  (href === "/portal"
+                                    ? pathname === "/portal" ||
+                                      pathname === "/portal/dashboard"
+                                    : pathname.startsWith(href))) ||
                                 active
                                   ? "default"
                                   : "ghost"
@@ -122,7 +125,10 @@ export function Menu({ isOpen }: MenuProps) {
                         label={label}
                         active={
                           active === undefined
-                            ? pathname.startsWith(href)
+                            ? href === "/portal"
+                              ? pathname === "/portal" ||
+                                pathname === "/portal/dashboard"
+                              : pathname.startsWith(href)
                             : active
                         }
                         submenus={submenus}
