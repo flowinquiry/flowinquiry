@@ -61,7 +61,7 @@ export default function WorkflowReviewDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="w-full max-w-5xl h-[85vh] max-h-[85vh] p-0 flex flex-col">
+      <DialogContent className="w-full !max-w-7xl h-[85vh] max-h-[85vh] p-0 flex flex-col">
         <DialogHeader className="px-6 py-4 border-b">
           <DialogTitle>Review Workflow: {workflowDetail?.name}</DialogTitle>
         </DialogHeader>
@@ -85,7 +85,7 @@ export default function WorkflowReviewDialog({
           </div>
 
           {/* Right: Transitions & SLA Info */}
-          <div className="w-[350px] bg-muted/30 flex flex-col h-full">
+          <div className="w-[400px] bg-muted-100 flex flex-col h-full">
             <div className="p-4 border-b">
               <h3 className="text-lg font-semibold">State Transitions</h3>
             </div>
@@ -99,7 +99,7 @@ export default function WorkflowReviewDialog({
                         className="p-3 rounded-md bg-background border"
                       >
                         <p className="text-sm font-medium">
-                          <span className="inline-block px-2 py-0.5 bg-primary/10 text-primary rounded-md mb-1">
+                          <span className="inline-block px-2 py-0.5 bg-primary-100 text-primary rounded-md mb-1">
                             {transition.eventName}
                           </span>
                         </p>
