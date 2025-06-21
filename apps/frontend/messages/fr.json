@@ -51,7 +51,9 @@
       "attachment_file_name": "Nom du fichier",
       "attachment_type": "Type",
       "attachment_size": "Taille",
-      "none": "Aucun"
+      "none": "Aucun",
+      "yes": "Oui",
+      "no": "Non"
     },
     "navigation": {
       "dashboard": "Tableau de bord",

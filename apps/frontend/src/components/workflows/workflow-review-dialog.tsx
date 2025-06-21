@@ -61,7 +61,7 @@ export default function WorkflowReviewDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="w-full max-w-[85vw] h-[85vh] max-h-[85vh] p-0 flex flex-col">
+      <DialogContent className="w-full max-w-5xl h-[85vh] max-h-[85vh] p-0 flex flex-col">
         <DialogHeader className="px-6 py-4 border-b">
           <DialogTitle>Review Workflow: {workflowDetail?.name}</DialogTitle>
         </DialogHeader>
@@ -73,7 +73,7 @@ export default function WorkflowReviewDialog({
             {loading ? (
               <div className="flex items-center justify-center h-full">
                 <Loader2 className="h-8 w-8 animate-spin" />
-                <span className="ml-2">Loading workflow diagram...</span>
+                <span className="ml-2">{t.common.misc("loading_data")}</span>
               </div>
             ) : (
               workflowDetail && (
@@ -117,7 +117,9 @@ export default function WorkflowReviewDialog({
                           <span className="inline-block h-1 w-1 rounded-full bg-muted-foreground"></span>
                           <span className="inline-flex items-center">
                             Escalated:{" "}
-                            {transition.escalateOnViolation ? "Yes" : "No"}
+                            {transition.escalateOnViolation
+                              ? t.common.misc("yes")
+                              : t.common.misc("no")}
                           </span>
                         </div>
                       </div>
