@@ -71,7 +71,7 @@ const TeamNavLayout = ({
                   className={cn(
                     "flex items-center p-2 text-sm font-medium rounded-md",
                     pathname.startsWith(feature.href)
-                      ? "bg-[hsl(var(--secondary))] text-[hsl(var(--secondary-foreground))]"
+                      ? "bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]"
                       : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]",
                   )}
                 >

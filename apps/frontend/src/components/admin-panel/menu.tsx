@@ -71,7 +71,7 @@ export function Menu({ isOpen }: MenuProps) {
                                 (active === undefined &&
                                   pathname.startsWith(href)) ||
                                 active
-                                  ? "secondary"
+                                  ? "default"
                                   : "ghost"
                               }
                               className={cn(

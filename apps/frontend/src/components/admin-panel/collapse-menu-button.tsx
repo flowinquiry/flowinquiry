@@ -66,7 +66,7 @@ export function CollapseMenuButton({
         asChild
       >
         <Button
-          variant={isSubmenuActive ? "secondary" : "ghost"}
+          variant={isSubmenuActive ? "default" : "ghost"}
           className="w-full justify-start h-10"
         >
           <div className="w-full items-center flex justify-between">
@@ -107,7 +107,7 @@ export function CollapseMenuButton({
             key={index}
             variant={
               (active === undefined && pathname === href) || active
-                ? "secondary"
+                ? "default"
                 : "ghost"
             }
             className="w-full justify-start h-10 mb-1"
@@ -139,7 +139,7 @@ export function CollapseMenuButton({
           <TooltipTrigger asChild>
             <DropdownMenuTrigger asChild>
               <Button
-                variant={isSubmenuActive ? "secondary" : "ghost"}
+                variant={isSubmenuActive ? "default" : "ghost"}
                 className="flex justify-center h-10 mb-1 px-3 w-auto"
               >
                 <Icon size={18} />
@@ -167,7 +167,7 @@ export function CollapseMenuButton({
             <Link
               className={`cursor-pointer ${
                 ((active === undefined && pathname === href) || active) &&
-                "bg-secondary"
+                "bg-primary text-primary-foreground"
               }`}
               href={href}
             >
