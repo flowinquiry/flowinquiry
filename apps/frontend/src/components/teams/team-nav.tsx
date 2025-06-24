@@ -11,9 +11,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { Button } from "@/components/ui/button";
 import { useAppClientTranslations } from "@/hooks/use-translations";
 import { obfuscate } from "@/lib/endecode";
-import { cn } from "@/lib/utils";
 import { useBreadcrumb } from "@/providers/breadcrumb-provider";
 
 const TeamNavLayout = ({
@@ -65,19 +65,22 @@ const TeamNavLayout = ({
           <div>
             <nav className="space-y-2">
               {teamFeatures.map((feature) => (
-                <Link
+                <Button
                   key={feature.href}
-                  href={feature.href}
-                  className={cn(
-                    "flex items-center p-2 text-sm font-medium rounded-md",
-                    pathname.startsWith(feature.href)
-                      ? "bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]"
-                      : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]",
-                  )}
+                  asChild
+                  variant={
+                    pathname.startsWith(feature.href) ? "default" : "ghost"
+                  }
+                  className="w-full justify-start text-sm font-medium"
                 >
-                  <feature.icon className="w-5 h-5 mr-2" />
-                  {feature.label}
-                </Link>
+                  <Link
+                    href={feature.href}
+                    className="flex items-center p-2 rounded-md"
+                  >
+                    <feature.icon className="w-5 h-5 mr-2" />
+                    {feature.label}
+                  </Link>
+                </Button>
               ))}
             </nav>
           </div>
