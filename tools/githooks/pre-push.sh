@@ -12,7 +12,7 @@ while read local_ref local_sha remote_ref remote_sha; do
   fi
 done
 
-run_frontend=false
+run_frontend=true
 for file in $CHANGED_FILES; do
   if [[ "$file" == apps/frontend/* ]]; then
     run_frontend=true
