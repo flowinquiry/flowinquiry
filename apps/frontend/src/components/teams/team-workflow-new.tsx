@@ -71,13 +71,11 @@ const TeamWorkflowNew = () => {
                 <TooltipContent className="max-w-xs whitespace-pre-wrap break-words">
                   <div className="text-left">
                     <p className="font-bold">{team.name}</p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm ">
                       {team.slogan ?? t.teams.common("default_slogan")}
                     </p>
                     {team.description && (
-                      <p className="text-sm text-gray-500">
-                        {team.description}
-                      </p>
+                      <p className="text-sm ">{team.description}</p>
                     )}
                   </div>
                 </TooltipContent>
@@ -105,7 +103,7 @@ const TeamWorkflowNew = () => {
                   >
                     {t.workflows.add("create_workflow_from_scratch_title")}
                   </Button>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm ">
                     {t.workflows.add(
                       "create_workflow_from_scratch_description",
                     )}
@@ -121,7 +119,7 @@ const TeamWorkflowNew = () => {
                   >
                     {t.workflows.add("clone_workflow_title")}
                   </Button>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm ">
                     {t.workflows.add("clone_workflow_description")}.
                   </div>
                 </div>

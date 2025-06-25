@@ -92,13 +92,11 @@ const TeamWorkflowsView = () => {
                 <TooltipContent className="max-w-xs whitespace-pre-wrap break-words">
                   <div className="text-left">
                     <p className="font-bold">{team.name}</p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm ">
                       {team.slogan ?? t.teams.common("default_slogan")}
                     </p>
                     {team.description && (
-                      <p className="text-sm text-gray-500">
-                        {team.description}
-                      </p>
+                      <p className="text-sm ">{team.description}</p>
                     )}
                   </div>
                 </TooltipContent>

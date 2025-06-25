@@ -178,13 +178,11 @@ const ProjectListView = () => {
                 <TooltipContent className="max-w-xs whitespace-pre-wrap break-words">
                   <div className="text-left">
                     <p className="font-bold">{team.name}</p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm ">
                       {team.slogan ?? t.teams.common("default_slogan")}
                     </p>
                     {team.description && (
-                      <p className="text-sm text-gray-500">
-                        {team.description}
-                      </p>
+                      <p className="text-sm ">{team.description}</p>
                     )}
                   </div>
                 </TooltipContent>
@@ -295,7 +293,7 @@ const ProjectListView = () => {
                         <TableCell>
                           <Link
                             href={`/portal/teams/${obfuscate(team.id)}/projects/${project.shortName}`}
-                            className="text-blue-500 hover:underline"
+                            className="hover:underline"
                             data-testid={`project-name-link-${project.id}`}
                           >
                             {project.name}
@@ -408,10 +406,7 @@ const ProjectListView = () => {
                 />
               </>
             ) : (
-              <p
-                className="text-gray-500 text-center"
-                data-testid="no-projects-message"
-              >
+              <p className=" text-center" data-testid="no-projects-message">
                 {t.teams.projects.list("no_projects_found")}
               </p>
             )}
