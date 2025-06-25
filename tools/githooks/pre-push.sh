@@ -2,17 +2,11 @@
 
 echo "🪝 Pre-push hook running..."
 
-# Read local and remote refs from stdin (Git passes this to pre-push)
-while read local_ref local_sha remote_ref remote_sha; do
-  # If new branch (remote_sha is 0000...), diff from nothing
-  if [ "$remote_sha" = "0000000000000000000000000000000000000000" ]; then
-    CHANGED_FILES=$(git diff --name-only "$local_sha")
-  else
-    CHANGED_FILES=$(git diff --name-only "$remote_sha" "$local_sha")
-  fi
-done
+# Compare local HEAD against remote main
+CHANGED_FILES=$(git diff --name-only origin/main)
 
-run_frontend=true
+run_frontend=false
+
 for file in $CHANGED_FILES; do
   if [[ "$file" == apps/frontend/* ]]; then
     run_frontend=true
