@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Detect changes in the frontend
-CHANGED_FILES=$(git diff --cached --name-only)
+# Detect changes in the frontend directory since last push
+CHANGED_FILES=$(git diff --name-only HEAD @{push})
 
 run_frontend=false
 
