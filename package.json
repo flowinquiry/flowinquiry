@@ -31,7 +31,7 @@
     "test": "turbo run test",
     "test:frontend": "turbo run test --filter=flowinquiry-frontend",
     "test:ui:frontend": "turbo run test:ui --filter=flowinquiry-frontend",
-    "postinstall": "if [ \"$SKIP_POSTINSTALL\" != \"1\" ]; then tools/githooks/setup-pre-commit.sh && cd apps/frontend && pnpm playwright:install; fi",
+    "postinstall": "if [ \"$SKIP_POSTINSTALL\" != \"1\" ]; then tools/githooks/setup-hooks.sh && cd apps/frontend && pnpm playwright:install; fi",
     "check-env": "tools/check-env.sh",
     "setup:backend": "tools/setup/backend-env.sh",
     "setup:frontend": "tools/setup/frontend-env.sh",

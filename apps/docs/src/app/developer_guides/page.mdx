@@ -51,20 +51,21 @@ We strive to use the best tools to enhance our team's productivity. Below are th
 
 ## Git hooks
 
-Our goal is to automate as many development tasks as possible—everything from code formatting to convention checks across our Java and Next.js/TypeScript projects. To enforce this consistently, we’ve added Git pre-commit hooks that automatically run these tools before any commit goes through.
+Our goal is to automate as many development tasks as possible—everything from code formatting to convention checks across our Java and Next.js/TypeScript projects. To enforce this consistently, we’ve added Git hooks that automatically run these tools before any commit goes through.
 To install the Git hook:
 
 1. Open a terminal in your FlowInquiry project root.
 2. Run:
 
 ```bash
-tools/githooks/setup-pre-commit.sh
+tools/githooks/setup-hooks.sh
 ```
 
 3. You should see:
 
 ```bash
 ✅ pre-commit hook set up!
+✅ pre-push hook set up!
 ```
 
 And that’s it—you’re all set!
