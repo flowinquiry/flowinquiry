@@ -69,7 +69,7 @@ export const ExtInputField = ({
                 type={type}
                 placeholder={placeholder}
                 {...field}
-                className={className} // Apply custom classes here
+                className={className}
                 testId={props.testId}
               />
             }
@@ -87,7 +87,8 @@ export const ExtTextAreaField = ({
   label,
   placeholder,
   required,
-  testId,
+  className = "",
+  ...props
 }: ExtInputProps & UiAttributes) => {
   return (
     <div className="md:col-span-2">
@@ -101,7 +102,12 @@ export const ExtTextAreaField = ({
               {required && <span className="text-destructive"> *</span>}
             </FormLabel>
             <FormControl>
-              <Textarea placeholder={placeholder} {...field} testId={testId} />
+              <Textarea
+                placeholder={placeholder}
+                {...field}
+                className={className}
+                testId={props.testId}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>

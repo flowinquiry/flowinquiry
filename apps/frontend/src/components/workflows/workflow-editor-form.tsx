@@ -79,7 +79,10 @@ const WorkflowEditForm = ({
           className="space-y-6"
           data-testid="workflow-editor-form"
         >
-          <div data-testid="workflow-editor-details-section">
+          <div
+            data-testid="workflow-editor-details-section"
+            className="flex flex-col gap-4"
+          >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <ExtInputField
                 form={form}
@@ -165,7 +168,6 @@ const WorkflowEditForm = ({
               </div>
             ))}
             <Button
-              type="button"
               onClick={() =>
                 appendState({
                   stateName: "",
@@ -175,7 +177,7 @@ const WorkflowEditForm = ({
                   workflowId: workflowDetail.id!,
                 })
               }
-              variant="secondary"
+              variant="default"
               testId="workflow-editor-add-state"
             >
               {t.workflows.add("add_state")}
@@ -284,7 +286,7 @@ const WorkflowEditForm = ({
                   workflowId: workflowDetail.id!,
                 })
               }
-              variant="secondary"
+              variant="default"
               testId="workflow-editor-add-transition"
             >
               {t.workflows.add("add_transition")}
@@ -295,11 +297,14 @@ const WorkflowEditForm = ({
             className="flex justify-start space-x-4"
             data-testid="workflow-editor-buttons"
           >
-            <Button type="submit" testId="workflow-editor-save">
+            <Button
+              variant="default"
+              type="submit"
+              testId="workflow-editor-save"
+            >
               {t.common.buttons("save")}
             </Button>
             <Button
-              type="button"
               variant="secondary"
               onClick={onCancel}
               testId="workflow-editor-cancel"

@@ -1,228 +1,167 @@
 "use client";
 
-import { Edit, Plus } from "lucide-react";
 import React from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
-  ProjectDTO,
-  ProjectEpicDTO,
-  ProjectIterationDTO,
-} from "@/types/projects";
-import { PermissionUtils } from "@/types/resources";
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { EstimationUnitSchema } from "@/types/projects";
 
 interface ProjectSettingsProps {
-  project: ProjectDTO;
-  iterations: ProjectIterationDTO[];
-  epics: ProjectEpicDTO[];
-  loadingIterations: boolean;
-  loadingEpics: boolean;
-  permissionLevel: string;
-  teamRole: string;
-  handleAddNewIteration: () => void;
-  handleEditIteration: (iterationId: number) => void;
-  handleAddNewEpic: () => void;
-  handleEditEpic: (epicId: number) => void;
-  setIsProjectEditDialogOpen: (isOpen: boolean) => void;
-  getEpicColor: (epicId: number) => string;
-  getIterationStatus: (iteration: ProjectIterationDTO) => string;
-  t: any; // Translation function
+  // No props needed for the simplified version
 }
 
-export default function ProjectSettings({
-  project,
-  iterations,
-  epics,
-  loadingIterations,
-  loadingEpics,
-  permissionLevel,
-  teamRole,
-  handleAddNewIteration,
-  handleEditIteration,
-  handleAddNewEpic,
-  handleEditEpic,
-  setIsProjectEditDialogOpen,
-  getEpicColor,
-  getIterationStatus,
-  t,
-}: ProjectSettingsProps) {
+// Define the form schema for project settings
+const projectSettingSchema = z.object({
+  sprintLengthDays: z.number().int().positive().default(14),
+  defaultPriority: z.number().int().nonnegative().default(3),
+  estimationUnit: EstimationUnitSchema.default("STORY_POINTS"),
+  enableEstimation: z.boolean().default(true),
+});
+
+type ProjectSettingFormValues = z.infer<typeof projectSettingSchema>;
+
+export default function ProjectSettings(): React.ReactElement {
+  // Initialize form with default values
+  const form = useForm<ProjectSettingFormValues>({
+    defaultValues: {
+      sprintLengthDays: 14,
+      defaultPriority: 3,
+      estimationUnit: "STORY_POINTS",
+      enableEstimation: true,
+    },
+  });
+
   return (
     <div className="space-y-6" data-testid="project-settings-view">
-      {/* Project Details Section */}
+      {/* Project Settings Section */}
       <div className="p-6 border rounded-lg bg-card">
-        <h2 className="text-xl font-semibold mb-4">Project Details</h2>
-        <div className="space-y-4">
-          <div>
-            <h3 className="text-sm font-medium text-muted-foreground mb-1">
-              Project Name
-            </h3>
-            <p className="text-lg">{project.name}</p>
-          </div>
+        <h2 className="text-xl font-semibold mb-4">Project Settings</h2>
+        <Form {...form}>
+          <form className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Sprint Length Days */}
+              <FormField
+                control={form.control}
+                name="sprintLengthDays"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Sprint Length (Days)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        {...field}
+                        onChange={(e) =>
+                          field.onChange(parseInt(e.target.value))
+                        }
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      The default length of sprints in days
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          <div>
-            <h3 className="text-sm font-medium text-muted-foreground mb-1">
-              Description
-            </h3>
-            <div
-              className="prose prose-sm max-w-none"
-              dangerouslySetInnerHTML={{
-                __html: project.description ?? "<p>No description provided</p>",
-              }}
-            />
-          </div>
+              {/* Default Priority */}
+              <FormField
+                control={form.control}
+                name="defaultPriority"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Default Priority</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        {...field}
+                        onChange={(e) =>
+                          field.onChange(parseInt(e.target.value))
+                        }
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      The default priority for new tickets
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-1">
-                Status
-              </h3>
-              <Badge variant="outline">{project.status || "Not set"}</Badge>
+              {/* Estimation Unit */}
+              <FormField
+                control={form.control}
+                name="estimationUnit"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Estimation Unit</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select estimation unit" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="STORY_POINTS">
+                          Story Points
+                        </SelectItem>
+                        <SelectItem value="DAYS">Days</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>
+                      The unit used for estimating work
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Enable Estimation */}
+              <FormField
+                control={form.control}
+                name="enableEstimation"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">
+                        Enable Estimation
+                      </FormLabel>
+                      <FormDescription>
+                        Allow estimation of tickets in this project
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
             </div>
-
-            <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-1">
-                Start Date
-              </h3>
-              <p>
-                {project.startDate
-                  ? new Date(project.startDate).toLocaleDateString()
-                  : "Not set"}
-              </p>
-            </div>
-
-            <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-1">
-                End Date
-              </h3>
-              <p>
-                {project.endDate
-                  ? new Date(project.endDate).toLocaleDateString()
-                  : "Not set"}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {(PermissionUtils.canWrite(permissionLevel) ||
-          teamRole === "manager") && (
-          <div className="mt-6">
-            <Button
-              onClick={() => setIsProjectEditDialogOpen(true)}
-              variant="default"
-              className="flex items-center gap-2"
-            >
-              <Edit className="w-4 h-4" />
-              Edit Project Details
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {/* Iterations Section */}
-      <div className="p-6 border rounded-lg bg-card">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Iterations</h2>
-          <Button
-            onClick={handleAddNewIteration}
-            variant="outline"
-            size="sm"
-            className="flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Add Iteration
-          </Button>
-        </div>
-
-        {loadingIterations ? (
-          <p>{t.common.misc("loading_data")}</p>
-        ) : iterations.length > 0 ? (
-          <div className="space-y-3">
-            {iterations.map((iteration) => (
-              <div
-                key={iteration.id}
-                className="flex justify-between items-center p-3 border rounded-md hover:bg-muted/50"
-              >
-                <div>
-                  <p className="font-medium">{iteration.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {getIterationStatus(iteration)} |
-                    {iteration.startDate
-                      ? new Date(iteration.startDate).toLocaleDateString()
-                      : "Not scheduled"}
-                    {iteration.startDate || iteration.endDate ? " - " : ""}
-                    {iteration.endDate
-                      ? new Date(iteration.endDate).toLocaleDateString()
-                      : iteration.startDate
-                        ? "Ongoing"
-                        : ""}
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleEditIteration(iteration.id!)}
-                >
-                  <Edit className="h-4 w-4" />
-                </Button>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-muted-foreground">
-            No iterations found for this project.
-          </p>
-        )}
-      </div>
-
-      {/* Epics Section */}
-      <div className="p-6 border rounded-lg bg-card">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Epics</h2>
-          <Button
-            onClick={handleAddNewEpic}
-            variant="outline"
-            size="sm"
-            className="flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Add Epic
-          </Button>
-        </div>
-
-        {loadingEpics ? (
-          <p>{t.common.misc("loading_data")}</p>
-        ) : epics.length > 0 ? (
-          <div className="space-y-3">
-            {epics.map((epic) => (
-              <div
-                key={epic.id}
-                className="flex justify-between items-center p-3 border rounded-md hover:bg-muted/50"
-                style={{
-                  borderLeft: `4px solid ${getEpicColor(epic.id!)}`,
-                }}
-              >
-                <div>
-                  <p className="font-medium">{epic.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {epic.description || "No description"}
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleEditEpic(epic.id!)}
-                >
-                  <Edit className="h-4 w-4" />
-                </Button>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-muted-foreground">
-            No epics found for this project.
-          </p>
-        )}
+          </form>
+        </Form>
       </div>
     </div>
   );
