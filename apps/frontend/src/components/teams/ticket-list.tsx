@@ -177,7 +177,7 @@ const TicketList = ({ tickets, instantView = true }: TicketListProps) => {
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <h3
-                                    className={`text-xl text-left text-blue-600 hover:underline ${
+                                    className={`text-xl text-left hover:underline ${
                                       request.isCompleted ? "line-through" : ""
                                     }`}
                                   >
@@ -224,7 +224,7 @@ const TicketList = ({ tickets, instantView = true }: TicketListProps) => {
                         className="mb-6"
                         data-testid={`ticket-description-${request.id}`}
                       >
-                        <div className="text-xs font-medium text-gray-500 mb-1">
+                        <div className="text-xs font-medium  mb-1">
                           {t.teams.tickets.form.base("description")}
                         </div>
                         <TruncatedHtmlLabel
@@ -240,7 +240,7 @@ const TicketList = ({ tickets, instantView = true }: TicketListProps) => {
                       >
                         {/* Requester */}
                         <div data-testid={`ticket-requester-${request.id}`}>
-                          <div className="text-xs font-medium text-gray-500 mb-1">
+                          <div className="text-xs font-medium  mb-1">
                             {t.teams.tickets.form.base("requester")}
                           </div>
                           <div className="flex items-center gap-2">
@@ -261,7 +261,7 @@ const TicketList = ({ tickets, instantView = true }: TicketListProps) => {
 
                         {/* Assigned User */}
                         <div data-testid={`ticket-assignee-info-${request.id}`}>
-                          <div className="text-xs font-medium text-gray-500 mb-1">
+                          <div className="text-xs font-medium  mb-1">
                             {t.teams.tickets.form.base("assignee")}
                           </div>
                           <div className="flex items-center gap-2">
@@ -282,7 +282,7 @@ const TicketList = ({ tickets, instantView = true }: TicketListProps) => {
                               </>
                             ) : (
                               <span
-                                className="text-sm text-gray-500"
+                                className="text-sm "
                                 data-testid={`unassigned-message-${request.id}`}
                               >
                                 {t.teams.tickets.detail("unassigned")}
@@ -294,7 +294,7 @@ const TicketList = ({ tickets, instantView = true }: TicketListProps) => {
                         {/* Channel */}
                         {request.channel && (
                           <div data-testid={`ticket-channel-${request.id}`}>
-                            <div className="text-xs font-medium text-gray-500 mb-1">
+                            <div className="text-xs font-medium  mb-1">
                               {t.teams.tickets.form.base("channel")}
                             </div>
                             <Badge
@@ -308,7 +308,7 @@ const TicketList = ({ tickets, instantView = true }: TicketListProps) => {
 
                         {/* Due Date */}
                         <div data-testid={`ticket-due-date-${request.id}`}>
-                          <div className="text-xs font-medium text-gray-500 mb-1">
+                          <div className="text-xs font-medium  mb-1">
                             {t.teams.tickets.form.base(
                               "target_completion_date",
                             )}
@@ -324,7 +324,7 @@ const TicketList = ({ tickets, instantView = true }: TicketListProps) => {
 
                         {/* State */}
                         <div data-testid={`ticket-state-info-${request.id}`}>
-                          <div className="text-xs font-medium text-gray-500 mb-1">
+                          <div className="text-xs font-medium  mb-1">
                             {t.teams.tickets.form.base("state")}
                           </div>
                           <Badge
@@ -337,7 +337,7 @@ const TicketList = ({ tickets, instantView = true }: TicketListProps) => {
 
                         {request.projectId !== null && (
                           <div data-testid={`ticket-project-${request.id}`}>
-                            <div className="text-xs font-medium text-gray-500 mb-1">
+                            <div className="text-xs font-medium  mb-1">
                               {t.teams.tickets.form.base("project")}
                             </div>
                             <Button

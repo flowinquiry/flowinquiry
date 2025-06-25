@@ -267,7 +267,7 @@ export const TeamList = () => {
                   {PermissionUtils.canWrite(permissionLevel) && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Ellipsis className="cursor-pointer absolute top-2 right-2 text-gray-400" />
+                        <Ellipsis className="cursor-pointer absolute top-2 right-2" />
                       </DropdownMenuTrigger>
                       <DropdownMenuContent className="w-56">
                         <DropdownMenuItem

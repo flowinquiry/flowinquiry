@@ -7,6 +7,8 @@ import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -175,11 +177,13 @@ public class QueryUtils {
             Path<?> path = root.get(field);
             Class<?> fieldType = path.getJavaType();
 
+            Object typedValue = convertValueIfNeeded(value, root.get(field).getJavaType());
+
             switch (filter.getOperator()) {
                 case GT:
-                    return cb.greaterThan(root.get(field), (Comparable) value);
+                    return cb.greaterThan(root.get(field), (Comparable) typedValue);
                 case LT:
-                    return cb.lessThan(root.get(field), (Comparable) value);
+                    return cb.lessThan(root.get(field), (Comparable) typedValue);
                 case EQ:
                     // Handle null values and type conversions for direct fields
                     if (value == null) {
@@ -252,5 +256,34 @@ public class QueryUtils {
                     throw new IllegalArgumentException("Invalid operator: " + filter.getOperator());
             }
         }
+    }
+
+    private static Object convertValueIfNeeded(Object value, Class<?> targetType) {
+        if (value == null || targetType.isInstance(value)) {
+            return value;
+        }
+
+        if (value instanceof String) {
+            String stringValue = (String) value;
+
+            if (targetType.equals(Instant.class)) {
+                return Instant.parse(stringValue);
+            } else if (targetType.equals(LocalDate.class)) {
+                return LocalDate.parse(stringValue);
+            } else if (targetType.equals(Long.class)) {
+                return Long.valueOf(stringValue);
+            } else if (targetType.equals(Integer.class)) {
+                return Integer.valueOf(stringValue);
+            } else if (targetType.equals(Boolean.class)) {
+                return Boolean.valueOf(stringValue);
+            } else if (targetType.equals(Double.class)) {
+                return Double.valueOf(stringValue);
+            }
+            // fallback
+            return stringValue;
+        }
+
+        throw new IllegalArgumentException(
+                "Unsupported conversion from " + value.getClass() + " to " + targetType);
     }
 }
