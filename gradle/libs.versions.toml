@@ -10,7 +10,7 @@ mockitoVersion = "5.18.0"
 jsonApiVersion = "2.1.3"
 parssonVersion="1.1.7"
 springbootVersion = "3.4.6"
-springAiVersion="1.0.0-M6"
+springAiVersion="1.0.0"
 springDependencyManagementVersion="1.1.7"
 jhisterVersion = "8.11.0"
 j2HtmlVersion = "1.6.0"
@@ -49,8 +49,8 @@ parsson = { module = "org.eclipse.parsson:parsson", version.ref = "parssonVersio
 shedlock = {module="net.javacrumbs.shedlock:shedlock-spring", version.ref="shedlockVersion"}
 shedlock-jdbc-provider = {module="net.javacrumbs.shedlock:shedlock-provider-jdbc-template", version.ref="shedlockVersion"}
 splotless-plugin = { module = "com.diffplug.spotless:spotless-plugin-gradle", version = "7.0.3" }
-spring-ai-openai = {module = "org.springframework.ai:spring-ai-openai-spring-boot-starter", version.ref="springAiVersion"}
-spring-ai-ollama = {module = "org.springframework.ai:spring-ai-ollama-spring-boot-starter", version.ref="springAiVersion"}
+spring-ai-openai = {module = "org.springframework.ai:spring-ai-starter-model-openai", version.ref="springAiVersion"}
+spring-ai-ollama = {module = "org.springframework.ai:spring-ai-starter-model-ollama", version.ref="springAiVersion"}
 slack = {module="com.slack.api:slack-api-client", version.ref="slackClientVersion"}
 greenmail-junit5 = { module = "com.icegreen:greenmail-junit5", version.ref = "greenmailJunit5Version" }
 testcontainers-spring = { module = "io.flowinquiry.testcontainers:spring-testcontainers", version.ref = "testcontainersVersion" }
