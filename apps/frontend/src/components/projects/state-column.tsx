@@ -102,7 +102,7 @@ const StateColumn: React.FC<ColumnProps> = ({
           }}
           className={clsx(
             "mt-2 w-full flex items-center justify-center gap-2 py-2 border rounded-lg text-white font-semibold transition",
-            "bg-primary",
+            "bg-primary cursor-pointer",
           )}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}

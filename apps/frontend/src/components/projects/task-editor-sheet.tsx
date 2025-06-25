@@ -39,6 +39,8 @@ import { useError } from "@/providers/error-provider";
 import { TicketDTO, TicketDTOSchema, TicketPriority } from "@/types/tickets";
 import { WorkflowStateDTO } from "@/types/workflows";
 
+import { Button } from "../ui/button";
+
 export type TaskBoard = Record<string, TicketDTO[]>;
 
 interface TaskEditorSheetProps {
@@ -161,7 +163,7 @@ const TaskEditorSheet = ({
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetContent
         side="right"
-        className="w-[90vw] sm:w-2xl lg:w-4xl p-0 overflow-hidden"
+        className="w-full sm:max-w-[70rem] h-full px-4 overflow-hidden"
         data-testid="task-editor-sheet"
       >
         <div className="flex flex-col h-full max-h-screen">
@@ -353,14 +355,13 @@ const TaskEditorSheet = ({
                   labelWhileLoading={t.common.buttons("saving")}
                   data-testid="task-save-button"
                 />
-                <button
-                  type="button"
-                  className="px-4 py-2 border rounded-md bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700"
+                <Button
+                  variant="secondary"
                   onClick={() => setIsOpen(false)}
                   data-testid="task-discard-button"
                 >
                   {t.common.buttons("discard")}
-                </button>
+                </Button>
               </div>
             </form>
           </Form>

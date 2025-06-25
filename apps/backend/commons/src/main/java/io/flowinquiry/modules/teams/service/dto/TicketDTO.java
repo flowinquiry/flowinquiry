@@ -31,7 +31,7 @@ public class TicketDTO {
     private String projectName;
     private String projectShortName;
 
-    @NotNull(message = "Project Ticket Number cannot be null") private Long projectTicketNumber;
+    private Long projectTicketNumber;
 
     @NotNull(message = "Request User ID cannot be null") private Long requestUserId;
 
@@ -59,9 +59,9 @@ public class TicketDTO {
     private String currentStateName;
     private TicketChannel channel;
 
-    @NotNull(message = "isNew flag cannot be null") private Boolean isNew;
+    private Boolean isNew;
 
-    @NotNull(message = "isCompleted flag cannot be null") private Boolean isCompleted;
+    private Boolean isCompleted;
 
     private Instant createdAt;
     private Instant modifiedAt;
