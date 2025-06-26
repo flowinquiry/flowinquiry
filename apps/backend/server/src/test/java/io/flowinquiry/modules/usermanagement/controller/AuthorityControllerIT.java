@@ -1,4 +1,4 @@
-package io.flowinquiry.web.rest;
+package io.flowinquiry.modules.usermanagement.controller;
 
 import static io.flowinquiry.security.domain.AuthorityAsserts.assertAuthorityUpdatableFieldsEquals;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -12,7 +12,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.flowinquiry.IntegrationTest;
-import io.flowinquiry.modules.usermanagement.controller.AuthorityController;
 import io.flowinquiry.modules.usermanagement.domain.Authority;
 import io.flowinquiry.modules.usermanagement.repository.AuthorityRepository;
 import jakarta.persistence.EntityManager;

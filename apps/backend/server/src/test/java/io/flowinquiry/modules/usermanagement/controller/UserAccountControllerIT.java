@@ -1,4 +1,4 @@
-package io.flowinquiry.web.rest;
+package io.flowinquiry.modules.usermanagement.controller;
 
 import static io.flowinquiry.modules.usermanagement.domain.UserAuth.UP_AUTH_PROVIDER;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -12,9 +12,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.flowinquiry.IntegrationTest;
 import io.flowinquiry.modules.shared.Constants;
 import io.flowinquiry.modules.usermanagement.AuthoritiesConstants;
-import io.flowinquiry.modules.usermanagement.controller.KeyAndPasswordVM;
-import io.flowinquiry.modules.usermanagement.controller.ManagedUserVM;
-import io.flowinquiry.modules.usermanagement.controller.UserAccountController;
 import io.flowinquiry.modules.usermanagement.domain.User;
 import io.flowinquiry.modules.usermanagement.domain.UserAuth;
 import io.flowinquiry.modules.usermanagement.domain.UserStatus;

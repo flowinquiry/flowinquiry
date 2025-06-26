@@ -1,4 +1,4 @@
-package io.flowinquiry.web.rest;
+package io.flowinquiry.modules.usermanagement.controller;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -9,7 +9,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import io.flowinquiry.IntegrationTest;
 import io.flowinquiry.modules.usermanagement.AuthoritiesConstants;
-import io.flowinquiry.modules.usermanagement.controller.PublicUserController;
 import io.flowinquiry.modules.usermanagement.domain.User;
 import io.flowinquiry.modules.usermanagement.repository.UserRepository;
 import io.flowinquiry.modules.usermanagement.service.UserService;

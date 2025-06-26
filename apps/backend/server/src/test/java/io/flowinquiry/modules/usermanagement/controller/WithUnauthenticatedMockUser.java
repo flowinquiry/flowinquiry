@@ -1,4 +1,4 @@
-package io.flowinquiry.web.rest;
+package io.flowinquiry.modules.usermanagement.controller;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

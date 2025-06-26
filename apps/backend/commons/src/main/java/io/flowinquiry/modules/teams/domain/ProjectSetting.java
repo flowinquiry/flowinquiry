@@ -1,14 +1,17 @@
 package io.flowinquiry.modules.teams.domain;
 
-import io.flowinquiry.utils.JsonbConverter;
+import io.flowinquiry.modules.audit.domain.AbstractAuditingEntity;
+import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.*;
-import java.time.Instant;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.Type;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "fw_project_setting")
@@ -17,7 +20,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProjectSetting {
+public class ProjectSetting extends AbstractAuditingEntity<Long> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,18 +48,7 @@ public class ProjectSetting {
     private boolean enableEstimation = true;
 
     @Column(name = "integration_settings", columnDefinition = "jsonb")
-    @Convert(converter = JsonbConverter.class)
+    @Type(JsonBinaryType.class)
+    @JdbcTypeCode(SqlTypes.JSON)
     private Map<String, Object> integrationSettings;
-
-    @Column(name = "created_by")
-    private Long createdBy;
-
-    @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
-
-    @Column(name = "modified_by")
-    private Long modifiedBy;
-
-    @Column(name = "modified_at", nullable = false)
-    private Instant modifiedAt;
 }

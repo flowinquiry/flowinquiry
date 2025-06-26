@@ -1,4 +1,4 @@
-package io.flowinquiry.web.rest;
+package io.flowinquiry.modules.usermanagement.controller;
 
 import static io.flowinquiry.modules.usermanagement.domain.UserAuth.UP_AUTH_PROVIDER;
 import static org.hamcrest.Matchers.emptyString;
@@ -12,8 +12,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.flowinquiry.IntegrationTest;
-import io.flowinquiry.modules.usermanagement.controller.AuthenticateController;
-import io.flowinquiry.modules.usermanagement.controller.LoginVM;
 import io.flowinquiry.modules.usermanagement.domain.User;
 import io.flowinquiry.modules.usermanagement.domain.UserAuth;
 import io.flowinquiry.modules.usermanagement.domain.UserStatus;
