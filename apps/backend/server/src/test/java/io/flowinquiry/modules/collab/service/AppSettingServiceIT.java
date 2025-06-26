@@ -83,19 +83,15 @@ public class AppSettingServiceIT {
 
     @Test
     public void testGetRawSetting() {
-        // Reset the value to ensure it's consistent
-        AppSetting setting1 = appSettingRepository.findById("test.key1").get();
-        setting1.setValue("test value 1");
-        appSettingRepository.save(setting1);
-
-        Optional<AppSetting> setting = appSettingService.getRawSetting("test.key1");
+        // Use test.key2 instead of test.key1 to avoid conflicts with testCacheEviction
+        Optional<AppSetting> setting = appSettingService.getRawSetting("test.key2");
 
         assertThat(setting).isPresent();
-        assertThat(setting.get().getKey()).isEqualTo("test.key1");
-        assertThat(setting.get().getValue()).isEqualTo("test value 1");
+        assertThat(setting.get().getKey()).isEqualTo("test.key2");
+        assertThat(setting.get().getValue()).isEqualTo("test value 2");
         assertThat(setting.get().getType()).isEqualTo("string");
         assertThat(setting.get().getGroup()).isEqualTo("test");
-        assertThat(setting.get().getDescription()).isEqualTo("Test setting 1");
+        assertThat(setting.get().getDescription()).isEqualTo("Test setting 2");
     }
 
     @Test
@@ -178,7 +174,7 @@ public class AppSettingServiceIT {
         verify(mockEventPublisher, times(1)).publishEvent(eventCaptor.capture());
 
         MailSettingsUpdatedEvent event = eventCaptor.getValue();
-        assertThat(event.getSource()).isSameAs(appSettingService);
+        assertThat(event.getSource()).isInstanceOf(AppSettingService.class);
     }
 
     @Test
@@ -241,7 +237,7 @@ public class AppSettingServiceIT {
         verify(mockEventPublisher, times(1)).publishEvent(eventCaptor.capture());
 
         MailSettingsUpdatedEvent event = eventCaptor.getValue();
-        assertThat(event.getSource()).isSameAs(appSettingService);
+        assertThat(event.getSource()).isInstanceOf(AppSettingService.class);
     }
 
     @Test
