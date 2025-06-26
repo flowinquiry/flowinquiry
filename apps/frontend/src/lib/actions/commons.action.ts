@@ -194,7 +194,7 @@ export const doAdvanceSearch = async <R>(
   if (!queryValidation.success) {
     throw new HttpError(
       HttpError.BAD_REQUEST,
-      `Invalid query ${JSON.stringify(query)}. Root cause is ${JSON.stringify(queryValidation.error.errors)}`,
+      `Invalid query ${JSON.stringify(query)}. Root cause is ${JSON.stringify(queryValidation.error.issues)}`,
     );
   }
 
@@ -203,7 +203,7 @@ export const doAdvanceSearch = async <R>(
   if (!paginationValidation.success) {
     throw new HttpError(
       HttpError.BAD_REQUEST,
-      `Invalid pagination ${JSON.stringify(paginationValidation.error.errors)}`,
+      `Invalid pagination ${JSON.stringify(paginationValidation.error.issues)}`,
     );
   }
 

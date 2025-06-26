@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
+import * as z from "zod/v4";
 
 import { Heading } from "@/components/heading";
 import { Button } from "@/components/ui/button";
@@ -191,7 +191,7 @@ export function MailSettings() {
     } catch (error) {
       if (error instanceof z.ZodError) {
         // Set error if validation fails
-        const fieldError = error.errors.find((e) => e.path[0] === fieldName);
+        const fieldError = error.issues.find((e) => e.path[0] === fieldName);
         if (fieldError) {
           form.setError(fieldName as any, {
             type: "manual",

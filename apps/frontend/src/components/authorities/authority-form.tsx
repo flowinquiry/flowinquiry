@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
+import * as z from "zod/v4";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { Button } from "@/components/ui/button";
@@ -44,12 +44,10 @@ import {
 } from "@/types/authorities";
 import { PermissionLevel } from "@/types/resources";
 
-const formSchema = z.object({
+export const formSchema = z.object({
   authority: AuthorityDTOSchema,
   permissions: z.array(AuthorityResourcePermissionDTOSchema),
 });
-
-type FormData = z.infer<typeof formSchema>;
 
 const permissionOptions: PermissionLevel[] = [
   "NONE",
@@ -71,7 +69,9 @@ const AuthorityForm = ({
   const { setError } = useError();
   const t = useAppClientTranslations();
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  type FormInput = z.infer<typeof formSchema>;
+
+  const form = useForm<FormInput>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       authority: {
@@ -128,13 +128,22 @@ const AuthorityForm = ({
     fetchAuthorityAndPermissions();
   }, [authorityId, reset]);
 
-  async function onSubmit(formData: FormData) {
-    await createAuthority(formData.authority, setError);
-    await batchSavePermissions(formData.permissions, setError);
+  const onSubmit = async (formData: FormInput) => {
+    const transformed = {
+      ...formData,
+      authority: {
+        ...formData.authority,
+        name:
+          formData.authority.name?.trim() || formData.authority.descriptiveName,
+      },
+    };
+
+    await createAuthority(transformed.authority, setError);
+    await batchSavePermissions(transformed.permissions, setError);
     router.push(
-      `/portal/settings/authorities/${obfuscate(formData.authority.name)}`,
+      `/portal/settings/authorities/${obfuscate(transformed.authority.name)}`,
     );
-  }
+  };
 
   const isSystemRole = authority?.systemRole;
 

@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useSession } from "next-auth/react";
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
+import * as z from "zod/v4";
 
 import RichTextEditor from "@/components/shared/rich-text-editor";
 import TicketChannelSelectField from "@/components/teams/team-ticket-channel-select";

@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/v4";
 
 export type WorkflowVisibility = "PUBLIC" | "PRIVATE" | "TEAM";
 
@@ -14,7 +14,7 @@ export const WorkflowDTOSchema = z.object({
   level2EscalationTimeout: z.number().nullish(),
   level3EscalationTimeout: z.number().nullish(),
   tags: z.string().nullish(),
-  useForProject: z.oboolean(),
+  useForProject: z.boolean().optional(),
 });
 
 export type WorkflowDTO = z.infer<typeof WorkflowDTOSchema>;
@@ -35,13 +35,13 @@ export const WorkflowTransitionSchema = z.object({
   sourceStateId: z.number().nullish(),
   targetStateId: z.number().nullish(),
   eventName: z.string().min(1),
-  slaDuration: z.coerce.number().nullish(),
+  slaDuration: z.number().nullable().optional(),
   escalateOnViolation: z.boolean(),
 });
 
 export type WorkflowTransitionDTO = z.infer<typeof WorkflowTransitionSchema>;
 
-export const WorkflowDetailSchema = WorkflowDTOSchema.merge(
+export const WorkflowDetailSchema = WorkflowDTOSchema.and(
   z.object({
     states: z
       .array(WorkflowStateDTOSchema)
@@ -49,7 +49,7 @@ export const WorkflowDetailSchema = WorkflowDTOSchema.merge(
         (states) => states.filter((state) => state.isInitial).length <= 1,
         {
           message: "Only one state can be marked as initial.",
-          path: ["states"], // Indicate the error relates to the `states` array
+          path: ["states"],
         },
       ),
     transitions: z.array(WorkflowTransitionSchema),

@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
+import * as z from "zod/v4";
 
 import {
   Dialog,
@@ -60,14 +60,17 @@ const AddUserToAuthorityDialog: React.FC<AddUserToAuthorityDialogProps> = ({
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
     if (data && data.users) {
       const userIds = data.users.map((user) => Number(user.value));
-      await addUsersToAuthority(authorityEntity.name, userIds);
+      await addUsersToAuthority(authorityEntity.name!, userIds);
       setOpen(false);
       onSaveSuccess();
     }
   };
 
   const searchUsers = async (userTerm: string) => {
-    const users = await findUsersNotInAuthority(userTerm, authorityEntity.name);
+    const users = await findUsersNotInAuthority(
+      userTerm,
+      authorityEntity.name!,
+    );
     return Promise.all(
       users.map((user) => ({
         value: `${user.id}`,

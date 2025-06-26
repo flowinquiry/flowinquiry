@@ -5,7 +5,7 @@ import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import { InfoIcon } from "lucide-react";
 import React, { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
+import * as z from "zod/v4";
 
 import RichTextEditor from "@/components/shared/rich-text-editor";
 import {

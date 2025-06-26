@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import * as z from "zod/v4";
 
 import { Heading } from "@/components/heading";
 import { CountrySelectField } from "@/components/shared/countries-select";

@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
+import * as z from "zod/v4";
 
 import { Heading } from "@/components/heading";
 import { ImageCropper } from "@/components/image-cropper";

@@ -5,7 +5,7 @@ import { Save } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
+import * as z from "zod/v4";
 
 import { Button } from "@/components/ui/button";
 import { ExtInputField, ExtTextAreaField } from "@/components/ui/ext-form";
