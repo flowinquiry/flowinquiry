@@ -26,19 +26,8 @@ import { EstimationUnitSchema } from "@/types/projects";
 
 interface ProjectSettingsProps {
   project: any;
-  iterations: any[];
-  epics: any[];
-  loadingIterations: boolean;
-  loadingEpics: boolean;
   permissionLevel: any;
   teamRole: string;
-  handleAddNewIteration: () => void;
-  handleEditIteration: (iterationId: number) => void;
-  handleAddNewEpic: () => void;
-  handleEditEpic: (epicId: number) => void;
-  setIsProjectEditDialogOpen: (isOpen: boolean) => void;
-  getEpicColor: (epicId: number) => string;
-  getIterationStatus: (iteration: any) => string;
   t: any;
 }
 
@@ -54,19 +43,8 @@ type ProjectSettingFormValues = z.infer<typeof projectSettingSchema>;
 
 export default function ProjectSettings({
   project,
-  iterations,
-  epics,
-  loadingIterations,
-  loadingEpics,
   permissionLevel,
   teamRole,
-  handleAddNewIteration,
-  handleEditIteration,
-  handleAddNewEpic,
-  handleEditEpic,
-  setIsProjectEditDialogOpen,
-  getEpicColor,
-  getIterationStatus,
   t,
 }: ProjectSettingsProps): React.ReactElement {
   // Initialize form with values from project settings or defaults
@@ -88,14 +66,6 @@ export default function ProjectSettings({
       <div className="p-6 border rounded-lg bg-card">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Project Settings</h2>
-          {(permissionLevel === "WRITE" || teamRole === "manager") && (
-            <button
-              onClick={() => setIsProjectEditDialogOpen(true)}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
-            >
-              {t.teams.projects.view("edit_project")}
-            </button>
-          )}
         </div>
         <Form {...form}>
           <form className="space-y-6">
@@ -205,107 +175,6 @@ export default function ProjectSettings({
             </div>
           </form>
         </Form>
-      </div>
-
-      {/* Iterations Section */}
-      <div className="p-6 border rounded-lg bg-card">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Iterations</h2>
-          {(permissionLevel === "WRITE" || teamRole === "manager") && (
-            <button
-              onClick={handleAddNewIteration}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
-            >
-              {t.teams.projects.view("add_new_iteration")}
-            </button>
-          )}
-        </div>
-
-        {loadingIterations ? (
-          <p>{t.common.misc("loading_data")}</p>
-        ) : iterations.length > 0 ? (
-          <div className="space-y-4">
-            {iterations.map((iteration) => (
-              <div
-                key={iteration.id}
-                className="flex justify-between items-center p-4 border rounded-md"
-              >
-                <div>
-                  <h3 className="font-medium">{iteration.name}</h3>
-                  <div className="text-sm text-muted-foreground">
-                    {getIterationStatus(iteration)} |
-                    {iteration.startDate
-                      ? new Date(iteration.startDate).toLocaleDateString()
-                      : "Not scheduled"}
-                    {iteration.startDate || iteration.endDate ? " - " : ""}
-                    {iteration.endDate
-                      ? new Date(iteration.endDate).toLocaleDateString()
-                      : iteration.startDate
-                        ? "Ongoing"
-                        : ""}
-                  </div>
-                </div>
-                {(permissionLevel === "WRITE" || teamRole === "manager") && (
-                  <button
-                    onClick={() => handleEditIteration(iteration.id!)}
-                    className="px-3 py-1 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90 transition-colors"
-                  >
-                    {t.teams.projects.view("edit_iteration")}
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p>{t.teams.projects.view("no_iterations_found")}</p>
-        )}
-      </div>
-
-      {/* Epics Section */}
-      <div className="p-6 border rounded-lg bg-card">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Epics</h2>
-          {(permissionLevel === "WRITE" || teamRole === "manager") && (
-            <button
-              onClick={handleAddNewEpic}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
-            >
-              {t.teams.projects.view("add_new_epic")}
-            </button>
-          )}
-        </div>
-
-        {loadingEpics ? (
-          <p>{t.common.misc("loading_data")}</p>
-        ) : epics.length > 0 ? (
-          <div className="space-y-4">
-            {epics.map((epic) => (
-              <div
-                key={epic.id}
-                className="flex justify-between items-center p-4 border rounded-md"
-                style={{ borderLeft: `4px solid ${getEpicColor(epic.id!)}` }}
-              >
-                <div>
-                  <h3 className="font-medium">{epic.name}</h3>
-                  <div className="text-sm text-muted-foreground">
-                    {epic.description}
-                  </div>
-                </div>
-                {(permissionLevel === "WRITE" || teamRole === "manager") && (
-                  <button
-                    onClick={() => handleEditEpic(epic.id!)}
-                    className="px-3 py-1 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90 transition-colors"
-                    style={{ borderColor: getEpicColor(epic.id!) }}
-                  >
-                    {t.teams.projects.view("edit_epic")}
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p>{t.teams.projects.view("no_epics_found")}</p>
-        )}
       </div>
     </div>
   );

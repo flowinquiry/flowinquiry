@@ -1044,19 +1044,8 @@ export default function ProjectView({
               <TabsContent value="settings">
                 <ProjectSettings
                   project={project!}
-                  iterations={iterations}
-                  epics={epics}
-                  loadingIterations={loadingIterations}
-                  loadingEpics={loadingEpics}
                   permissionLevel={permissionLevel}
                   teamRole={teamRole}
-                  handleAddNewIteration={handleAddNewIteration}
-                  handleEditIteration={handleEditIteration}
-                  handleAddNewEpic={handleAddNewEpic}
-                  handleEditEpic={handleEditEpic}
-                  setIsProjectEditDialogOpen={setIsProjectEditDialogOpen}
-                  getEpicColor={getEpicColor}
-                  getIterationStatus={getIterationStatus}
                   t={t}
                 />
               </TabsContent>
