@@ -84,12 +84,12 @@ export const findProjectSettingsById = (
 };
 
 export const updateProjectSettings = (
-  id: number,
+  projectId: number,
   settings: ProjectSettingDTO,
   setError?: (error: HttpError | string | null) => void,
 ) => {
   return put<ProjectSettingDTO, ProjectSettingDTO>(
-    `/api/project-settings/${id}`,
+    `/api/project-settings/project/${projectId}`,
     settings,
     setError,
   );

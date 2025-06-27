@@ -36,9 +36,17 @@ public class ProjectSettingService {
     }
 
     @Transactional
-    public ProjectSettingDTO update(Long id, ProjectSettingDTO dto) {
+    public ProjectSettingDTO updateByProjectId(Long projectId, ProjectSettingDTO dto) {
+        // Ensure the project exists
+        if (!projectRepository.existsById(projectId)) {
+            throw new ResourceNotFoundException("Project not found");
+        }
+
+        // Set the project ID in the DTO
+        dto.setProjectId(projectId);
+
         return projectSettingRepository
-                .findById(id)
+                .findByProjectId(projectId)
                 .map(
                         existing -> {
                             projectSettingMapper.updateEntity(dto, existing);

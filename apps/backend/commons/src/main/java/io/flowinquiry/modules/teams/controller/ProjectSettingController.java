@@ -95,13 +95,13 @@ public class ProjectSettingController {
                         description = "Project settings not found",
                         content = @Content)
             })
-    @PutMapping("/{id}")
+    @PutMapping("/project/{projectId}")
     public ProjectSettingDTO update(
-            @Parameter(description = "ID of the project settings to update", required = true)
+            @Parameter(description = "ID of the project to update settings for", required = true)
                     @PathVariable
-                    Long id,
+                    Long projectId,
             @Parameter(description = "Updated project settings data", required = true) @RequestBody
                     ProjectSettingDTO dto) {
-        return projectSettingService.update(id, dto);
+        return projectSettingService.updateByProjectId(projectId, dto);
     }
 }

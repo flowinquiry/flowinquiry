@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useEffect,useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
@@ -29,10 +29,7 @@ import {
   updateProjectSettings,
 } from "@/lib/actions/project.action";
 import { useError } from "@/providers/error-provider";
-import {
-  ProjectSettingDTO,
-  ProjectSettingDTOSchema,
-} from "@/types/projects";
+import { ProjectSettingDTO, ProjectSettingDTOSchema } from "@/types/projects";
 
 interface ProjectSettingsProps {
   projectId: number;
@@ -98,7 +95,7 @@ export default function ProjectSettings({
     try {
       if (projectSettings) {
         const updatedSettings = await updateProjectSettings(
-          projectSettings.id!,
+          projectId,
           {
             ...projectSettings,
             ...data,

@@ -107,4 +107,104 @@ public class ProjectSettingServiceIT {
         assertThat(retrievedSettings.getProjectId()).isEqualTo(projectId);
         assertThat(retrievedSettings.getSprintLengthDays()).isEqualTo(21);
     }
+
+    @Test
+    public void shouldUpdateExistingSettingsSuccessfully() {
+        // First, create initial settings
+        ProjectSettingDTO initialSettings = new ProjectSettingDTO();
+        initialSettings.setProjectId(projectId);
+        initialSettings.setSprintLengthDays(14);
+        initialSettings.setDefaultPriority(3);
+        initialSettings.setEstimationUnit(EstimationUnit.STORY_POINTS);
+        initialSettings.setEnableEstimation(true);
+
+        ProjectSettingDTO savedInitialSettings = projectSettingService.save(initialSettings);
+
+        // Verify the settings were saved correctly
+        ProjectSettingDTO retrievedBeforeUpdate = projectSettingService.getByProjectId(projectId);
+
+        // Now create updated settings
+        ProjectSettingDTO updatedSettings = new ProjectSettingDTO();
+        // Set the ID from the saved settings to ensure we're updating the same record
+        updatedSettings.setId(savedInitialSettings.getId());
+        updatedSettings.setProjectId(projectId);
+        updatedSettings.setSprintLengthDays(28);
+        updatedSettings.setDefaultPriority(1);
+        updatedSettings.setEstimationUnit(EstimationUnit.DAYS);
+        updatedSettings.setEnableEstimation(false);
+
+        Map<String, Object> integrationSettings = new HashMap<>();
+        integrationSettings.put("gitlabUrl", "https://gitlab.example.com");
+        integrationSettings.put("gitlabToken", "xyz789");
+        integrationSettings.put("enabled", true);
+        updatedSettings.setIntegrationSettings(integrationSettings);
+
+        // Update settings using updateByProjectId
+        ProjectSettingDTO result =
+                projectSettingService.updateByProjectId(projectId, updatedSettings);
+
+        // Verify updated settings
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(savedInitialSettings.getId());
+        assertThat(result.getProjectId()).isEqualTo(projectId);
+        assertThat(result.getSprintLengthDays()).isEqualTo(28);
+        assertThat(result.getDefaultPriority()).isEqualTo(1);
+        assertThat(result.getEstimationUnit()).isEqualTo(EstimationUnit.DAYS);
+        assertThat(result.isEnableEstimation()).isFalse();
+        assertThat(result.getIntegrationSettings()).isNotNull();
+
+        // Verify settings can be retrieved with updates
+        ProjectSettingDTO retrievedSettings = projectSettingService.getByProjectId(projectId);
+        assertThat(retrievedSettings).isNotNull();
+        assertThat(retrievedSettings.getId()).isEqualTo(savedInitialSettings.getId());
+        assertThat(retrievedSettings.getSprintLengthDays()).isEqualTo(28);
+        assertThat(retrievedSettings.getEstimationUnit()).isEqualTo(EstimationUnit.DAYS);
+    }
+
+    @Test
+    public void shouldCreateNewSettingsWhenUpdatingNonExistentSettings() {
+        // Make sure no settings exist yet (using a clean project)
+        ProjectSettingDTO defaultSettings = projectSettingService.getByProjectId(projectId);
+        assertThat(defaultSettings.getId()).isNull(); // Default settings have no ID
+
+        // Create settings to update with
+        ProjectSettingDTO newSettings = new ProjectSettingDTO();
+        newSettings.setSprintLengthDays(7);
+        newSettings.setDefaultPriority(4);
+        newSettings.setEstimationUnit(EstimationUnit.DAYS);
+        newSettings.setEnableEstimation(true);
+
+        // Update (which should create new settings)
+        ProjectSettingDTO result = projectSettingService.updateByProjectId(projectId, newSettings);
+
+        // Verify new settings were created
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isNotNull();
+        assertThat(result.getProjectId()).isEqualTo(projectId);
+        assertThat(result.getSprintLengthDays()).isEqualTo(7);
+        assertThat(result.getDefaultPriority()).isEqualTo(4);
+        assertThat(result.getEstimationUnit()).isEqualTo(EstimationUnit.DAYS);
+        assertThat(result.isEnableEstimation()).isTrue();
+
+        // Verify settings can be retrieved
+        ProjectSettingDTO retrievedSettings = projectSettingService.getByProjectId(projectId);
+        assertThat(retrievedSettings).isNotNull();
+        assertThat(retrievedSettings.getId()).isEqualTo(result.getId());
+        assertThat(retrievedSettings.getSprintLengthDays()).isEqualTo(7);
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenUpdatingSettingsForNonExistentProject() {
+        // Try to update settings for a non-existent project
+        Long nonExistentProjectId = 999999L;
+        ProjectSettingDTO settingsDTO = new ProjectSettingDTO();
+        settingsDTO.setSprintLengthDays(10);
+
+        assertThatThrownBy(
+                        () ->
+                                projectSettingService.updateByProjectId(
+                                        nonExistentProjectId, settingsDTO))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("Project not found");
+    }
 }
