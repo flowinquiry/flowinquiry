@@ -1,5 +1,19 @@
+/**
+ * This file provides a custom hook for accessing translations throughout the application.
+ * It wraps the next-intl useTranslations hook and organizes translations into a structured object
+ * that mirrors the application's component hierarchy and feature organization.
+ */
 import { useTranslations } from "next-intl";
 
+/**
+ * A custom hook that provides access to all application translations.
+ *
+ * This hook organizes translations into a nested structure based on application features
+ * (teams, users, common elements, etc.) making it easier to access specific translations
+ * in components without having to remember the full translation key paths.
+ *
+ * @returns An object containing all application translations organized by feature area
+ */
 export function useAppClientTranslations() {
   return {
     teams: {

@@ -28,7 +28,6 @@ interface ProjectSettingsProps {
   project: any;
   permissionLevel: any;
   teamRole: string;
-  t: any;
 }
 
 // Define the form schema for project settings
@@ -45,7 +44,6 @@ export default function ProjectSettings({
   project,
   permissionLevel,
   teamRole,
-  t,
 }: ProjectSettingsProps): React.ReactElement {
   // Initialize form with values from project settings or defaults
   const form = useForm<ProjectSettingFormValues>({

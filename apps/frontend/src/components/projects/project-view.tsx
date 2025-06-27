@@ -1046,7 +1046,6 @@ export default function ProjectView({
                   project={project!}
                   permissionLevel={permissionLevel}
                   teamRole={teamRole}
-                  t={t}
                 />
               </TabsContent>
             </Tabs>
