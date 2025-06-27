@@ -41,6 +41,7 @@ export function useAppClientTranslations() {
         view: useTranslations("teams.projects.view"),
         iteration: useTranslations("teams.projects.iteration"),
         epic: useTranslations("teams.projects.epic"),
+        settings: useTranslations("teams.projects.settings"),
       },
     },
     users: {

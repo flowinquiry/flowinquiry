@@ -19,7 +19,7 @@ export const TicketConversationHealthDTOSchema = z.object({
   totalMessages: z.number().optional(),
   totalQuestions: z.number().optional(),
   resolvedQuestions: z.number().optional(),
-  healthLevel: z.nativeEnum(TicketHealthLevel).optional(),
+  healthLevel: z.enum(TicketHealthLevel).optional(),
 });
 
 export const TicketDTOSchema = z.object({

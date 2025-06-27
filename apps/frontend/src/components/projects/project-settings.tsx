@@ -22,12 +22,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { useAppClientTranslations } from "@/hooks/use-translations";
 import { EstimationUnitSchema } from "@/types/projects";
 
 interface ProjectSettingsProps {
   project: any;
-  permissionLevel: any;
-  teamRole: string;
 }
 
 // Define the form schema for project settings
@@ -42,9 +41,9 @@ type ProjectSettingFormValues = z.infer<typeof projectSettingSchema>;
 
 export default function ProjectSettings({
   project,
-  permissionLevel,
-  teamRole,
 }: ProjectSettingsProps): React.ReactElement {
+  const t = useAppClientTranslations();
+
   // Initialize form with values from project settings or defaults
   const form = useForm<ProjectSettingFormValues>({
     defaultValues: {
@@ -63,7 +62,9 @@ export default function ProjectSettings({
       {/* Project Settings Section */}
       <div className="p-6 border rounded-lg bg-card">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Project Settings</h2>
+          <h2 className="text-xl font-semibold">
+            {t.teams.projects.settings("title")}
+          </h2>
         </div>
         <Form {...form}>
           <form className="space-y-6">
@@ -74,7 +75,9 @@ export default function ProjectSettings({
                 name="sprintLengthDays"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Sprint Length (Days)</FormLabel>
+                    <FormLabel>
+                      {t.teams.projects.settings("sprint_length")}
+                    </FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -85,7 +88,7 @@ export default function ProjectSettings({
                       />
                     </FormControl>
                     <FormDescription>
-                      The default length of sprints in days
+                      {t.teams.projects.settings("sprint_length_description")}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -98,7 +101,9 @@ export default function ProjectSettings({
                 name="defaultPriority"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Default Priority</FormLabel>
+                    <FormLabel>
+                      {t.teams.projects.settings("default_priority")}
+                    </FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -109,7 +114,9 @@ export default function ProjectSettings({
                       />
                     </FormControl>
                     <FormDescription>
-                      The default priority for new tickets
+                      {t.teams.projects.settings(
+                        "default_priority_description",
+                      )}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -122,7 +129,9 @@ export default function ProjectSettings({
                 name="estimationUnit"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Estimation Unit</FormLabel>
+                    <FormLabel>
+                      {t.teams.projects.settings("estimation_unit")}
+                    </FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
@@ -140,7 +149,7 @@ export default function ProjectSettings({
                       </SelectContent>
                     </Select>
                     <FormDescription>
-                      The unit used for estimating work
+                      {t.teams.projects.settings("estimation_unit_description")}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

@@ -8,7 +8,7 @@ export const ProjectSettingDTOSchema = z.object({
   id: z.number().int().positive().optional(),
   projectId: z.number().int().positive(),
   sprintLengthDays: z.number().int().positive(),
-  defaultPriority: z.number().int().nonnegative(),
+  defaultPriority: z.enum(["Critical", "High", "Medium", "Low", "Trivial"]),
   estimationUnit: EstimationUnitSchema,
   enableEstimation: z.boolean(),
   integrationSettings: z.record(z.string(), z.any()).optional().nullable(),
@@ -17,6 +17,8 @@ export const ProjectSettingDTOSchema = z.object({
   modifiedBy: z.number().int().positive().optional(),
   modifiedAt: z.string().datetime().optional(),
 });
+
+export type ProjectSettingDTO = z.infer<typeof ProjectSettingDTOSchema>;
 
 export const ProjectSchema = z.object({
   id: z.number().int().positive().optional(),

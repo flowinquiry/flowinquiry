@@ -7,7 +7,14 @@ import {
   DragOverlay,
   DragStartEvent,
 } from "@dnd-kit/core";
-import { ChevronDown, ChevronUp, Edit, Plus, Settings } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  Edit,
+  LayoutDashboard,
+  Plus,
+  Settings,
+} from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
@@ -689,11 +696,12 @@ export default function ProjectView({
             >
               <TabsList className="mb-2">
                 <TabsTrigger value="kanban" data-testid="kanban-view-tab">
-                  Kanban Board
+                  <LayoutDashboard className="mr-2 h-4 w-4" />
+                  {t.teams.projects.list("kanban")}
                 </TabsTrigger>
                 <TabsTrigger value="settings" data-testid="settings-view-tab">
                   <Settings className="mr-2 h-4 w-4" />
-                  Project Settings
+                  {t.teams.projects.list("settings")}
                 </TabsTrigger>
               </TabsList>
 
@@ -1042,11 +1050,7 @@ export default function ProjectView({
 
               {/* Project Settings View Content */}
               <TabsContent value="settings">
-                <ProjectSettings
-                  project={project!}
-                  permissionLevel={permissionLevel}
-                  teamRole={teamRole}
-                />
+                <ProjectSettings project={project!} />
               </TabsContent>
             </Tabs>
           </div>

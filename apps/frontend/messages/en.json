@@ -338,7 +338,9 @@
         "close_project": "Close project",
         "reopen_project": "Reopen project",
         "delete_project_dialog_title": "Confirm project deletion",
-        "delete_project_dialog_confirmation": "Are you sure you want to delete the project \"{projectName}\"? This action cannot be undone."
+        "delete_project_dialog_confirmation": "Are you sure you want to delete the project \"{projectName}\"? This action cannot be undone.",
+        "kanban": "Kanban Board",
+        "settings": "Settings"
       },
       "form": {
         "name": "Name",
@@ -407,6 +409,15 @@
         "new_project_description": "Every great project starts with a first step. Let's begin!",
         "edit_project": "Edit project",
         "edit_project_description": "Modify the project details"
+      },
+      "settings": {
+        "title": "Project Settings",
+        "sprint_length": "Sprint Length (Days)",
+        "sprint_length_description": "The default length of sprints in days",
+        "default_priority": "Default Priority",
+        "default_priority_description": "The default priority for new tickets",
+        "estimation_unit": "Estimation Unit",
+        "estimation_unit_description": "The unit used for estimating work"
       }
     }
   },

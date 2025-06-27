@@ -347,7 +347,9 @@
         "close_project": "Clôturer le projet",
         "reopen_project": "Rouvrir le projet",
         "delete_project_dialog_title": "Confirmer la suppression du projet",
-        "delete_project_dialog_confirmation": "Êtes-vous sûr de vouloir supprimer le projet \"{projectName}\" ? Cette action est irréversible."
+        "delete_project_dialog_confirmation": "Êtes-vous sûr de vouloir supprimer le projet \"{projectName}\" ? Cette action est irréversible.",
+        "kanban": "Tableau Kanban",
+        "settings": "Paramètres"
       },
       "view": {
         "add_new_task_to_state": "Ajouter une nouvelle tâche à {stateName}",
