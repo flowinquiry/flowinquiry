@@ -38,7 +38,8 @@ public class ProjectSetting extends AbstractAuditingEntity<Long> {
     private Integer sprintLengthDays;
 
     @Column(name = "default_priority", nullable = false)
-    private Integer defaultPriority;
+    @Convert(converter = TicketPriorityConverter.class)
+    private TicketPriority defaultPriority;
 
     @Column(name = "estimation_unit")
     @Enumerated(EnumType.STRING)

@@ -2,6 +2,7 @@ package io.flowinquiry.modules.teams.service.dto;
 
 import io.flowinquiry.modules.teams.domain.TShirtSize;
 import io.flowinquiry.modules.teams.domain.TicketChannel;
+import io.flowinquiry.modules.teams.domain.TicketPriority;
 import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -43,7 +44,7 @@ public class TicketDTO {
     private String requestTitle;
     private String requestDescription;
 
-    @NotNull(message = "Priority cannot be null") private String priority;
+    @NotNull(message = "Priority cannot be null") private TicketPriority priority;
 
     private LocalDate estimatedCompletionDate;
     private LocalDate actualCompletionDate;

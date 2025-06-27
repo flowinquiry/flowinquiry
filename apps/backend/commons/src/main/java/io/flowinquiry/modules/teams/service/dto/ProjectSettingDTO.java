@@ -1,6 +1,7 @@
 package io.flowinquiry.modules.teams.service.dto;
 
 import io.flowinquiry.modules.teams.domain.EstimationUnit;
+import io.flowinquiry.modules.teams.domain.TicketPriority;
 import java.time.Instant;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -20,7 +21,7 @@ public class ProjectSettingDTO {
 
     private Integer sprintLengthDays;
 
-    private Integer defaultPriority;
+    private TicketPriority defaultPriority;
 
     private EstimationUnit estimationUnit;
 
