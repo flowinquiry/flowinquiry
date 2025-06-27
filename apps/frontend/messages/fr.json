@@ -407,6 +407,19 @@
         "new_project_description": "Chaque grand projet commence par un premier pas. Commençons !",
         "edit_project": "Modifier le projet",
         "edit_project_description": "Modifiez les détails du projet"
+      },
+      "settings": {
+        "title": "Paramètres du projet",
+        "sprint_length": "Durée du sprint (jours)",
+        "sprint_length_description": "La durée par défaut des sprints en jours",
+        "default_priority": "Priorité par défaut",
+        "default_priority_description": "La priorité par défaut pour les nouveaux tickets",
+        "estimation_unit": "Unité d’estimation",
+        "estimation_unit_description": "L’unité utilisée pour estimer le travail",
+        "story_points": "Points d’histoire",
+        "days": "Jours",
+        "enable_estimation": "Activer l’estimation",
+        "enable_estimation_description": "Autoriser l’estimation des tickets dans ce projet"
       }
     }
   },

@@ -1050,7 +1050,7 @@ export default function ProjectView({
 
               {/* Project Settings View Content */}
               <TabsContent value="settings">
-                <ProjectSettings project={project!} />
+                <ProjectSettings projectId={project.id!} />
               </TabsContent>
             </Tabs>
           </div>

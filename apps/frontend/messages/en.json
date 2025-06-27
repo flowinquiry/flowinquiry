@@ -417,7 +417,11 @@
         "default_priority": "Default Priority",
         "default_priority_description": "The default priority for new tickets",
         "estimation_unit": "Estimation Unit",
-        "estimation_unit_description": "The unit used for estimating work"
+        "estimation_unit_description": "The unit used for estimating work",
+        "story_points": "Story Points",
+        "days": "Days",
+        "enable_estimation": "Enable Estimation",
+        "enable_estimation_description": "Allow estimation of tickets in this project"
       }
     }
   },
