@@ -145,7 +145,7 @@ public class TicketMapperTest {
                 () ->
                         assertEquals(
                                 ticket.getRequestDescription(), ticketDTO.getRequestDescription()),
-                () -> assertEquals(ticket.getPriority().name(), ticketDTO.getPriority()),
+                () -> assertEquals(ticket.getPriority(), ticketDTO.getPriority()),
                 () ->
                         assertEquals(
                                 ticket.getEstimatedCompletionDate(),

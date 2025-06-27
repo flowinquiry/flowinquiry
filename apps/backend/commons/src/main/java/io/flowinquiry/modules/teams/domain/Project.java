@@ -47,4 +47,7 @@ public class Project extends AbstractAuditingEntity<Long> {
 
     @Column(name = "end_date")
     private Instant endDate;
+
+    @OneToOne(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private ProjectSetting projectSetting;
 }

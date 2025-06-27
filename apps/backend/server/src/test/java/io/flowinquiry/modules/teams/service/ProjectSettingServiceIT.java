@@ -7,6 +7,7 @@ import io.flowinquiry.IntegrationTest;
 import io.flowinquiry.exceptions.ResourceNotFoundException;
 import io.flowinquiry.modules.teams.domain.EstimationUnit;
 import io.flowinquiry.modules.teams.domain.ProjectStatus;
+import io.flowinquiry.modules.teams.domain.TicketPriority;
 import io.flowinquiry.modules.teams.repository.ProjectRepository;
 import io.flowinquiry.modules.teams.service.dto.ProjectDTO;
 import io.flowinquiry.modules.teams.service.dto.ProjectSettingDTO;
@@ -76,7 +77,7 @@ public class ProjectSettingServiceIT {
         ProjectSettingDTO settingsDTO = new ProjectSettingDTO();
         settingsDTO.setProjectId(projectId);
         settingsDTO.setSprintLengthDays(21);
-        settingsDTO.setDefaultPriority(2);
+        settingsDTO.setDefaultPriority(TicketPriority.Medium);
         settingsDTO.setEstimationUnit(EstimationUnit.DAYS);
         settingsDTO.setEnableEstimation(false);
 
@@ -114,7 +115,7 @@ public class ProjectSettingServiceIT {
         ProjectSettingDTO initialSettings = new ProjectSettingDTO();
         initialSettings.setProjectId(projectId);
         initialSettings.setSprintLengthDays(14);
-        initialSettings.setDefaultPriority(3);
+        initialSettings.setDefaultPriority(TicketPriority.Low);
         initialSettings.setEstimationUnit(EstimationUnit.STORY_POINTS);
         initialSettings.setEnableEstimation(true);
 
@@ -129,7 +130,7 @@ public class ProjectSettingServiceIT {
         updatedSettings.setId(savedInitialSettings.getId());
         updatedSettings.setProjectId(projectId);
         updatedSettings.setSprintLengthDays(28);
-        updatedSettings.setDefaultPriority(1);
+        updatedSettings.setDefaultPriority(TicketPriority.High);
         updatedSettings.setEstimationUnit(EstimationUnit.DAYS);
         updatedSettings.setEnableEstimation(false);
 
@@ -170,7 +171,7 @@ public class ProjectSettingServiceIT {
         // Create settings to update with
         ProjectSettingDTO newSettings = new ProjectSettingDTO();
         newSettings.setSprintLengthDays(7);
-        newSettings.setDefaultPriority(4);
+        newSettings.setDefaultPriority(TicketPriority.Trivial);
         newSettings.setEstimationUnit(EstimationUnit.DAYS);
         newSettings.setEnableEstimation(true);
 

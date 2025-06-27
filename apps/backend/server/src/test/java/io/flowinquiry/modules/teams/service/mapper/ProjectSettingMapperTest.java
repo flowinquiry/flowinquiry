@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import io.flowinquiry.modules.teams.domain.EstimationUnit;
 import io.flowinquiry.modules.teams.domain.Project;
 import io.flowinquiry.modules.teams.domain.ProjectSetting;
+import io.flowinquiry.modules.teams.domain.TicketPriority;
 import io.flowinquiry.modules.teams.service.dto.ProjectSettingDTO;
 import java.time.Instant;
 import java.util.HashMap;
@@ -40,7 +41,7 @@ public class ProjectSettingMapperTest {
                         .id(2L)
                         .project(project)
                         .sprintLengthDays(14)
-                        .defaultPriority(3)
+                        .defaultPriority(TicketPriority.Low)
                         .estimationUnit(EstimationUnit.STORY_POINTS)
                         .enableEstimation(true)
                         .integrationSettings(integrationSettings)
@@ -85,7 +86,7 @@ public class ProjectSettingMapperTest {
                         .id(2L)
                         .projectId(1L)
                         .sprintLengthDays(14)
-                        .defaultPriority(3)
+                        .defaultPriority(TicketPriority.Low)
                         .estimationUnit(EstimationUnit.STORY_POINTS)
                         .enableEstimation(true)
                         .integrationSettings(integrationSettings)
@@ -131,7 +132,7 @@ public class ProjectSettingMapperTest {
                         .id(2L)
                         .project(project)
                         .sprintLengthDays(7)
-                        .defaultPriority(1)
+                        .defaultPriority(TicketPriority.High)
                         .estimationUnit(EstimationUnit.DAYS)
                         .enableEstimation(false)
                         .integrationSettings(originalSettings)
@@ -152,7 +153,7 @@ public class ProjectSettingMapperTest {
                         .id(2L)
                         .projectId(1L)
                         .sprintLengthDays(14)
-                        .defaultPriority(3)
+                        .defaultPriority(TicketPriority.Low)
                         .estimationUnit(EstimationUnit.STORY_POINTS)
                         .enableEstimation(true)
                         .integrationSettings(updatedSettings)

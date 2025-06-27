@@ -25,4 +25,5 @@ public class ProjectDTO {
     private Instant createdAt;
     private Long modifiedBy;
     private Instant modifiedAt;
+    private ProjectSettingDTO projectSetting;
 }
