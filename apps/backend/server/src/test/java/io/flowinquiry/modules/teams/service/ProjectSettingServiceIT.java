@@ -55,7 +55,7 @@ public class ProjectSettingServiceIT {
         assertThat(settings).isNotNull();
         assertThat(settings.getProjectId()).isEqualTo(projectId);
         assertThat(settings.getSprintLengthDays()).isEqualTo(14);
-        assertThat(settings.getDefaultPriority()).isEqualTo(3);
+        assertThat(settings.getDefaultPriority()).isEqualTo(TicketPriority.Low);
         assertThat(settings.getEstimationUnit()).isEqualTo(EstimationUnit.STORY_POINTS);
         assertThat(settings.isEnableEstimation()).isTrue();
         assertThat(settings.getIntegrationSettings()).isNull();
@@ -96,7 +96,7 @@ public class ProjectSettingServiceIT {
         assertThat(savedSettings.getId()).isNotNull();
         assertThat(savedSettings.getProjectId()).isEqualTo(projectId);
         assertThat(savedSettings.getSprintLengthDays()).isEqualTo(21);
-        assertThat(savedSettings.getDefaultPriority()).isEqualTo(2);
+        assertThat(savedSettings.getDefaultPriority()).isEqualTo(TicketPriority.Medium);
         assertThat(savedSettings.getEstimationUnit()).isEqualTo(EstimationUnit.DAYS);
         assertThat(savedSettings.isEnableEstimation()).isFalse();
         assertThat(savedSettings.getIntegrationSettings()).isNotNull();
@@ -149,7 +149,7 @@ public class ProjectSettingServiceIT {
         assertThat(result.getId()).isEqualTo(savedInitialSettings.getId());
         assertThat(result.getProjectId()).isEqualTo(projectId);
         assertThat(result.getSprintLengthDays()).isEqualTo(28);
-        assertThat(result.getDefaultPriority()).isEqualTo(1);
+        assertThat(result.getDefaultPriority()).isEqualTo(TicketPriority.High);
         assertThat(result.getEstimationUnit()).isEqualTo(EstimationUnit.DAYS);
         assertThat(result.isEnableEstimation()).isFalse();
         assertThat(result.getIntegrationSettings()).isNotNull();
@@ -183,7 +183,7 @@ public class ProjectSettingServiceIT {
         assertThat(result.getId()).isNotNull();
         assertThat(result.getProjectId()).isEqualTo(projectId);
         assertThat(result.getSprintLengthDays()).isEqualTo(7);
-        assertThat(result.getDefaultPriority()).isEqualTo(4);
+        assertThat(result.getDefaultPriority()).isEqualTo(TicketPriority.Trivial);
         assertThat(result.getEstimationUnit()).isEqualTo(EstimationUnit.DAYS);
         assertThat(result.isEnableEstimation()).isTrue();
 
