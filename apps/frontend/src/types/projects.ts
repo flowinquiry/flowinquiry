@@ -33,6 +33,7 @@ export const ProjectSchema = z.object({
   createdAt: z.string().datetime().optional(),
   modifiedBy: z.number().int().positive().optional(),
   modifiedAt: z.string().datetime().optional(),
+  projectSetting: ProjectSettingDTOSchema.optional(),
 });
 
 export type ProjectDTO = z.infer<typeof ProjectSchema>;
