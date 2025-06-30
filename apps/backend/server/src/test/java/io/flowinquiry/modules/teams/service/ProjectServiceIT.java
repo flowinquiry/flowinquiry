@@ -153,12 +153,12 @@ public class ProjectServiceIT {
                         .description(projectDescription)
                         .shortName(shortName)
                         .status(ProjectStatus.Active)
-                        .teamId(1L) // Using teamId 1 as specified in the requirements
+                        .teamId(1L)
                         .createdBy(1L)
                         .build();
 
         // Save the project
-        ProjectDTO savedProject = projectService.createProject(projectDTO);
+        projectService.createProject(projectDTO);
 
         // Execute the getByShortName method
         ProjectDTO retrievedProject = projectService.getByShortName(shortName);
@@ -173,6 +173,19 @@ public class ProjectServiceIT {
         // Verify other properties
         assertThat(retrievedProject.getName()).isEqualTo(projectName);
         assertThat(retrievedProject.getDescription()).isEqualTo(projectDescription);
+
+        // Verify that the project setting is included in the returned DTO
+        assertThat(retrievedProject.getProjectSetting()).isNotNull();
+        assertThat(retrievedProject.getProjectSetting().getProjectId())
+                .isEqualTo(retrievedProject.getId());
+        assertThat(retrievedProject.getProjectSetting().getSprintLengthDays())
+                .isEqualTo(14); // Default value
+        assertThat(retrievedProject.getProjectSetting().getDefaultPriority().toString())
+                .isEqualTo("Low"); // Default value
+        assertThat(retrievedProject.getProjectSetting().getEstimationUnit().toString())
+                .isEqualTo("STORY_POINTS"); // Default value
+        assertThat(retrievedProject.getProjectSetting().isEnableEstimation())
+                .isTrue(); // Default value
     }
 
     @Test

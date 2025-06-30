@@ -3,11 +3,14 @@ package io.flowinquiry.modules.teams.service;
 import static io.flowinquiry.query.QueryUtils.createSpecification;
 
 import io.flowinquiry.exceptions.ResourceNotFoundException;
+import io.flowinquiry.modules.teams.domain.EstimationUnit;
 import io.flowinquiry.modules.teams.domain.Project;
 import io.flowinquiry.modules.teams.domain.Team;
+import io.flowinquiry.modules.teams.domain.TicketPriority;
 import io.flowinquiry.modules.teams.repository.ProjectRepository;
 import io.flowinquiry.modules.teams.repository.TeamRepository;
 import io.flowinquiry.modules.teams.service.dto.ProjectDTO;
+import io.flowinquiry.modules.teams.service.dto.ProjectSettingDTO;
 import io.flowinquiry.modules.teams.service.event.NewProjectCreatedEvent;
 import io.flowinquiry.modules.teams.service.mapper.ProjectMapper;
 import io.flowinquiry.query.QueryDTO;
@@ -73,7 +76,27 @@ public class ProjectService {
     public ProjectDTO getByShortName(String shortName) {
         return projectRepository
                 .findByShortName(shortName)
-                .map(projectMapper::toDto)
+                .map(
+                        project -> {
+                            ProjectDTO projectDTO = projectMapper.toDto(project);
+                            if (projectDTO.getProjectSetting() == null) {
+                                // Create default project setting
+                                ProjectSettingDTO defaultSetting =
+                                        ProjectSettingDTO.builder()
+                                                .projectId(projectDTO.getId())
+                                                .sprintLengthDays(14) // Default 2 weeks sprint
+                                                .defaultPriority(
+                                                        TicketPriority.Low) // Default low priority
+                                                .estimationUnit(
+                                                        EstimationUnit
+                                                                .STORY_POINTS) // Default story
+                                                // points
+                                                .enableEstimation(true) // Default enable estimation
+                                                .build();
+                                projectDTO.setProjectSetting(defaultSetting);
+                            }
+                            return projectDTO;
+                        })
                 .orElseThrow(
                         () ->
                                 new ResourceNotFoundException(
