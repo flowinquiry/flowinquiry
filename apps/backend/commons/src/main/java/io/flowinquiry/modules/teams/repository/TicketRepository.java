@@ -67,6 +67,7 @@ public interface TicketRepository
             WHERE r.id = :ticketId
         )
         AND tr.id < :ticketId
+        AND tr.isDeleted = false
         AND (:projectId IS NOT NULL AND tr.project.id = :projectId OR :projectId IS NULL AND tr.project IS NULL)
         ORDER BY tr.id DESC
             LIMIT 1
@@ -99,6 +100,7 @@ public interface TicketRepository
             WHERE r.id = :ticketId
         )
         AND tr.id > :ticketId
+        AND tr.isDeleted = false
         AND (:projectId IS NOT NULL AND tr.project.id = :projectId OR :projectId IS NULL AND tr.project IS NULL)
         ORDER BY tr.id ASC
         LIMIT 1

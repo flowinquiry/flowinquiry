@@ -75,15 +75,21 @@ public class TicketWorkStateTransitionEventListener {
                                 () ->
                                         new EntityNotFoundException(
                                                 "Can not find ticket with id " + ticketId));
+        // Handle case when modifiedByUser is null
+        String userName = "System";
+        String userLink = "";
+
+        if (ticket.getModifiedByUser() != null) {
+            userName =
+                    ticket.getModifiedByUser().getFirstName()
+                            + " "
+                            + ticket.getModifiedByUser().getLastName();
+            userLink = "/portal/users/" + Obfuscator.obfuscate(ticket.getModifiedBy());
+        }
+
         String html =
                 p().with(
-                                a(ticket.getModifiedByUser().getFirstName()
-                                                + " "
-                                                + ticket.getModifiedByUser().getLastName())
-                                        .withHref(
-                                                "/portal/users/"
-                                                        + Obfuscator.obfuscate(
-                                                                ticket.getModifiedBy())),
+                                a(userName).withHref(userLink),
                                 text(" updated the ticket "),
                                 a(ticket.getRequestTitle())
                                         .withHref(
