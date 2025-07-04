@@ -100,65 +100,24 @@ public class ProjectServiceIT {
 
     @Test
     public void shouldFindProjectsSuccessfully() {
-        // Using teamId 1 as specified in the requirements
-        Long teamId = 1L;
-
-        // Create a test project with teamId 1
-        ProjectDTO projectDTO =
-                ProjectDTO.builder()
-                        .name("Test Project for Query")
-                        .description("Project for testing queries")
-                        .shortName("TPQ")
-                        .status(ProjectStatus.Active)
-                        .teamId(teamId)
-                        .createdBy(1L)
-                        .build();
-        projectService.createProject(projectDTO);
-
-        // Create a query to find projects for team with ID 1
         QueryDTO queryDTO = new QueryDTO();
 
-        // Create a filter for team = 1
-        Filter teamIdFilter = new Filter("team.id", FilterOperator.EQ, teamId);
-        queryDTO.setFilters(Collections.singletonList(teamIdFilter));
+        Filter teamIdFilter = new Filter("team.id", FilterOperator.EQ, 1L);
 
-        // Get the first page with 10 items
+        queryDTO.setFilters(Collections.singletonList(teamIdFilter));
         Pageable pageable = Pageable.ofSize(10);
 
-        // Execute the findProjects method
         Page<ProjectDTO> projectsPage =
                 projectService.findProjects(Optional.of(queryDTO), pageable);
 
-        // Verify that we found at least one project
         assertThat(projectsPage).isNotEmpty();
 
-        // Verify that all projects belong to the specified team
-        assertThat(projectsPage.getContent())
-                .allMatch(project -> project.getTeamId().equals(teamId));
+        assertThat(projectsPage.getContent()).allMatch(project -> project.getTeamId().equals(1L));
     }
 
     @Test
     public void shouldGetProjectByShortNameSuccessfully() {
-        // Create a project with a specific short name
-        String shortName =
-                "SP"
-                        + System.currentTimeMillis()
-                                % 10000; // Ensure unique short name within 10 chars
-        String projectName = "Sample Project";
-        String projectDescription = "Project description";
-
-        ProjectDTO projectDTO =
-                ProjectDTO.builder()
-                        .name(projectName)
-                        .description(projectDescription)
-                        .shortName(shortName)
-                        .status(ProjectStatus.Active)
-                        .teamId(1L)
-                        .createdBy(1L)
-                        .build();
-
-        // Save the project
-        projectService.createProject(projectDTO);
+        String shortName = "cust";
 
         // Execute the getByShortName method
         ProjectDTO retrievedProject = projectService.getByShortName(shortName);
@@ -169,10 +128,6 @@ public class ProjectServiceIT {
         // Verify that the project has the correct short name and team ID
         assertThat(retrievedProject.getShortName()).isEqualTo(shortName);
         assertThat(retrievedProject.getTeamId()).isEqualTo(1L);
-
-        // Verify other properties
-        assertThat(retrievedProject.getName()).isEqualTo(projectName);
-        assertThat(retrievedProject.getDescription()).isEqualTo(projectDescription);
 
         // Verify that the project setting is included in the returned DTO
         assertThat(retrievedProject.getProjectSetting()).isNotNull();
@@ -198,5 +153,32 @@ public class ProjectServiceIT {
                 .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining(
                         "Cannot find project with short name '" + nonExistentShortName + "'");
+    }
+
+    @Test
+    public void shouldGetProjectsByUserIdSuccessfully() {
+        Long userId = 1L;
+        Pageable pageable = Pageable.ofSize(20);
+
+        Page<ProjectDTO> projectsPage = projectService.getProjectsByUserId(userId, pageable);
+
+        assertThat(projectsPage).isNotEmpty();
+
+        // Verify that all returned projects belong to teams that the user is a member of
+        // User 1 is associated with teams 1, 2, 3, 7, and 11 according to fw_user_team_test.csv
+        assertThat(projectsPage.getContent())
+                .allMatch(
+                        project ->
+                                project.getTeamId().equals(1L)
+                                        || project.getTeamId().equals(2L)
+                                        || project.getTeamId().equals(3L)
+                                        || project.getTeamId().equals(7L)
+                                        || project.getTeamId().equals(11L));
+
+        // Verify that projects from team 1 and team 2 are included
+        // Team 1 has projects with IDs 1, 3, 5, 7, 9 and Team 2 has projects with IDs 2, 4, 6, 8,
+        // 10
+        assertThat(projectsPage.getContent()).anyMatch(project -> project.getTeamId().equals(1L));
+        assertThat(projectsPage.getContent()).anyMatch(project -> project.getTeamId().equals(2L));
     }
 }

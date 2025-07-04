@@ -1,4 +1,10 @@
-import { LayoutGrid, LucideIcon, Puzzle, Settings } from "lucide-react";
+import {
+  FolderKanban,
+  LayoutGrid,
+  LucideIcon,
+  Puzzle,
+  Settings,
+} from "lucide-react";
 import { createTranslator, Messages } from "next-intl";
 
 import { Permission } from "@/providers/permissions-provider";
@@ -88,6 +94,17 @@ export function getMenuList(
           label: comT("teams"),
           resource: "teams",
           icon: Puzzle,
+        },
+      ],
+    },
+    {
+      groupLabel: "",
+      menus: [
+        {
+          href: "/portal/projects",
+          label: comT("projects"),
+          resource: "Dashboard",
+          icon: FolderKanban,
         },
       ],
     },

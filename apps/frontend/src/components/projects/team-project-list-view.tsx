@@ -57,7 +57,7 @@ import { ProjectDTO, ProjectStatus } from "@/types/projects";
 import { Filter, QueryDTO } from "@/types/query";
 import { PermissionUtils } from "@/types/resources";
 
-const ProjectListView = () => {
+const TeamProjectListView = () => {
   const team = useTeam();
   const t = useAppClientTranslations();
   const breadcrumbItems = [
@@ -445,4 +445,4 @@ const ProjectListView = () => {
   );
 };
 
-export default ProjectListView;
+export default TeamProjectListView;

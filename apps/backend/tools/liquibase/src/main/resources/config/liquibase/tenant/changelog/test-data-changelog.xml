@@ -87,6 +87,28 @@
 	</changeSet>
 
 	<changeSet author="flowinquiry"
+		id="000:07-insert-default-fw-project-data" runOnChange="true">
+		<loadData
+			file="config/liquibase/tenant/data/test/fw_project_test.csv"
+			tableName="fw_project" separator=";">
+			<column name="id" type="NUMERIC" />
+			<column name="created_by" type="NUMERIC" />
+			<column name="created_at" type="TIMESTAMP" />
+			<column name="modified_by" type="NUMERIC" />
+			<column name="modified_at" type="TIMESTAMP" />
+			<column name="name" type="STRING" />
+			<column name="description" type="STRING" />
+			<column name="short_name" type="STRING" />
+			<column name="team_id" type="NUMERIC" />
+			<column name="status" type="STRING" />
+			<column name="start_date" type="TIMESTAMP" />
+			<column name="end_date" type="TIMESTAMP" />
+		</loadData>
+		<sql>SELECT setval('fw_project_id_seq', (SELECT MAX(id) FROM
+			fw_project));</sql>
+	</changeSet>
+
+	<changeSet author="flowinquiry"
 		id="000:08-insert-default-fw-user-team-data" runOnChange="true">
 		<loadData
 			file="config/liquibase/tenant/data/test/fw_user_team_test.csv"

@@ -73,6 +73,11 @@ public class ProjectService {
         return projectRepository.findAll(spec, pageable).map(projectMapper::toDto);
     }
 
+    @Transactional(readOnly = true)
+    public Page<ProjectDTO> getProjectsByUserId(Long userId, Pageable pageable) {
+        return projectRepository.findAllByUserId(userId, pageable).map(projectMapper::toDto);
+    }
+
     public ProjectDTO getByShortName(String shortName) {
         return projectRepository
                 .findByShortName(shortName)

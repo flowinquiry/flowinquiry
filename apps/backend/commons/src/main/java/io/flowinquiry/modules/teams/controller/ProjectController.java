@@ -240,4 +240,30 @@ public class ProjectController {
                     String shortName) {
         return projectService.getByShortName(shortName);
     }
+
+    @Operation(
+            summary = "Get projects by user ID",
+            description = "Retrieves all projects associated with a specific user with pagination")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully retrieved user's projects",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema = @Schema(implementation = Page.class))),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "User not found",
+                        content = @Content)
+            })
+    @GetMapping("/by-user/{userId}")
+    public Page<ProjectDTO> getProjectsByUser(
+            @Parameter(description = "ID of the user to retrieve projects for", required = true)
+                    @PathVariable
+                    Long userId,
+            @Parameter(description = "Pagination information") Pageable pageable) {
+        return projectService.getProjectsByUserId(userId, pageable);
+    }
 }
