@@ -1100,7 +1100,7 @@ export default function ProjectView({
             setIsIterationDialogOpen(false);
             setSelectedIterationForEdit(null);
           }}
-          projectId={projectId!}
+          project={project!}
           iteration={selectedIterationForEdit}
         />
 

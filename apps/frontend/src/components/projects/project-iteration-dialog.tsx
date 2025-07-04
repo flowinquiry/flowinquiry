@@ -29,6 +29,7 @@ import {
 } from "@/lib/actions/project-iteration.action";
 import { useError } from "@/providers/error-provider";
 import {
+  ProjectDTO,
   ProjectIterationDTO,
   ProjectIterationDTOSchema,
 } from "@/types/projects";
@@ -38,7 +39,7 @@ interface ProjectIterationDialogProps {
   onOpenChange: (open: boolean) => void;
   onSave?: (iteration: ProjectIterationDTO) => void;
   onCancel?: () => void;
-  projectId: number;
+  project: ProjectDTO;
   iteration?: ProjectIterationDTO | null; // Optional iteration for edit mode
 }
 
@@ -47,7 +48,7 @@ export function ProjectIterationDialog({
   onOpenChange,
   onSave,
   onCancel,
-  projectId,
+  project,
   iteration,
 }: ProjectIterationDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -62,7 +63,7 @@ export function ProjectIterationDialog({
     resolver: zodResolver(ProjectIterationDTOSchema),
     defaultValues: {
       id: iteration?.id,
-      projectId: projectId,
+      projectId: project?.id,
       name: iteration?.name || "",
       description: iteration?.description || "",
       startDate: iteration?.startDate,
@@ -76,7 +77,7 @@ export function ProjectIterationDialog({
     if (open) {
       form.reset({
         id: iteration?.id,
-        projectId: projectId,
+        projectId: project.id,
         name: iteration?.name || "",
         description: iteration?.description || "",
         startDate: iteration?.startDate,
@@ -84,7 +85,49 @@ export function ProjectIterationDialog({
         totalTickets: iteration?.totalTickets || 0,
       });
     }
-  }, [open, iteration, projectId, form]);
+  }, [open, iteration, project, form]);
+
+  // Watch for changes to startDate and endDate
+  const startDate = useWatch({ control: form.control, name: "startDate" });
+  const endDate = useWatch({ control: form.control, name: "endDate" });
+
+  // Calculate endDate when startDate changes or calculate startDate when endDate changes
+  useEffect(() => {
+    // Skip if project settings are not available or sprintLengthDays is not set
+    if (!project.projectSetting?.sprintLengthDays) return;
+
+    const sprintLengthDays = project.projectSetting.sprintLengthDays;
+
+    // Get the last changed field from form state
+    const dirtyFields = form.formState.dirtyFields;
+
+    // If startDate was changed and is valid, calculate endDate
+    if (dirtyFields.startDate && startDate) {
+      const startDateObj = new Date(startDate);
+      const calculatedEndDate = addDays(startDateObj, sprintLengthDays - 1); // -1 because the start day is included
+
+      // Only update if endDate is not already set by user
+      if (!endDate || dirtyFields.startDate) {
+        form.setValue("endDate", calculatedEndDate.toISOString(), { 
+          shouldValidate: true,
+          shouldDirty: true 
+        });
+      }
+    } 
+    // If endDate was changed and is valid, calculate startDate
+    else if (dirtyFields.endDate && endDate) {
+      const endDateObj = new Date(endDate);
+      const calculatedStartDate = subDays(endDateObj, sprintLengthDays - 1); // -1 because the end day is included
+
+      // Only update if startDate is not already set by user
+      if (!startDate || dirtyFields.endDate) {
+        form.setValue("startDate", calculatedStartDate.toISOString(), { 
+          shouldValidate: true,
+          shouldDirty: true 
+        });
+      }
+    }
+  }, [startDate, endDate, project.projectSetting?.sprintLengthDays, form]);
 
   const handleSubmit = async (values: ProjectIterationDTO) => {
     setIsSubmitting(true);
