@@ -25,5 +25,6 @@ public interface ProjectRepository
         WHERE u.id = :userId
     )
 """)
+    @EntityGraph(attributePaths = {"team"})
     Page<Project> findAllByUserId(@Param("userId") Long userId, Pageable pageable);
 }

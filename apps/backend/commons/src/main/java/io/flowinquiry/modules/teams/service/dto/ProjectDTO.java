@@ -18,6 +18,7 @@ public class ProjectDTO {
     private String description;
     @NotNull private String shortName;
     @NotNull private Long teamId;
+    private String teamName;
     @NotNull private ProjectStatus status;
     private Instant startDate;
     private Instant endDate;

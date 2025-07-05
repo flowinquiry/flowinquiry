@@ -217,7 +217,7 @@ const TeamProjectListView = () => {
 
           {/* Search & Status Filter Row */}
           <div
-            className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg shadow-md border border-gray-300 dark:border-gray-700"
+            className="flex items-center gap-4 p-4 rounded-lg shadow-md border"
             data-testid="project-search-filter"
           >
             <Input
@@ -254,7 +254,7 @@ const TeamProjectListView = () => {
           </div>
 
           <div
-            className="bg-white dark:bg-gray-900 p-4 rounded-lg shadow-sm"
+            className="p-4 rounded-lg shadow-sm"
             data-testid="project-table-container"
           >
             {loading ? (

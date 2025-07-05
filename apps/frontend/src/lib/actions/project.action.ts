@@ -6,6 +6,7 @@ import {
   put,
 } from "@/lib/actions/commons.action";
 import { HttpError } from "@/lib/errors";
+import { PageableResult } from "@/types/commons";
 import { ProjectDTO, ProjectSettingDTO } from "@/types/projects";
 import { Pagination, QueryDTO } from "@/types/query";
 import { WorkflowDetailDTO } from "@/types/workflows";
@@ -91,6 +92,16 @@ export const updateProjectSettings = (
   return put<ProjectSettingDTO, ProjectSettingDTO>(
     `/api/project-settings/project/${projectId}`,
     settings,
+    setError,
+  );
+};
+
+export const findProjectsByUserId = (
+  userId: number,
+  setError?: (error: HttpError | string | null) => void,
+) => {
+  return get<PageableResult<ProjectDTO>>(
+    `/api/projects/by-user/${userId}`,
     setError,
   );
 };

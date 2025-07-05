@@ -25,6 +25,7 @@ export const ProjectSchema = z.object({
   name: z.string().min(1).max(255),
   description: z.string().optional(),
   teamId: z.number().int().positive(),
+  teamName: z.string().optional(),
   shortName: z.string().min(1).max(10),
   status: z.enum(["Active", "Closed", "Cancelled"]),
   startDate: z.string().optional().nullable(),
