@@ -340,7 +340,9 @@
         "delete_project_dialog_title": "Confirm project deletion",
         "delete_project_dialog_confirmation": "Are you sure you want to delete the project \"{projectName}\"? This action cannot be undone.",
         "kanban": "Kanban Board",
-        "settings": "Settings"
+        "settings": "Settings",
+        "flat_view": "Flat View",
+        "group_by_team": "Group by Team"
       },
       "form": {
         "name": "Name",

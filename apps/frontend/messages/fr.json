@@ -349,7 +349,9 @@
         "delete_project_dialog_title": "Confirmer la suppression du projet",
         "delete_project_dialog_confirmation": "Êtes-vous sûr de vouloir supprimer le projet \"{projectName}\" ? Cette action est irréversible.",
         "kanban": "Tableau Kanban",
-        "settings": "Paramètres"
+        "settings": "Paramètres",
+        "flat_view": "Vue plate",
+        "group_by_team": "Grouper par équipe"
       },
       "view": {
         "add_new_task_to_state": "Ajouter une nouvelle tâche à {stateName}",
