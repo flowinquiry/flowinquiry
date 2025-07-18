@@ -16,7 +16,7 @@ done
 
 if $run_frontend; then
   echo "🚧 Detected frontend change. Running build..."
-  pnpm build:frontend
+  pnpm frontend:build
   if [ $? -ne 0 ]; then
     echo "❌ Frontend build failed. Push aborted."
     exit 1
