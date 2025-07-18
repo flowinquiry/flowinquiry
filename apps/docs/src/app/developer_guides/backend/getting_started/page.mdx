@@ -90,12 +90,12 @@ FlowInquiry's front-end requires Node and pnpm to be installed on your machine. 
 
 #### Create a local configuration file `.env.local`
 
-Run the command `pnpm setup:backend` in the flowinquiry's root folder to create a file `.env.local` in the folder `apps/backend`
+Run the command `pnpm backend:setup` in the flowinquiry's root folder to create a file `.env.local` in the folder `apps/backend`
 
         ```bash
-        ➜  flowinquiry✗ pnpm setup:backend
+        ➜  flowinquiry✗ pnpm backend:setup
 
-        > flowinquiry@0.0.1 setup:backend flowinquiry
+        > flowinquiry@0.0.1 backend:setup flowinquiry
         > bash tools/setup/backend-env.sh
 
         🔐 Creating .env.local for backend...
@@ -132,12 +132,12 @@ Ensure that Docker is installed on your machine, then run the command `pnpm dock
 
 <Tabs items={['Gradle', 'IntelliJ']}>
     <Tabs.Tab>
-        From the root folder, run the command `pnpm dev:backend` in the flowinquiry's root folder
+        From the root folder, run the command `pnpm backend:dev` in the flowinquiry's root folder
 
         ```bash
-        ➜  flowinquiry✗ pnpm dev:backend
+        ➜  flowinquiry✗ pnpm backend:dev
 
-        > flowinquiry@0.0.1 dev:backend flowinquiry
+        > flowinquiry@0.0.1 backend:dev flowinquiry
         > ./gradlew :apps:backend:server:bootRun
 
 

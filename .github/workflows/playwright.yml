@@ -96,7 +96,7 @@ jobs:
       # Conditionally start frontend
       - name: Start frontend
         run: |
-          pnpm dev:frontend > frontend.log 2>&1 &
+          pnpm frontend:dev > frontend.log 2>&1 &
           echo "Waiting for frontend..."
           timeout 60s bash -c '
             until curl -sf http://localhost:3000; do
@@ -112,7 +112,7 @@ jobs:
 
       - name: Run Playwright tests
         id: run_tests
-        run: pnpm test:frontend
+        run: pnpm frontend:test
 
       # Upload HTML report for PR review
       - name: Upload Playwright report

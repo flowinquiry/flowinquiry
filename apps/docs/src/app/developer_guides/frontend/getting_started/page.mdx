@@ -82,12 +82,12 @@ FlowInquiry's front-end requires Node and pnpm to be installed on your machine. 
 
 #### Create the local configuration file `.env.local`
 
-Run the command `pnpm setup:frontend` in the flowinquiry's root folder
+Run the command `pnpm frontend:setup` in the flowinquiry's root folder
 
 ```bash
-➜  flowinquiry✗ pnpm setup:frontend
+➜  flowinquiry✗ pnpm frontend:setup
 
-> flowinquiry@0.0.1 setup:frontend flowinquiry
+> flowinquiry@0.0.1 frontend:setup flowinquiry
 > bash tools/setup/frontend-env.sh
 
 Creating an empty apps/frontend/.env.local...
@@ -98,13 +98,13 @@ Initialization complete.
 
 #### Run in dev mode
 
-You can launch the nextjs development server by running `pnpm dev:frontend` in the flowinquiry's root folder
+You can launch the nextjs development server by running `pnpm frontend:dev` in the flowinquiry's root folder
 
 it will start the FlowInquiry frontend development server at the default port `3000`
 
 ```bash
-➜  flowinquiry ✗ pnpm dev:frontend
-> flowinquiry@0.0.1 dev:frontend flowinquiry
+➜  flowinquiry ✗ pnpm frontend:dev
+> flowinquiry@0.0.1 frontend:dev flowinquiry
 > turbo run dev --filter=flowinquiry-frontend
 turbo 2.4.4
 
