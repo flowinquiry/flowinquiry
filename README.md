@@ -33,27 +33,27 @@ FlowInquiry is a free, open-source tool for managing projects, tickets, and requ
 
 ## ⚙️ Key Features of FlowInquiry
 
-📂 Projects – Use a Kanban board to group tasks by iteration or epic
+* 📂 Projects – Use a Kanban board to group tasks by iteration or epic
 
-🧩 Custom Workflows – Set request states and define how they move
+* 🧩 Custom Workflows – Set request states and define how they move
 
-⏱ SLA Tracking – Set due dates and handle items that run late
+* ⏱ SLA Tracking – Set due dates and handle items that run late
 
-🔄 Live Updates – See changes in teams, projects, or requests as they happen
+* 🔄 Live Updates – See changes in teams, projects, or requests as they happen
 
-👥 Comments and Watchers – Share updates and keep the right people informed
+* 👥 Comments and Watchers – Share updates and keep the right people informed
 
-📅 Timeline View – See the full history of a request at a glance
+* 📅 Timeline View – See the full history of a request at a glance
 
-🧵 Change Log – Track what changed, when, and by whom
+* 🧵 Change Log – Track what changed, when, and by whom
 
-🔐 Role-Based Access – Control who can see or do what
+* 🔐 Role-Based Access – Control who can see or do what
 
-🌍 Language Support – Use in multiple languages for global teams
+* 🌍 Language Support – Use in multiple languages for global teams
 
-🔌 Integrations – Connect with email, with Slack and GitHub coming soon
+* 🔌 Integrations – Connect with email, with Slack and GitHub coming soon
 
-🚀 Deployment Options – Run with Docker or on your own setup; Kubernetes coming soon
+* 🚀 Deployment Options – Run with Docker or on your own setup; Kubernetes coming soon
 
 ## Built With
 
