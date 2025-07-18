@@ -1,0 +1,232 @@
+---
+description: Learn how to implement scheduled jobs in FlowInquiry using Spring Boot and Spring Scheduler. This guide covers creating, configuring, and managing scheduled tasks with examples.
+---
+
+# Scheduler
+
+## Introduction
+
+Schedulers in FlowInquiry are implemented using Spring Boot's scheduling capabilities. They allow you to execute tasks at specified intervals or at specific times. This is useful for tasks like sending notifications, cleaning up data, or performing regular system maintenance.
+
+## Key Components
+
+### Spring Scheduler
+
+Spring provides robust support for scheduling tasks through the `@Scheduled` annotation. This annotation can be used with:
+
+- Fixed rate execution (`fixedRate`)
+- Fixed delay execution (`fixedDelay`)
+- Cron expressions for more complex scheduling needs
+
+### ShedLock
+
+For distributed environments, we use ShedLock to ensure that scheduled tasks are executed only once at the same time across multiple instances of the application. This prevents duplicate executions in clustered environments.
+
+## Creating a New Scheduler
+
+### Step 1: Create a new class
+
+Create a new class in the appropriate module package with a descriptive name ending with `Job`:
+
+```java
+package io.flowinquiry.modules.yourmodule.service.job;
+
+import org.springframework.stereotype.Component;
+import org.springframework.scheduling.annotation.Scheduled;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Component
+public class YourNewSchedulerJob {
+    // Implementation will go here
+}
+```
+
+### Step 2: Add necessary dependencies
+
+Inject any services or repositories your scheduler needs:
+
+```java
+private final YourService yourService;
+private final AnotherService anotherService;
+
+public YourNewSchedulerJob(
+        YourService yourService,
+        AnotherService anotherService) {
+    this.yourService = yourService;
+    this.anotherService = anotherService;
+}
+```
+
+### Step 3: Configure the schedule with distributed locking
+
+Add the `@Scheduled` annotation along with `@SchedulerLock` to your execution method. Always use `@SchedulerLock` to prevent duplicate execution in clustered environments:
+
+```java
+@Scheduled(cron = "0 0 * * * ?") // Runs at the top of every hour
+@SchedulerLock(
+    name = "YourNewSchedulerJob",
+    lockAtMostFor = "10m",    // Maximum time the lock will be held
+    lockAtLeastFor = "1m"     // Minimum time the lock will be held
+)
+public void run() {
+    // Your scheduled task logic here
+}
+```
+
+The `@SchedulerLock` annotation has several important parameters:
+
+- `name`: A unique name for the lock (required)
+- `lockAtMostFor`: Maximum duration the lock will be held before it's automatically released, even if the task is still running. This prevents deadlocks if a node crashes while holding a lock. Format: "10m" (10 minutes), "1h" (1 hour), etc.
+- `lockAtLeastFor`: Minimum duration the lock will be held, even if the task finishes earlier. This prevents other nodes from acquiring the lock too quickly in case of task failures or very short executions. Format is the same as `lockAtMostFor`.
+
+For most jobs, setting `lockAtMostFor` to a value slightly longer than the expected maximum execution time and `lockAtLeastFor` to a short duration (or omitting it) is recommended.
+
+### Step 4: Add transaction management (if needed)
+
+If your job interacts with the database, add transaction management:
+
+```java
+@Scheduled(cron = "0 0 * * * ?")
+@SchedulerLock(
+    name = "YourNewSchedulerJob",
+    lockAtMostFor = "10m",
+    lockAtLeastFor = "1m"
+)
+@Transactional
+public void run() {
+    // Your scheduled task logic here
+}
+```
+
+### Step 5: Implement your job logic
+
+Add your business logic inside the run method:
+
+```java
+@Scheduled(cron = "0 0 * * * ?")
+@SchedulerLock(
+    name = "YourNewSchedulerJob",
+    lockAtMostFor = "10m",
+    lockAtLeastFor = "1m"
+)
+@Transactional
+public void run() {
+    log.debug("Starting YourNewSchedulerJob");
+
+    // Fetch data
+    List<YourEntity> entities = yourService.fetchEntities();
+
+    // Process data
+    for (YourEntity entity : entities) {
+        // Process each entity
+        anotherService.processEntity(entity);
+    }
+
+    log.debug("Completed YourNewSchedulerJob");
+}
+```
+
+## Real-World Example: SendNotificationForTicketsViolateSlaJob
+
+Let's examine a real implementation from FlowInquiry:
+
+```java
+@Slf4j
+@Profile("!test")
+@Component
+public class SendNotificationForTicketsViolateSlaJob {
+
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm z");
+    private final SimpMessagingTemplate messageTemplate;
+    private final TeamService teamService;
+    private final WorkflowTransitionHistoryService workflowTransitionHistoryService;
+    private final MailService mailService;
+    private final DeduplicationCacheService deduplicationCacheService;
+    private final UserMapper userMapper;
+    private final MessageSource messageSource;
+
+    // Constructor with dependency injection
+    public SendNotificationForTicketsViolateSlaJob(
+            SimpMessagingTemplate messageTemplate,
+            TeamService teamService,
+            WorkflowTransitionHistoryService workflowTransitionHistoryService,
+            MailService mailService,
+            DeduplicationCacheService deduplicationCacheService,
+            UserMapper userMapper,
+            MessageSource messageSource) {
+        this.messageTemplate = messageTemplate;
+        this.teamService = teamService;
+        this.workflowTransitionHistoryService = workflowTransitionHistoryService;
+        this.mailService = mailService;
+        this.deduplicationCacheService = deduplicationCacheService;
+        this.userMapper = userMapper;
+        this.messageSource = messageSource;
+    }
+
+    @Scheduled(cron = "0 0/1 * * * ?")  // Runs every minute
+    @SchedulerLock(
+        name = "SendNotificationForTicketsViolateSlaJob",
+        lockAtMostFor = "5m",    // Maximum time the lock will be held
+        lockAtLeastFor = "30s"   // Minimum time the lock will be held
+    )
+    @Transactional
+    public void run() {
+        // Fetch data: Get tickets that have violated SLA
+        List<WorkflowTransitionHistory> violatingTickets =
+                workflowTransitionHistoryService.getViolatedTransitions();
+
+        // Process each violating ticket
+        for (WorkflowTransitionHistory violatingTicket : violatingTickets) {
+            // ... business logic for processing each ticket
+            // (sending notifications, emails, etc.)
+        }
+    }
+}
+```
+
+### Key Points from the Example:
+
+1. **Profile Configuration**: `@Profile("!test")` ensures this job doesn't run during tests
+2. **Scheduling**: `@Scheduled(cron = "0 0/1 * * * ?")` runs the job every minute
+3. **Distributed Locking**: `@SchedulerLock` prevents duplicate execution with:
+   - `lockAtMostFor = "5m"` ensures the lock is released after 5 minutes even if the job crashes
+   - `lockAtLeastFor = "30s"` ensures the lock is held for at least 30 seconds to prevent rapid re-execution
+4. **Transaction Management**: `@Transactional` ensures database consistency
+5. **Dependency Injection**: Constructor-based injection of all required services
+6. **Logging**: Using SLF4J for logging important events
+
+## Cron Expression Guide
+
+Cron expressions in Spring follow the format: `second minute hour day-of-month month day-of-week`
+
+Common patterns:
+
+- `0 0 * * * ?` - Every hour at the top of the hour
+- `0 0/15 * * * ?` - Every 15 minutes
+- `0 0 0 * * ?` - Once a day at midnight
+- `0 0 8-17 * * MON-FRI` - Every hour from 8 AM to 5 PM on weekdays
+
+## Best Practices
+
+1. **Use Descriptive Names**: Name your job classes clearly to indicate their purpose
+2. **Add Logging**: Include debug logs at the start and end of your job
+3. **Handle Exceptions**: Properly catch and handle exceptions to prevent job failures
+4. **Use Distributed Locking**: Always use ShedLock in clustered environments
+5. **Implement Idempotency**: Ensure your job can safely run multiple times
+6. **Use Deduplication**: For notification jobs, implement deduplication to prevent duplicate messages
+7. **Consider Performance**: Be mindful of resource usage, especially for frequently running jobs
+8. **Test Thoroughly**: Create unit tests for your job logic
+
+## Troubleshooting
+
+- **Job Not Running**: Check if the correct profile is active and the cron expression is valid
+- **Duplicate Executions**: Ensure ShedLock is properly configured
+- **Performance Issues**: Review your job's logic and consider optimizing database queries
+- **Database Deadlocks**: Review transaction isolation levels and query patterns
+
+## Additional Resources
+
+- [Spring Scheduling Documentation](https://docs.spring.io/spring-framework/docs/current/reference/html/integration.html#scheduling)
+- [ShedLock GitHub Repository](https://github.com/lukas-krecan/ShedLock)
+- [Cron Expression Generator](https://www.freeformatter.com/cron-expression-generator-quartz.html)

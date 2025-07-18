@@ -45,13 +45,9 @@ export default {
         title: "Backend",
         items: {
           getting_started: "Getting-started",
-          overview: {
-            title: "Overview",
-            items: {
-              high_level_architect: "High-level architect",
-              data_layer: "Data Layer",
-            },
-          },
+          high_level_architect: "High-level architect",
+          data_layer: "Data Layer",
+          scheduler: "Scheduler",
           database_migration: "Database migration",
           integration_testing: "Integration Testing",
           api_docs: "API-Docs",
