@@ -1,13 +1,11 @@
-package io.flowinquiry.modules.collab.service.event;
-
-import static io.flowinquiry.modules.teams.domain.WorkflowTransitionHistoryStatus.COMPLETED;
+package io.flowinquiry.modules.teams.service.job;
 
 import io.flowinquiry.modules.collab.EmailContext;
 import io.flowinquiry.modules.collab.domain.EntityType;
 import io.flowinquiry.modules.collab.service.EntityWatcherService;
 import io.flowinquiry.modules.collab.service.MailService;
-import io.flowinquiry.modules.teams.domain.Ticket;
-import io.flowinquiry.modules.teams.repository.TicketRepository;
+import io.flowinquiry.modules.teams.service.TicketService;
+import io.flowinquiry.modules.teams.service.dto.TicketDTO;
 import io.flowinquiry.modules.usermanagement.service.UserService;
 import io.flowinquiry.modules.usermanagement.service.dto.UserDTO;
 import java.util.Locale;
@@ -24,23 +22,23 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Profile("!test")
 @Component
-public class EmailViolatedSLATicketWatchers {
+public class SendEmailForTicketOverdue {
     private final EntityWatcherService entityWatcherService;
     private final MailService mailService;
     private final UserService userService;
-    private final TicketRepository ticketRepository;
+    private final TicketService ticketService;
     private final MessageSource messageSource;
 
-    public EmailViolatedSLATicketWatchers(
+    public SendEmailForTicketOverdue(
             EntityWatcherService entityWatcherService,
             MailService mailService,
             UserService userService,
-            TicketRepository ticketRepository,
+            TicketService ticketService,
             MessageSource messageSource) {
         this.entityWatcherService = entityWatcherService;
         this.mailService = mailService;
         this.userService = userService;
-        this.ticketRepository = ticketRepository;
+        this.ticketService = ticketService;
         this.messageSource = messageSource;
     }
 
@@ -52,14 +50,12 @@ public class EmailViolatedSLATicketWatchers {
     public void notifyWatchers() {
 
         int page = 0;
-        int size = 100;
-        Page<Ticket> ticketsPage;
+        int size = 500;
+        Page<TicketDTO> ticketPage;
 
         do {
-            ticketsPage =
-                    ticketRepository.findAllOverdueTickets(COMPLETED, PageRequest.of(page, size));
-
-            ticketsPage
+            ticketPage = ticketService.getAllOverdueTickets(PageRequest.of(page, size));
+            ticketPage
                     .getContent()
                     .forEach(
                             ticket -> {
@@ -89,9 +85,9 @@ public class EmailViolatedSLATicketWatchers {
                                                                                 messageSource)
                                                                         .setToUser(user)
                                                                         .setTemplate(
-                                                                                "mail/overdueTicketEmail")
+                                                                                "mail/projectTicketOverdueEmail")
                                                                         .setSubject(
-                                                                                "email.ticket.sla.violation.title",
+                                                                                "email.ticket.project.overdue.title",
                                                                                 ticket
                                                                                         .getRequestTitle())
                                                                         .addVariable(
@@ -99,13 +95,12 @@ public class EmailViolatedSLATicketWatchers {
                                                                                 ticket
                                                                                         .getRequestTitle())
                                                                         .addVariable(
-                                                                                "slaDueDate",
+                                                                                "estimatedCompletionDate",
                                                                                 ticket
                                                                                         .getEstimatedCompletionDate())
                                                                         .addVariable(
                                                                                 "obfuscatedTeamId",
-                                                                                ticket.getTeam()
-                                                                                        .getId())
+                                                                                ticket.getTeamId())
                                                                         .addVariable(
                                                                                 "obfuscatedTicketId",
                                                                                 ticket.getId());
@@ -117,9 +112,7 @@ public class EmailViolatedSLATicketWatchers {
                                                     }
                                                 });
                             });
-
             page++;
-
-        } while (ticketsPage.hasNext());
+        } while (ticketPage.hasNext());
     }
 }
