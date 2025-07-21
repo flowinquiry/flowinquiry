@@ -209,9 +209,11 @@ public class UserService {
         user.setResetDate(Instant.now());
         user.setStatus(UserStatus.PENDING);
 
-        // Due to client when construct the authority, it passes the Authority object with the name
+        // Due to client when construct the authority, it passes the Authority object
+        // with the name
         // and descriptiveName have both actual value
-        // is descriptiveName, so we must mapping the authority by search authority by descriptive
+        // is descriptiveName, so we must mapping the authority by search authority by
+        // descriptive
         // name
         if (userDTO.getAuthorities() != null) {
             Set<Authority> authorities =
@@ -369,6 +371,11 @@ public class UserService {
     @Transactional(readOnly = true)
     public Optional<UserDTO> getUserWithManagerById(Long id) {
         return userRepository.findOneWithManagerById(id).map(userMapper::toDto);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<UserDTO> getUserById(Long id) {
+        return userRepository.findOneById(id).map(userMapper::toDto);
     }
 
     @Transactional(readOnly = true)
