@@ -4,10 +4,13 @@ import io.flowinquiry.modules.collab.EmailContext;
 import io.flowinquiry.modules.collab.domain.EntityType;
 import io.flowinquiry.modules.collab.service.EntityWatcherService;
 import io.flowinquiry.modules.collab.service.MailService;
+import io.flowinquiry.modules.fss.service.dto.EntityWatcherDTO;
 import io.flowinquiry.modules.teams.service.TicketService;
 import io.flowinquiry.modules.teams.service.dto.TicketDTO;
 import io.flowinquiry.modules.usermanagement.service.UserService;
 import io.flowinquiry.modules.usermanagement.service.dto.UserDTO;
+import io.flowinquiry.utils.Obfuscator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -43,10 +46,7 @@ public class SendEmailForTicketOverdue {
     }
 
     @Scheduled(cron = "0 0 0 * * ?") // Runs at midnight every day
-    @SchedulerLock(
-            name = "SendNotificationForTicketsViolateSlaJob",
-            lockAtMostFor = "1m",
-            lockAtLeastFor = "1s")
+    @SchedulerLock(name = "SendEmailForTicketOverdue", lockAtMostFor = "1m", lockAtLeastFor = "1s")
     public void notifyWatchers() {
 
         int page = 0;
@@ -55,64 +55,49 @@ public class SendEmailForTicketOverdue {
 
         do {
             ticketPage = ticketService.getAllOverdueTickets(PageRequest.of(page, size));
-            ticketPage
-                    .getContent()
-                    .forEach(
-                            ticket -> {
-                                log.info(
-                                        "Processing overdue ticket ID for sending emails to watchers: {}",
-                                        ticket.getId());
-                                entityWatcherService
-                                        .getWatchersForEntity(EntityType.Ticket, ticket.getId())
-                                        .forEach(
-                                                watcher -> {
-                                                    Optional<UserDTO> userinfo =
-                                                            userService.getUserById(
-                                                                    watcher.getWatchUserId());
-                                                    if (userinfo.isPresent()) {
-                                                        UserDTO user = userinfo.get();
-                                                        Locale locale =
-                                                                Locale.forLanguageTag(
-                                                                        user.getLangKey() != null
-                                                                                ? user.getLangKey()
-                                                                                : "en");
 
-                                                        EmailContext emailContext =
-                                                                new EmailContext(
-                                                                                locale,
-                                                                                mailService
-                                                                                        .getBaseUrl(),
-                                                                                messageSource)
-                                                                        .setToUser(user)
-                                                                        .setTemplate(
-                                                                                "mail/projectTicketOverdueEmail")
-                                                                        .setSubject(
-                                                                                "email.ticket.project.overdue.title",
-                                                                                ticket
-                                                                                        .getRequestTitle())
-                                                                        .addVariable(
-                                                                                "requestTitle",
-                                                                                ticket
-                                                                                        .getRequestTitle())
-                                                                        .addVariable(
-                                                                                "estimatedCompletionDate",
-                                                                                ticket
-                                                                                        .getEstimatedCompletionDate())
-                                                                        .addVariable(
-                                                                                "obfuscatedTeamId",
-                                                                                ticket.getTeamId())
-                                                                        .addVariable(
-                                                                                "obfuscatedTicketId",
-                                                                                ticket.getId());
+            for (TicketDTO ticket : ticketPage.getContent()) {
+                log.info(
+                        "Processing overdue ticket ID for sending emails to watchers: {}",
+                        ticket.getId());
 
-                                                        mailService.sendEmail(emailContext);
-                                                        log.info(
-                                                                "Sent overdue ticket mail to watcher: {}",
-                                                                user.getId());
-                                                    }
-                                                });
-                            });
+                // Fetch watchers for the ticket
+                List<EntityWatcherDTO> entityWatcherDTOs =
+                        entityWatcherService.getWatchersForEntity(
+                                EntityType.Ticket, ticket.getId());
+
+                for (EntityWatcherDTO watcher : entityWatcherDTOs) {
+                    sendEmailToWatcher(watcher, ticket);
+                }
+            }
             page++;
         } while (ticketPage.hasNext());
+    }
+
+    private void sendEmailToWatcher(EntityWatcherDTO watcher, TicketDTO ticket) {
+
+        Optional<UserDTO> userinfo = userService.getUserById(watcher.getWatchUserId());
+        if (userinfo.isPresent()) {
+            UserDTO user = userinfo.get();
+            Locale locale =
+                    Locale.forLanguageTag(user.getLangKey() != null ? user.getLangKey() : "en");
+
+            EmailContext emailContext =
+                    new EmailContext(locale, mailService.getBaseUrl(), messageSource)
+                            .setToUser(user)
+                            .setTemplate("mail/projectTicketOverdueEmail")
+                            .setSubject(
+                                    "email.ticket.project.overdue.title", ticket.getRequestTitle())
+                            .addVariable("requestTitle", ticket.getRequestTitle())
+                            .addVariable(
+                                    "estimatedCompletionDate", ticket.getEstimatedCompletionDate())
+                            .addVariable(
+                                    "obfuscatedTeamId", Obfuscator.obfuscate(ticket.getTeamId()))
+                            .addVariable(
+                                    "obfuscatedTicketId", Obfuscator.obfuscate(ticket.getId()));
+
+            mailService.sendEmail(emailContext);
+            log.info("Sent overdue ticket mail to watcher: {}", user.getId());
+        }
     }
 }
