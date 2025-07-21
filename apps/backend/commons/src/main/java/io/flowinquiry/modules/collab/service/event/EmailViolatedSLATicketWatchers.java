@@ -47,8 +47,8 @@ public class EmailViolatedSLATicketWatchers {
     @Scheduled(cron = "0 0 0 * * ?") // Runs at midnight every day
     @SchedulerLock(
             name = "SendNotificationForTicketsViolateSlaJob",
-            lockAtMostFor = "5m",
-            lockAtLeastFor = "30s")
+            lockAtMostFor = "1m",
+            lockAtLeastFor = "1s")
     public void notifyWatchers() {
 
         int page = 0;
