@@ -59,19 +59,19 @@ public interface TicketRepository
     @Query(
             value =
                     """
-        SELECT tr
-        FROM Ticket tr
-        WHERE tr.team.id = (
-            SELECT r.team.id
-            FROM Ticket r
-            WHERE r.id = :ticketId
-        )
-        AND tr.id < :ticketId
-        AND tr.isDeleted = false
-        AND (:projectId IS NOT NULL AND tr.project.id = :projectId OR :projectId IS NULL AND tr.project IS NULL)
-        ORDER BY tr.id DESC
-            LIMIT 1
-    """)
+                SELECT tr
+                FROM Ticket tr
+                WHERE tr.team.id = (
+                    SELECT r.team.id
+                    FROM Ticket r
+                    WHERE r.id = :ticketId
+                )
+                AND tr.id < :ticketId
+                AND tr.isDeleted = false
+                AND (:projectId IS NOT NULL AND tr.project.id = :projectId OR :projectId IS NULL AND tr.project IS NULL)
+                ORDER BY tr.id DESC
+                    LIMIT 1
+            """)
     Optional<Ticket> findPreviousTicket(
             @Param("ticketId") Long ticketId, @Param("projectId") Long projectId);
 
@@ -92,19 +92,19 @@ public interface TicketRepository
     @Query(
             value =
                     """
-        SELECT tr
-        FROM Ticket tr
-        WHERE tr.team.id = (
-            SELECT r.team.id
-            FROM Ticket r
-            WHERE r.id = :ticketId
-        )
-        AND tr.id > :ticketId
-        AND tr.isDeleted = false
-        AND (:projectId IS NOT NULL AND tr.project.id = :projectId OR :projectId IS NULL AND tr.project IS NULL)
-        ORDER BY tr.id ASC
-        LIMIT 1
-    """)
+                SELECT tr
+                FROM Ticket tr
+                WHERE tr.team.id = (
+                    SELECT r.team.id
+                    FROM Ticket r
+                    WHERE r.id = :ticketId
+                )
+                AND tr.id > :ticketId
+                AND tr.isDeleted = false
+                AND (:projectId IS NOT NULL AND tr.project.id = :projectId OR :projectId IS NULL AND tr.project IS NULL)
+                ORDER BY tr.id ASC
+                LIMIT 1
+            """)
     Optional<Ticket> findNextTicket(
             @Param("ticketId") Long ticketId, @Param("projectId") Long projectId);
 
@@ -199,6 +199,22 @@ public interface TicketRepository
     Page<Ticket> findOverdueTicketsByUserId(
             @Param("userId") Long userId,
             @Param("status") WorkflowTransitionHistoryStatus completedStatus,
+            Pageable pageable);
+
+    @Query(
+            """
+    SELECT DISTINCT r
+    FROM Ticket r
+    JOIN WorkflowTransitionHistory h ON h.ticket.id = r.id
+    WHERE r.isDeleted = false
+      AND r.isCompleted = false
+      AND (
+        (r.estimatedCompletionDate IS NOT NULL AND r.estimatedCompletionDate < CURRENT_TIMESTAMP)
+        OR (h.slaDueDate IS NOT NULL AND h.slaDueDate < CURRENT_TIMESTAMP AND h.status <> :completedStatus)
+      )
+""")
+    Page<Ticket> findAllOverdueTickets(
+            @Param("completedStatus") WorkflowTransitionHistoryStatus completedStatus,
             Pageable pageable);
 
     @Query(

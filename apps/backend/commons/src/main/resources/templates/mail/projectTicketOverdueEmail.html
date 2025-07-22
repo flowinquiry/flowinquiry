@@ -1,0 +1,96 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head></head>
+  <body>
+    <div
+      class="email-container"
+      style="
+        max-width: 600px;
+        margin: auto;
+        background-color: #ffffff;
+        border: 1px solid #dcdcdc;
+        border-radius: 8px;
+      "
+    >
+      <!-- Include Header -->
+      <div
+        th:insert="~{mail/header :: header(#{email.ticket.project.overdue.title(${requestTitle})})}"
+      ></div>
+
+      <!-- Body -->
+      <div style="padding: 20px; text-align: left">
+        <p th:text="#{email.greeting(${user.firstName})}">
+          Dear user@example.com,
+        </p>
+
+        <p>
+          <span th:text="#{email.ticket.project.overdue.text1}">
+            The following project ticket is overdue:
+          </span>
+          <strong th:text="${requestTitle}">Ticket Title</strong>.
+        </p>
+
+        <p>
+          <span th:text="#{email.ticket.project.overdue.text2}">
+            The estimated completion date was:
+          </span>
+          <strong th:text="${estimatedCompletionDate}">March 12, 2025</strong>.
+        </p>
+
+        <p>
+          <span th:text="#{email.ticket.project.overdue.text3}">
+            Please check the ticket status and take necessary action.
+          </span>
+        </p>
+
+        <!-- View Ticket Button -->
+        <a
+          th:with="url=(@{|${baseUrl}/portal/teams/${obfuscatedTeamId}/tickets/${obfuscatedTicketId}|})"
+          th:href="${url}"
+          style="
+            display: inline-block;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #ffffff;
+            background-color: #d9534f;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 10px;
+          "
+          th:text="#{email.ticket.project.overdue.action}"
+        >
+          View Ticket
+        </a>
+
+        <p
+          th:text="#{email.ticket.project.overdue.text4}"
+          style="margin-top: 20px"
+        >
+          If the button above doesn't work, copy and paste the following URL
+          into your browser:
+        </p>
+
+        <!-- Full Ticket Link -->
+        <p>
+          <a
+            th:with="url=(@{|${baseUrl}/portal/teams/${obfuscatedTeamId}/tickets/${obfuscatedTicketId}|})"
+            th:href="${url}"
+            th:text="${url}"
+          >
+            Full Ticket Link
+          </a>
+        </p>
+
+        <p>
+          <span th:text="#{email.regards}">Regards,</span>
+          <br />
+          <span th:text="#{email.signature}">FlowInquiry Team.</span>
+        </p>
+      </div>
+
+      <!-- Include Footer -->
+      <div th:insert="~{mail/footer :: footer}"></div>
+    </div>
+  </body>
+</html>

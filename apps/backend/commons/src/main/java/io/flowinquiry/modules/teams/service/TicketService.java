@@ -317,6 +317,10 @@ public class TicketService {
                 .map(ticketMapper::toDto);
     }
 
+    public Page<TicketDTO> getAllOverdueTickets(Pageable pageable) {
+        return ticketRepository.findAllOverdueTickets(COMPLETED, pageable).map(ticketMapper::toDto);
+    }
+
     public Long countOverdueTickets(
             Long teamId, WorkflowTransitionHistoryStatus status, Instant fromDate, Instant toDate) {
         return ticketRepository.countOverdueTicketsByTeamId(teamId, status, fromDate, toDate);
