@@ -22,10 +22,11 @@ Integration tests are critical for ensuring that your FlowInquiry backend compon
 
 ### Test Data Management
 
-FlowInquiry uses Liquibase for database migrations, which provides an elegant way to handle test data:
+FlowInquiry gets test data from the module `tools/liquibase`, and all test data files are located at the `data/test` folder. This provides an elegant way to handle test data:
 
-1. Create migration scripts dedicated to test data in the `src/main/resources/db/changelog` directory
-2. Add the `context="test"` attribute to changesets containing test data:
+1. Test data files are organized in the `data/test` folder
+2. The `tools/liquibase` module manages these test data files
+3. Add the `context="test"` attribute to changesets containing test data:
 
 ```xml
 <changeSet id="create-test-users" author="developer" context="test">
@@ -37,27 +38,84 @@ FlowInquiry uses Liquibase for database migrations, which provides an elegant wa
 </changeSet>
 ```
 
-3. These test changesets will only be applied during integration tests, keeping your development and production databases clean
+4. These test changesets will only be applied during integration tests, keeping your development and production databases clean
+
+#### Changeset for project table
+
+```
+<changeSet author="flowinquiry" id="000:07-insert-default-fw-project-data" runOnChange="true">
+    <loadData file="config/liquibase/tenant/data/test/fw_project_test.csv"
+        tableName="fw_project" separator=";">
+            <column name="id" type="NUMERIC" />
+            <column name="created_by" type="NUMERIC" />
+            <column name="created_at" type="TIMESTAMP" />
+            <column name="modified_by" type="NUMERIC" />
+            <column name="modified_at" type="TIMESTAMP" />
+            <column name="name" type="STRING" />
+            <column name="description" type="STRING" />
+            <column name="short_name" type="STRING" />
+            <column name="team_id" type="NUMERIC" />
+            <column name="status" type="STRING" />
+            <column name="start_date" type="TIMESTAMP" />
+            <column name="end_date" type="TIMESTAMP" />
+    </loadData>
+    <sql>SELECT setval('fw_project_id_seq', (SELECT MAX(id) FROM
+            fw_project));</sql>
+</changeSet>
+```
+
+#### CSV Test Data Example
+
+Test data files are typically stored in CSV format with semicolon (`;`) separators. Here's an example from `fw_project_test.csv`, which reflects the `project` table in the database:
+
+```
+id;created_by;created_at;modified_by;modified_at;name;description;short_name;team_id;status;start_date;end_date
+1;1;2023-01-01T10:00:00;1;2023-01-01T10:00:00;Customer Portal;Customer-facing web portal;cust;1;Active;2023-01-02T00:00:00;2023-06-30T00:00:00
+2;1;2023-01-05T09:30:00;1;2023-01-05T09:30:00;CRM System;Manage contacts and leads;crm;2;Active;2023-01-10T00:00:00;2023-07-31T00:00:00
+```
+
+Each column in the CSV file has a specific meaning:
+
+- `id`: Unique identifier for the project
+- `created_by`: User ID who created the project
+- `created_at`: Timestamp when the project was created
+- `modified_by`: User ID who last modified the project
+- `modified_at`: Timestamp when the project was last modified
+- `name`: Full name of the project
+- `description`: Detailed description of the project
+- `short_name`: Abbreviated name/code for the project
+- `team_id`: ID of the team responsible for the project
+- `status`: Current status of the project (e.g., "Active")
+- `start_date`: Project start date
+- `end_date`: Project end date
 
 ### Writing Integration Tests
 
 To create an integration test in FlowInquiry:
 
-1. Create a test class in the `src/integration-test/java` directory
+1. Create a test class in the `src/test/java` directory
 2. Annotate the class with `@IntegrationTest`:
 
 ```java
 @IntegrationTest
-public class UserServiceIntegrationTest {
+@Transactional
+public class TicketServiceIT {
 
     @Autowired
     private UserService userService;
+    ...
 
     @Test
-    public void testFindUserById() {
-        User user = userService.findById("test-user-1");
-        assertNotNull(user);
-        assertEquals("testuser", user.getUsername());
+    void shouldCreateTicketSuccessfully() {
+        TicketDTO ticketDTO = ticketMapper.toDto(ticketRepository.findById(2L).orElseThrow());
+        ticketDTO.setId(null);
+        ticketDTO.setConversationHealth(null);
+        TicketDTO savedTicket = ticketService.createTicket(ticketDTO);
+        assertThat(savedTicket).isNotNull();
+
+        ArgumentCaptor<NewTicketCreatedEvent> eventCaptor =
+                ArgumentCaptor.forClass(NewTicketCreatedEvent.class);
+        verify(spyEventPublisher, times(1)).publishEvent(eventCaptor.capture());
     }
 }
 ```
@@ -93,11 +151,11 @@ This will:
 
 1. Start the required Docker containers
 2. Execute all tests annotated with `@IntegrationTest`
-3. Generate test reports in the `build/reports/tests/integrationTest` directory
+3. Generate test reports in the `apps/server/build/reports/jacoco` directory
 4. Shut down and clean up containers after completion
 
 If you want to run a specific integration test class:
 
 ```bash
-./gradlew integrationTest --tests "com.flowinquiry.backend.UserServiceIntegrationTest"
+./gradlew integrationTest --tests "io.flowinquiry.modules.teams.service.TicketServiceIT"
 ```
