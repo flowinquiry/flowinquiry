@@ -27,6 +27,7 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -119,6 +120,9 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
 
     @Column(name = "last_login_time")
     private Instant lastLoginTime;
+
+    @Column(name = "tenant_id", nullable = false, updatable = false)
+    private UUID tenantId;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UserAuth> userAuths = new HashSet<>();

@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -123,4 +124,7 @@ public class Ticket extends AbstractAuditingEntity<Long> {
 
     @OneToMany(mappedBy = "parentTicket", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Ticket> childTickets = new ArrayList<>();
+
+    @Column(name = "tenant_id", nullable = false, updatable = false)
+    private UUID tenantId;
 }

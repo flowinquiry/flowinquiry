@@ -201,4 +201,504 @@
 			<column name="tenant_id" />
 		</createIndex>
 	</changeSet>
+	<changeSet
+		id="003:07-alter-tenant_relationship-to-entity-watchers-table"
+		author="flowinquiry">
+		<addColumn tableName="fw_entity_watchers">
+			<column name="tenant_id" type="UUID" />
+		</addColumn>
+
+		<update tableName="fw_entity_watchers">
+			<column name="tenant_id"
+				value="00000000-0000-0000-0000-000000000001" />
+		</update>
+
+		<addNotNullConstraint
+			tableName="fw_entity_watchers" columnName="tenant_id"
+			columnDataType="UUID" />
+
+		<addForeignKeyConstraint
+			baseTableName="fw_entity_watchers" baseColumnNames="tenant_id"
+			constraintName="fk_fw_entity_watchers_tenant"
+			referencedTableName="fw_tenant" referencedColumnNames="id" />
+		<createIndex indexName="idx_fw_entity_watchers_tenant_id"
+			tableName="fw_entity_watchers">
+			<column name="tenant_id" />
+		</createIndex>
+	</changeSet>
+	<changeSet
+		id="003:08-alter-tenant_relationship-to-escalation-tracking-table"
+		author="flowinquiry">
+		<addColumn tableName="fw_escalation_tracking">
+			<column name="tenant_id" type="UUID" />
+		</addColumn>
+
+		<update tableName="fw_escalation_tracking">
+			<column name="tenant_id"
+				value="00000000-0000-0000-0000-000000000001" />
+		</update>
+
+		<addNotNullConstraint
+			tableName="fw_escalation_tracking" columnName="tenant_id"
+			columnDataType="UUID" />
+
+		<addForeignKeyConstraint
+			baseTableName="fw_escalation_tracking" baseColumnNames="tenant_id"
+			constraintName="fk_fw_escalation_tracking_tenant"
+			referencedTableName="fw_tenant" referencedColumnNames="id" />
+		<createIndex
+			indexName="idx_fw_escalation_tracking_tenant_id"
+			tableName="fw_escalation_tracking">
+			<column name="tenant_id" />
+		</createIndex>
+	</changeSet>
+	<changeSet
+		id="003:09-alter-tenant_relationship-to-notification-table"
+		author="flowinquiry">
+		<addColumn tableName="fw_notification">
+			<column name="tenant_id" type="UUID" />
+		</addColumn>
+
+		<update tableName="fw_notification">
+			<column name="tenant_id"
+				value="00000000-0000-0000-0000-000000000001" />
+		</update>
+
+		<addNotNullConstraint tableName="fw_notification"
+			columnName="tenant_id" columnDataType="UUID" />
+
+		<addForeignKeyConstraint
+			baseTableName="fw_notification" baseColumnNames="tenant_id"
+			constraintName="fk_fw_notification_tenant"
+			referencedTableName="fw_tenant" referencedColumnNames="id" />
+		<createIndex indexName="idx_fw_notification_tenant_id"
+			tableName="fw_notification">
+			<column name="tenant_id" />
+		</createIndex>
+	</changeSet>
+	<changeSet
+		id="003:10-alter-tenant_relationship-to-organization-table"
+		author="flowinquiry">
+		<addColumn tableName="fw_organization">
+			<column name="tenant_id" type="UUID" />
+		</addColumn>
+
+		<update tableName="fw_organization">
+			<column name="tenant_id"
+				value="00000000-0000-0000-0000-000000000001" />
+		</update>
+
+		<addNotNullConstraint tableName="fw_organization"
+			columnName="tenant_id" columnDataType="UUID" />
+
+		<addForeignKeyConstraint
+			baseTableName="fw_organization" baseColumnNames="tenant_id"
+			constraintName="fk_fw_organization_tenant"
+			referencedTableName="fw_tenant" referencedColumnNames="id" />
+		<createIndex indexName="idx_fw_organization_tenant_id"
+			tableName="fw_organization">
+			<column name="tenant_id" />
+		</createIndex>
+	</changeSet>
+	<changeSet
+		id="003:11-alter-tenant_relationship-to-project-table"
+		author="flowinquiry">
+		<addColumn tableName="fw_project">
+			<column name="tenant_id" type="UUID" />
+		</addColumn>
+
+		<update tableName="fw_project">
+			<column name="tenant_id"
+				value="00000000-0000-0000-0000-000000000001" />
+		</update>
+
+		<addNotNullConstraint tableName="fw_project"
+			columnName="tenant_id" columnDataType="UUID" />
+
+		<addForeignKeyConstraint
+			baseTableName="fw_project" baseColumnNames="tenant_id"
+			constraintName="fk_fw_project_tenant" referencedTableName="fw_tenant"
+			referencedColumnNames="id" />
+		<createIndex indexName="idx_fw_project_tenant_id"
+			tableName="fw_project">
+			<column name="tenant_id" />
+		</createIndex>
+	</changeSet>
+	<changeSet
+		id="003:12-alter-tenant_relationship-to-project-epic-table"
+		author="flowinquiry">
+		<addColumn tableName="fw_project_epic">
+			<column name="tenant_id" type="UUID" />
+		</addColumn>
+
+		<update tableName="fw_project_epic">
+			<column name="tenant_id"
+				value="00000000-0000-0000-0000-000000000001" />
+		</update>
+
+		<addNotNullConstraint tableName="fw_project_epic"
+			columnName="tenant_id" columnDataType="UUID" />
+
+		<addForeignKeyConstraint
+			baseTableName="fw_project_epic" baseColumnNames="tenant_id"
+			constraintName="fk_fw_project_epic_tenant"
+			referencedTableName="fw_tenant" referencedColumnNames="id" />
+		<createIndex indexName="idx_fw_project_epic_tenant_id"
+			tableName="fw_project_epic">
+			<column name="tenant_id" />
+		</createIndex>
+	</changeSet>
+	<changeSet
+		id="003:13-alter-tenant_relationship-to-project-iteration-table"
+		author="flowinquiry">
+		<addColumn tableName="fw_project_iteration">
+			<column name="tenant_id" type="UUID" />
+		</addColumn>
+
+		<update tableName="fw_project_iteration">
+			<column name="tenant_id"
+				value="00000000-0000-0000-0000-000000000001" />
+		</update>
+
+		<addNotNullConstraint
+			tableName="fw_project_iteration" columnName="tenant_id"
+			columnDataType="UUID" />
+
+		<addForeignKeyConstraint
+			baseTableName="fw_project_iteration" baseColumnNames="tenant_id"
+			constraintName="fk_fw_project_iteration_tenant"
+			referencedTableName="fw_tenant" referencedColumnNames="id" />
+		<createIndex
+			indexName="idx_fw_project_iteration_tenant_id"
+			tableName="fw_project_iteration">
+			<column name="tenant_id" />
+		</createIndex>
+	</changeSet>
+	<changeSet
+		id="003:14-alter-tenant_relationship-to-project-setting-table"
+		author="flowinquiry">
+		<addColumn tableName="fw_project_setting">
+			<column name="tenant_id" type="UUID" />
+		</addColumn>
+
+		<update tableName="fw_project_setting">
+			<column name="tenant_id"
+				value="00000000-0000-0000-0000-000000000001" />
+		</update>
+
+		<addNotNullConstraint
+			tableName="fw_project_setting" columnName="tenant_id"
+			columnDataType="UUID" />
+
+		<addForeignKeyConstraint
+			baseTableName="fw_project_setting" baseColumnNames="tenant_id"
+			constraintName="fk_fw_project_setting_tenant"
+			referencedTableName="fw_tenant" referencedColumnNames="id" />
+		<createIndex indexName="idx_fw_project_setting_tenant_id"
+			tableName="fw_project_setting">
+			<column name="tenant_id" />
+		</createIndex>
+	</changeSet>
+	<changeSet
+		id="003:15-alter-tenant_relationship-to-team-workflow-selection-table"
+		author="flowinquiry">
+		<addColumn tableName="fw_team_workflow_selection">
+			<column name="tenant_id" type="UUID" />
+		</addColumn>
+
+		<update tableName="fw_team_workflow_selection">
+			<column name="tenant_id"
+				value="00000000-0000-0000-0000-000000000001" />
+		</update>
+
+		<addNotNullConstraint
+			tableName="fw_team_workflow_selection" columnName="tenant_id"
+			columnDataType="UUID" />
+
+		<addForeignKeyConstraint
+			baseTableName="fw_team_workflow_selection"
+			baseColumnNames="tenant_id"
+			constraintName="fk_fw_team_workflow_selection_tenant"
+			referencedTableName="fw_tenant" referencedColumnNames="id" />
+		<createIndex
+			indexName="idx_fw_team_workflow_selection_tenant_id"
+			tableName="fw_team_workflow_selection">
+			<column name="tenant_id" />
+		</createIndex>
+	</changeSet>
+	<changeSet
+		id="003:16-alter-tenant_relationship-to-ticket-table"
+		author="flowinquiry">
+		<addColumn tableName="fw_ticket">
+			<column name="tenant_id" type="UUID" />
+		</addColumn>
+
+		<update tableName="fw_ticket">
+			<column name="tenant_id"
+				value="00000000-0000-0000-0000-000000000001" />
+		</update>
+
+		<addNotNullConstraint tableName="fw_ticket"
+			columnName="tenant_id" columnDataType="UUID" />
+
+		<addForeignKeyConstraint
+			baseTableName="fw_ticket" baseColumnNames="tenant_id"
+			constraintName="fk_fw_ticket_tenant" referencedTableName="fw_tenant"
+			referencedColumnNames="id" />
+		<createIndex indexName="idx_fw_ticket_tenant_id"
+			tableName="fw_ticket">
+			<column name="tenant_id" />
+		</createIndex>
+	</changeSet>
+	<changeSet
+		id="003:17-alter-tenant_relationship-to-ticket-conversation-health-table"
+		author="flowinquiry">
+		<addColumn tableName="fw_ticket_conversation_health">
+			<column name="tenant_id" type="UUID" />
+		</addColumn>
+
+		<update tableName="fw_ticket_conversation_health">
+			<column name="tenant_id"
+				value="00000000-0000-0000-0000-000000000001" />
+		</update>
+
+		<addNotNullConstraint
+			tableName="fw_ticket_conversation_health" columnName="tenant_id"
+			columnDataType="UUID" />
+
+		<addForeignKeyConstraint
+			baseTableName="fw_ticket_conversation_health"
+			baseColumnNames="tenant_id"
+			constraintName="fk_fw_ticket_conversation_health_tenant"
+			referencedTableName="fw_tenant" referencedColumnNames="id" />
+		<createIndex
+			indexName="idx_fw_ticket_conversation_health_tenant_id"
+			tableName="fw_ticket_conversation_health">
+			<column name="tenant_id" />
+		</createIndex>
+	</changeSet>
+	<changeSet
+		id="003:18-alter-tenant_relationship-to-user-table"
+		author="flowinquiry">
+		<addColumn tableName="fw_user">
+			<column name="tenant_id" type="UUID" />
+		</addColumn>
+
+		<update tableName="fw_user">
+			<column name="tenant_id"
+				value="00000000-0000-0000-0000-000000000001" />
+		</update>
+
+		<addNotNullConstraint tableName="fw_user"
+			columnName="tenant_id" columnDataType="UUID" />
+
+		<addForeignKeyConstraint
+			baseTableName="fw_user" baseColumnNames="tenant_id"
+			constraintName="fk_fw_user_tenant" referencedTableName="fw_tenant"
+			referencedColumnNames="id" />
+		<createIndex indexName="idx_fw_user_tenant_id"
+			tableName="fw_user">
+			<column name="tenant_id" />
+		</createIndex>
+	</changeSet>
+	<changeSet
+		id="003:19-alter-tenant_relationship-to-user-auth-table"
+		author="flowinquiry">
+		<addColumn tableName="fw_user_auth">
+			<column name="tenant_id" type="UUID" />
+		</addColumn>
+
+		<update tableName="fw_user_auth">
+			<column name="tenant_id"
+				value="00000000-0000-0000-0000-000000000001" />
+		</update>
+
+		<addNotNullConstraint tableName="fw_user_auth"
+			columnName="tenant_id" columnDataType="UUID" />
+
+		<addForeignKeyConstraint
+			baseTableName="fw_user_auth" baseColumnNames="tenant_id"
+			constraintName="fk_fw_user_auth_tenant"
+			referencedTableName="fw_tenant" referencedColumnNames="id" />
+		<createIndex indexName="idx_fw_user_auth_tenant_id"
+			tableName="fw_user_auth">
+			<column name="tenant_id" />
+		</createIndex>
+	</changeSet>
+	<changeSet
+		id="003:20-alter-tenant_relationship-to-user-authority-table"
+		author="flowinquiry">
+		<addColumn tableName="fw_user_authority">
+			<column name="tenant_id" type="UUID" />
+		</addColumn>
+
+		<update tableName="fw_user_authority">
+			<column name="tenant_id"
+				value="00000000-0000-0000-0000-000000000001" />
+		</update>
+
+		<addNotNullConstraint
+			tableName="fw_user_authority" columnName="tenant_id"
+			columnDataType="UUID" />
+
+		<addForeignKeyConstraint
+			baseTableName="fw_user_authority" baseColumnNames="tenant_id"
+			constraintName="fk_fw_user_authority_tenant"
+			referencedTableName="fw_tenant" referencedColumnNames="id" />
+		<createIndex indexName="idx_fw_user_authority_tenant_id"
+			tableName="fw_user_authority">
+			<column name="tenant_id" />
+		</createIndex>
+	</changeSet>
+	<changeSet
+		id="003:21-alter-tenant_relationship-to-user-team-table"
+		author="flowinquiry">
+		<addColumn tableName="fw_user_team">
+			<column name="tenant_id" type="UUID" />
+		</addColumn>
+
+		<update tableName="fw_user_team">
+			<column name="tenant_id"
+				value="00000000-0000-0000-0000-000000000001" />
+		</update>
+
+		<addNotNullConstraint tableName="fw_user_team"
+			columnName="tenant_id" columnDataType="UUID" />
+
+		<addForeignKeyConstraint
+			baseTableName="fw_user_team" baseColumnNames="tenant_id"
+			constraintName="fk_fw_user_team_tenant"
+			referencedTableName="fw_tenant" referencedColumnNames="id" />
+		<createIndex indexName="idx_fw_user_team_tenant_id"
+			tableName="fw_user_team">
+			<column name="tenant_id" />
+		</createIndex>
+	</changeSet>
+	<changeSet
+		id="003:22-alter-tenant_relationship-to-workflow-table"
+		author="flowinquiry">
+		<addColumn tableName="fw_workflow">
+			<column name="tenant_id" type="UUID" />
+		</addColumn>
+
+		<update tableName="fw_workflow">
+			<column name="tenant_id"
+				value="00000000-0000-0000-0000-000000000001" />
+		</update>
+
+		<addNotNullConstraint tableName="fw_workflow"
+			columnName="tenant_id" columnDataType="UUID" />
+
+		<addForeignKeyConstraint
+			baseTableName="fw_workflow" baseColumnNames="tenant_id"
+			constraintName="fk_fw_workflow_tenant"
+			referencedTableName="fw_tenant" referencedColumnNames="id" />
+		<createIndex indexName="idx_fw_workflow_tenant_id"
+			tableName="fw_workflow">
+			<column name="tenant_id" />
+		</createIndex>
+	</changeSet>
+	<changeSet
+		id="003:23-alter-tenant_relationship-to-workflow-actions-table"
+		author="flowinquiry">
+		<addColumn tableName="fw_workflow_actions">
+			<column name="tenant_id" type="UUID" />
+		</addColumn>
+
+		<update tableName="fw_workflow_actions">
+			<column name="tenant_id"
+				value="00000000-0000-0000-0000-000000000001" />
+		</update>
+
+		<addNotNullConstraint
+			tableName="fw_workflow_actions" columnName="tenant_id"
+			columnDataType="UUID" />
+
+		<addForeignKeyConstraint
+			baseTableName="fw_workflow_actions" baseColumnNames="tenant_id"
+			constraintName="fk_fw_workflow_actions_tenant"
+			referencedTableName="fw_tenant" referencedColumnNames="id" />
+		<createIndex indexName="idx_fw_workflow_actions_tenant_id"
+			tableName="fw_workflow_actions">
+			<column name="tenant_id" />
+		</createIndex>
+	</changeSet>
+	<changeSet
+		id="003:24-alter-tenant_relationship-to-workflow-state-table"
+		author="flowinquiry">
+		<addColumn tableName="fw_workflow_state">
+			<column name="tenant_id" type="UUID" />
+		</addColumn>
+
+		<update tableName="fw_workflow_state">
+			<column name="tenant_id"
+				value="00000000-0000-0000-0000-000000000001" />
+		</update>
+
+		<addNotNullConstraint
+			tableName="fw_workflow_state" columnName="tenant_id"
+			columnDataType="UUID" />
+
+		<addForeignKeyConstraint
+			baseTableName="fw_workflow_state" baseColumnNames="tenant_id"
+			constraintName="fk_fw_workflow_state_tenant"
+			referencedTableName="fw_tenant" referencedColumnNames="id" />
+		<createIndex indexName="idx_fw_workflow_state_tenant_id"
+			tableName="fw_workflow_state">
+			<column name="tenant_id" />
+		</createIndex>
+	</changeSet>
+	<changeSet
+		id="003:25-alter-tenant_relationship-to-workflow-transition-table"
+		author="flowinquiry">
+		<addColumn tableName="fw_workflow_transition">
+			<column name="tenant_id" type="UUID" />
+		</addColumn>
+
+		<update tableName="fw_workflow_transition">
+			<column name="tenant_id"
+				value="00000000-0000-0000-0000-000000000001" />
+		</update>
+
+		<addNotNullConstraint
+			tableName="fw_workflow_transition" columnName="tenant_id"
+			columnDataType="UUID" />
+
+		<addForeignKeyConstraint
+			baseTableName="fw_workflow_transition" baseColumnNames="tenant_id"
+			constraintName="fk_fw_workflow_transition_tenant"
+			referencedTableName="fw_tenant" referencedColumnNames="id" />
+		<createIndex
+			indexName="idx_fw_workflow_transition_tenant_id"
+			tableName="fw_workflow_transition">
+			<column name="tenant_id" />
+		</createIndex>
+	</changeSet>
+	<changeSet
+		id="003:26-alter-tenant_relationship-to-workflow-transition-history-table"
+		author="flowinquiry">
+		<addColumn tableName="fw_workflow_transition_history">
+			<column name="tenant_id" type="UUID" />
+		</addColumn>
+
+		<update tableName="fw_workflow_transition_history">
+			<column name="tenant_id"
+				value="00000000-0000-0000-0000-000000000001" />
+		</update>
+
+		<addNotNullConstraint
+			tableName="fw_workflow_transition_history" columnName="tenant_id"
+			columnDataType="UUID" />
+
+		<addForeignKeyConstraint
+			baseTableName="fw_workflow_transition_history"
+			baseColumnNames="tenant_id"
+			constraintName="fk_fw_workflow_transition_history_tenant"
+			referencedTableName="fw_tenant" referencedColumnNames="id" />
+		<createIndex
+			indexName="idx_fw_workflow_transition_history_tenant_id"
+			tableName="fw_workflow_transition_history">
+			<column name="tenant_id" />
+		</createIndex>
+	</changeSet>
 </databaseChangeLog>

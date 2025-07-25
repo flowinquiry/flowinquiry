@@ -16,6 +16,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -67,6 +68,9 @@ public class ActivityLog {
             referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "fk_activity_log_user"))
     private User createdBy;
+
+    @Column(name = "tenant_id", nullable = false, updatable = false)
+    private UUID tenantId;
 
     @PrePersist
     public void prePersist() {

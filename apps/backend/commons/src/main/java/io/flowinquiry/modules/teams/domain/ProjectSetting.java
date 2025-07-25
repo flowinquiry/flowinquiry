@@ -4,6 +4,7 @@ import io.flowinquiry.modules.audit.domain.AbstractAuditingEntity;
 import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.*;
 import java.util.Map;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -52,4 +53,7 @@ public class ProjectSetting extends AbstractAuditingEntity<Long> {
     @Type(JsonBinaryType.class)
     @JdbcTypeCode(SqlTypes.JSON)
     private Map<String, Object> integrationSettings;
+
+    @Column(name = "tenant_id", nullable = false, updatable = false)
+    private UUID tenantId;
 }

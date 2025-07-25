@@ -11,6 +11,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Set;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -59,4 +60,7 @@ public class Authority implements Serializable {
 
     @Formula("(SELECT COUNT(ua.user_id) FROM fw_user_authority ua WHERE ua.authority_name = name)")
     private Long usersCount;
+
+    @Column(name = "tenant_id", nullable = false, updatable = false)
+    private UUID tenantId;
 }

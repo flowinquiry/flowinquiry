@@ -3,6 +3,7 @@ package io.flowinquiry.modules.teams.domain;
 import io.flowinquiry.modules.audit.domain.AbstractAuditingEntity;
 import jakarta.persistence.*;
 import java.time.Instant;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -43,4 +44,7 @@ public class ProjectIteration extends AbstractAuditingEntity<Long> {
 
     @Formula("(SELECT COUNT(r.id) FROM fw_ticket r WHERE r.iteration_id = id)")
     private Long totalTickets;
+
+    @Column(name = "tenant_id", nullable = false, updatable = false)
+    private UUID tenantId;
 }

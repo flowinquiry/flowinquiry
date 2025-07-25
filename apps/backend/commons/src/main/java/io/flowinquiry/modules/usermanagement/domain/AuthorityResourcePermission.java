@@ -8,6 +8,7 @@ import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -50,10 +51,14 @@ public class AuthorityResourcePermission {
     @JoinColumn(name = "resource_name", insertable = false, updatable = false)
     private Resource resource;
 
+    @Column(name = "tenant_id", nullable = false, updatable = false)
+    private UUID tenantId;
+
     public AuthorityResourcePermission(
-            String authorityName, String resourceName, int permissionCode) {
+            String authorityName, String resourceName, int permissionCode, UUID tenantId) {
         this.authorityName = authorityName;
         this.resourceName = resourceName;
         this.permission = Permission.fromCode(permissionCode);
+        this.tenantId = tenantId;
     }
 }

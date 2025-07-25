@@ -3,6 +3,7 @@ package io.flowinquiry.modules.collab.domain;
 import io.flowinquiry.modules.usermanagement.domain.User;
 import jakarta.persistence.*;
 import java.time.Instant;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -47,6 +48,9 @@ public class EntityWatcher {
 
     @Column(name = "created_by", nullable = false, updatable = false)
     private Long createdBy;
+
+    @Column(name = "tenant_id", nullable = false, updatable = false)
+    private UUID tenantId;
 
     @PrePersist
     protected void onCreate() {
