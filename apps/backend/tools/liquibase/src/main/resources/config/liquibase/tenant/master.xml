@@ -18,6 +18,8 @@
 		file="config/liquibase/tenant/changelog/001_request_workflow_tables.xml" />
 	<include
 		file="config/liquibase/tenant/changelog/002_00_rename_team_request_to_ticket_table.xml" />
+	<include
+		file="config/liquibase/tenant/changelog/003_create_tenant_table.xml" />
 
 	<include
 		file="config/liquibase/tenant/changelog/dev-data-changelog.xml"
