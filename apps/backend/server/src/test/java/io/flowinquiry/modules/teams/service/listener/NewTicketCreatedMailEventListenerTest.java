@@ -141,7 +141,7 @@ public class NewTicketCreatedMailEventListenerTest {
         assert capturedContexts.size() == 2;
 
         // Verify first email
-        EmailContext firstEmail = capturedContexts.get(0);
+        EmailContext firstEmail = capturedContexts.getFirst();
         assert firstEmail.getToUser().equals(userDTO1);
         assert firstEmail.getTemplate().equals("mail/newTicketEmail");
 

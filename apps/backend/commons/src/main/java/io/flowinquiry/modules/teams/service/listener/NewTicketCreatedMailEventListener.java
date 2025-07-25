@@ -27,10 +27,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class NewTicketCreatedMailEventListener {
 
-    private final UserMapper userMapper;
     private final EntityWatcherRepository entityWatcherRepository;
     private final TicketService ticketService;
     private final MailService mailService;
+    private final UserMapper userMapper;
     private final MessageSource messageSource;
 
     public NewTicketCreatedMailEventListener(
