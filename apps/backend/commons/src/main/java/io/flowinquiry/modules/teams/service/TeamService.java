@@ -166,7 +166,8 @@ public class TeamService {
                                                         user.getId(), team.getId(), roleName),
                                                 user,
                                                 team,
-                                                teamRole))
+                                                teamRole,
+                                                user.getTenantId()))
                         .toList();
 
         // Save all UserTeam entities in a batch

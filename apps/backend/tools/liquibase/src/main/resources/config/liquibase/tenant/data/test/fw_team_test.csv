@@ -1,21 +1,21 @@
-id;name;logo_url;slogan;description;organization_id
-1;Development Team;;Building the Future;Focused on developing new products and features.;1
-2;Marketing Team;;Spreading the Word;Handles all marketing and outreach efforts.;2
-3;Sales Team;;Drive the Growth;Dedicated to driving sales and expanding market share.;3
-4;Customer Support;;Always Here for You;Provides support to customers for any issues.;4
-5;Research & Development;;Innovating Constantly;Focused on research and innovation.;5
-6;Finance Team;;Managing Resources;Handles financial planning and resource allocation.;1
-7;Human Resources;;People First;Manages hiring, training, and employee relations.;2
-8;Operations Team;;Keeping it Running;Ensures smooth daily operations of the company.;3
-9;Quality Assurance;;Ensuring Quality;Dedicated to product testing and quality control.;4
-10;IT Support;;Here to Help;Provides internal technical support for staff.;5
-11;Legal Team;;Ensuring Compliance;Manages all legal aspects and compliance.;1
-12;Design Team;;Creativity Unleashed;Focused on UI/UX and product design.;2
-13;Content Creation;;Crafting Stories;Responsible for creating content and storytelling.;3
-14;Data Science Team;;Data-Driven Decisions;Analyzes data for business insights.;4
-15;Supply Chain Team;;Efficient Logistics;Manages logistics and supply chain.;5
-16;Product Management;;Building Vision;Leads product strategy and roadmap.;1
-17;Engineering Team;;Solving Problems;Works on core technical challenges.;2
-18;Security Team;;Protecting Data;Ensures data security and privacy.;3
-19;Public Relations;;Building Trust;Manages the company’s public image.;4
-20;Customer Success;;Helping Customers Thrive;Focuses on helping customers achieve success.;5
+id;name;logo_url;slogan;description;organization_id;tenant_id
+1;Development Team;;Building the Future;Focused on developing new products and features.;1;00000000-0000-0000-0000-000000000001
+2;Marketing Team;;Spreading the Word;Handles all marketing and outreach efforts.;2;00000000-0000-0000-0000-000000000001
+3;Sales Team;;Drive the Growth;Dedicated to driving sales and expanding market share.;3;00000000-0000-0000-0000-000000000001
+4;Customer Support;;Always Here for You;Provides support to customers for any issues.;4;00000000-0000-0000-0000-000000000001
+5;Research & Development;;Innovating Constantly;Focused on research and innovation.;5;00000000-0000-0000-0000-000000000001
+6;Finance Team;;Managing Resources;Handles financial planning and resource allocation.;1;00000000-0000-0000-0000-000000000001
+7;Human Resources;;People First;Manages hiring, training, and employee relations.;2;00000000-0000-0000-0000-000000000001
+8;Operations Team;;Keeping it Running;Ensures smooth daily operations of the company.;3;00000000-0000-0000-0000-000000000001
+9;Quality Assurance;;Ensuring Quality;Dedicated to product testing and quality control.;4;00000000-0000-0000-0000-000000000001
+10;IT Support;;Here to Help;Provides internal technical support for staff.;5;00000000-0000-0000-0000-000000000001
+11;Legal Team;;Ensuring Compliance;Manages all legal aspects and compliance.;1;00000000-0000-0000-0000-000000000001
+12;Design Team;;Creativity Unleashed;Focused on UI/UX and product design.;2;00000000-0000-0000-0000-000000000001
+13;Content Creation;;Crafting Stories;Responsible for creating content and storytelling.;3;00000000-0000-0000-0000-000000000001
+14;Data Science Team;;Data-Driven Decisions;Analyzes data for business insights.;4;00000000-0000-0000-0000-000000000001
+15;Supply Chain Team;;Efficient Logistics;Manages logistics and supply chain.;5;00000000-0000-0000-0000-000000000001
+16;Product Management;;Building Vision;Leads product strategy and roadmap.;1;00000000-0000-0000-0000-000000000001
+17;Engineering Team;;Solving Problems;Works on core technical challenges.;2;00000000-0000-0000-0000-000000000001
+18;Security Team;;Protecting Data;Ensures data security and privacy.;3;00000000-0000-0000-0000-000000000001
+19;Public Relations;;Building Trust;Manages the company’s public image.;4;00000000-0000-0000-0000-000000000001
+20;Customer Success;;Helping Customers Thrive;Focuses on helping customers achieve success.;5;00000000-0000-0000-0000-000000000001

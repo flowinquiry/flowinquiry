@@ -1,11 +1,11 @@
-id;created_by;created_at;modified_by;modified_at;name;description;short_name;team_id;status;start_date;end_date
-1;1;2023-01-01T10:00:00;1;2023-01-01T10:00:00;Customer Portal;Customer-facing web portal;cust;1;Active;2023-01-02T00:00:00;2023-06-30T00:00:00
-2;1;2023-01-05T09:30:00;1;2023-01-05T09:30:00;CRM System;Manage contacts and leads;crm;2;Active;2023-01-10T00:00:00;2023-07-31T00:00:00
-3;1;2023-02-01T11:15:00;1;2023-02-01T11:15:00;Mobile App;Android/iOS application;mob;1;Active;2023-02-05T00:00:00;2023-09-01T00:00:00
-4;1;2023-02-10T08:45:00;1;2023-02-10T08:45:00;API Gateway;Unified API gateway;api;2;Active;2023-02-15T00:00:00;2023-08-31T00:00:00
-5;1;2023-03-01T14:00:00;1;2023-03-01T14:00:00;Billing Service;Handles subscriptions and payments;bill;1;Active;2023-03-02T00:00:00;2023-12-31T00:00:00
-6;1;2023-03-10T15:30:00;1;2023-03-10T15:30:00;Internal Tools;Admin dashboards and tools;tools;2;Active;2023-03-15T00:00:00;2023-10-30T00:00:00
-7;1;2023-03-20T09:00:00;1;2023-03-20T09:00:00;Analytics Platform;Tracks usage and metrics;data;1;Active;2023-04-01T00:00:00;2023-11-15T00:00:00
-8;1;2023-04-01T13:20:00;1;2023-04-01T13:20:00;DevOps Automation;CICD and infra provisioning;dev;2;Active;2023-04-05T00:00:00;2023-10-01T00:00:00
-9;1;2023-04-10T07:45:00;1;2023-04-10T07:45:00;Knowledge Base;Internal documentation;kb;1;Active;2023-04-15T00:00:00;2023-09-30T00:00:00
-10;1;2023-04-20T12:00:00;1;2023-04-20T12:00:00;Email Service;Email notifications and campaigns;email;2;Active;2023-04-25T00:00:00;2023-12-01T00:00:00
+id;created_by;created_at;modified_by;modified_at;name;description;short_name;team_id;status;start_date;end_date;tenant_id
+1;1;2023-01-01T10:00:00;1;2023-01-01T10:00:00;Customer Portal;Customer-facing web portal;cust;1;Active;2023-01-02T00:00:00;2023-06-30T00:00:00;00000000-0000-0000-0000-000000000001
+2;1;2023-01-05T09:30:00;1;2023-01-05T09:30:00;CRM System;Manage contacts and leads;crm;2;Active;2023-01-10T00:00:00;2023-07-31T00:00:00;00000000-0000-0000-0000-000000000001
+3;1;2023-02-01T11:15:00;1;2023-02-01T11:15:00;Mobile App;Android/iOS application;mob;1;Active;2023-02-05T00:00:00;2023-09-01T00:00:00;00000000-0000-0000-0000-000000000001
+4;1;2023-02-10T08:45:00;1;2023-02-10T08:45:00;API Gateway;Unified API gateway;api;2;Active;2023-02-15T00:00:00;2023-08-31T00:00:00;00000000-0000-0000-0000-000000000001
+5;1;2023-03-01T14:00:00;1;2023-03-01T14:00:00;Billing Service;Handles subscriptions and payments;bill;1;Active;2023-03-02T00:00:00;2023-12-31T00:00:00;00000000-0000-0000-0000-000000000001
+6;1;2023-03-10T15:30:00;1;2023-03-10T15:30:00;Internal Tools;Admin dashboards and tools;tools;2;Active;2023-03-15T00:00:00;2023-10-30T00:00:00;00000000-0000-0000-0000-000000000001
+7;1;2023-03-20T09:00:00;1;2023-03-20T09:00:00;Analytics Platform;Tracks usage and metrics;data;1;Active;2023-04-01T00:00:00;2023-11-15T00:00:00;00000000-0000-0000-0000-000000000001
+8;1;2023-04-01T13:20:00;1;2023-04-01T13:20:00;DevOps Automation;CICD and infra provisioning;dev;2;Active;2023-04-05T00:00:00;2023-10-01T00:00:00;00000000-0000-0000-0000-000000000001
+9;1;2023-04-10T07:45:00;1;2023-04-10T07:45:00;Knowledge Base;Internal documentation;kb;1;Active;2023-04-15T00:00:00;2023-09-30T00:00:00;00000000-0000-0000-0000-000000000001
+10;1;2023-04-20T12:00:00;1;2023-04-20T12:00:00;Email Service;Email notifications and campaigns;email;2;Active;2023-04-25T00:00:00;2023-12-01T00:00:00;00000000-0000-0000-0000-000000000001

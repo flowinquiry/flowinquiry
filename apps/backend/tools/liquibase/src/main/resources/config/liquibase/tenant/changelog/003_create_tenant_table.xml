@@ -400,7 +400,55 @@
 		</createIndex>
 	</changeSet>
 	<changeSet
-		id="003:15-alter-tenant_relationship-to-team-workflow-selection-table"
+		id="003:15-alter-tenant_relationship-to-team-table"
+		author="flowinquiry">
+		<addColumn tableName="fw_team">
+			<column name="tenant_id" type="UUID" />
+		</addColumn>
+
+		<update tableName="fw_team">
+			<column name="tenant_id"
+				value="00000000-0000-0000-0000-000000000001" />
+		</update>
+
+		<addNotNullConstraint tableName="fw_team"
+			columnName="tenant_id" columnDataType="UUID" />
+
+		<addForeignKeyConstraint
+			baseTableName="fw_team" baseColumnNames="tenant_id"
+			constraintName="fk_fw_team_tenant" referencedTableName="fw_tenant"
+			referencedColumnNames="id" />
+		<createIndex indexName="idx_fw_team_tenant_id"
+			tableName="fw_team">
+			<column name="tenant_id" />
+		</createIndex>
+	</changeSet>
+	<changeSet
+		id="003:16-alter-tenant_relationship-to-team-role-table"
+		author="flowinquiry">
+		<addColumn tableName="fw_team_role">
+			<column name="tenant_id" type="UUID" />
+		</addColumn>
+
+		<update tableName="fw_team_role">
+			<column name="tenant_id"
+				value="00000000-0000-0000-0000-000000000001" />
+		</update>
+
+		<addNotNullConstraint tableName="fw_team_role"
+			columnName="tenant_id" columnDataType="UUID" />
+
+		<addForeignKeyConstraint
+			baseTableName="fw_team_role" baseColumnNames="tenant_id"
+			constraintName="fk_fw_team_role_tenant"
+			referencedTableName="fw_tenant" referencedColumnNames="id" />
+		<createIndex indexName="idx_fw_team_role_tenant_id"
+			tableName="fw_team_role">
+			<column name="tenant_id" />
+		</createIndex>
+	</changeSet>
+	<changeSet
+		id="003:17-alter-tenant_relationship-to-team-workflow-selection-table"
 		author="flowinquiry">
 		<addColumn tableName="fw_team_workflow_selection">
 			<column name="tenant_id" type="UUID" />
@@ -427,7 +475,7 @@
 		</createIndex>
 	</changeSet>
 	<changeSet
-		id="003:16-alter-tenant_relationship-to-ticket-table"
+		id="003:18-alter-tenant_relationship-to-ticket-table"
 		author="flowinquiry">
 		<addColumn tableName="fw_ticket">
 			<column name="tenant_id" type="UUID" />
@@ -451,7 +499,7 @@
 		</createIndex>
 	</changeSet>
 	<changeSet
-		id="003:17-alter-tenant_relationship-to-ticket-conversation-health-table"
+		id="003:19-alter-tenant_relationship-to-ticket-conversation-health-table"
 		author="flowinquiry">
 		<addColumn tableName="fw_ticket_conversation_health">
 			<column name="tenant_id" type="UUID" />
@@ -478,7 +526,7 @@
 		</createIndex>
 	</changeSet>
 	<changeSet
-		id="003:18-alter-tenant_relationship-to-user-table"
+		id="003:20-alter-tenant_relationship-to-user-table"
 		author="flowinquiry">
 		<addColumn tableName="fw_user">
 			<column name="tenant_id" type="UUID" />
@@ -502,7 +550,7 @@
 		</createIndex>
 	</changeSet>
 	<changeSet
-		id="003:19-alter-tenant_relationship-to-user-auth-table"
+		id="003:21-alter-tenant_relationship-to-user-auth-table"
 		author="flowinquiry">
 		<addColumn tableName="fw_user_auth">
 			<column name="tenant_id" type="UUID" />
@@ -526,7 +574,7 @@
 		</createIndex>
 	</changeSet>
 	<changeSet
-		id="003:20-alter-tenant_relationship-to-user-authority-table"
+		id="003:22-alter-tenant_relationship-to-user-authority-table"
 		author="flowinquiry">
 		<addColumn tableName="fw_user_authority">
 			<column name="tenant_id" type="UUID" />
@@ -551,7 +599,7 @@
 		</createIndex>
 	</changeSet>
 	<changeSet
-		id="003:21-alter-tenant_relationship-to-user-team-table"
+		id="003:23-alter-tenant_relationship-to-user-team-table"
 		author="flowinquiry">
 		<addColumn tableName="fw_user_team">
 			<column name="tenant_id" type="UUID" />
@@ -575,7 +623,7 @@
 		</createIndex>
 	</changeSet>
 	<changeSet
-		id="003:22-alter-tenant_relationship-to-workflow-table"
+		id="003:24-alter-tenant_relationship-to-workflow-table"
 		author="flowinquiry">
 		<addColumn tableName="fw_workflow">
 			<column name="tenant_id" type="UUID" />
@@ -599,7 +647,7 @@
 		</createIndex>
 	</changeSet>
 	<changeSet
-		id="003:23-alter-tenant_relationship-to-workflow-actions-table"
+		id="003:25-alter-tenant_relationship-to-workflow-actions-table"
 		author="flowinquiry">
 		<addColumn tableName="fw_workflow_actions">
 			<column name="tenant_id" type="UUID" />
@@ -624,7 +672,7 @@
 		</createIndex>
 	</changeSet>
 	<changeSet
-		id="003:24-alter-tenant_relationship-to-workflow-state-table"
+		id="003:26-alter-tenant_relationship-to-workflow-state-table"
 		author="flowinquiry">
 		<addColumn tableName="fw_workflow_state">
 			<column name="tenant_id" type="UUID" />
@@ -649,7 +697,7 @@
 		</createIndex>
 	</changeSet>
 	<changeSet
-		id="003:25-alter-tenant_relationship-to-workflow-transition-table"
+		id="003:27-alter-tenant_relationship-to-workflow-transition-table"
 		author="flowinquiry">
 		<addColumn tableName="fw_workflow_transition">
 			<column name="tenant_id" type="UUID" />
@@ -675,7 +723,7 @@
 		</createIndex>
 	</changeSet>
 	<changeSet
-		id="003:26-alter-tenant_relationship-to-workflow-transition-history-table"
+		id="003:28-alter-tenant_relationship-to-workflow-transition-history-table"
 		author="flowinquiry">
 		<addColumn tableName="fw_workflow_transition_history">
 			<column name="tenant_id" type="UUID" />

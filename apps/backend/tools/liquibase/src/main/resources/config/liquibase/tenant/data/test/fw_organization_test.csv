@@ -1,6 +1,6 @@
-id;name;logo_url;slogan;description
-1;Tech Innovators;https://example.com/logos/tech-innovators.png;Innovating the Future;A leading tech company focused on cutting-edge innovations in AI and robotics.
-2;Green Earth Solutions;https://example.com/logos/green-earth.png;Sustainability for All;Providing sustainable solutions for a greener planet, specializing in renewable energy.
-3;Healthcare United;https://example.com/logos/healthcare-united.png;Your Health, Our Mission;A healthcare organization dedicated to providing affordable and quality health services.
-4;EduSmart;https://example.com/logos/edusmart.png;Empowering Minds;An educational organization creating resources to enhance learning for students worldwide.
-5;Global Finance;https://example.com/logos/global-finance.png;Your Trustworthy Partner;A finance firm offering a wide range of investment and advisory services.
+id;name;logo_url;slogan;description;tenant_id
+1;Tech Innovators;https://example.com/logos/tech-innovators.png;Innovating the Future;A leading tech company focused on cutting-edge innovations in AI and robotics.;00000000-0000-0000-0000-000000000001
+2;Green Earth Solutions;https://example.com/logos/green-earth.png;Sustainability for All;Providing sustainable solutions for a greener planet, specializing in renewable energy.;00000000-0000-0000-0000-000000000001
+3;Healthcare United;https://example.com/logos/healthcare-united.png;Your Health, Our Mission;A healthcare organization dedicated to providing affordable and quality health services.;00000000-0000-0000-0000-000000000001
+4;EduSmart;https://example.com/logos/edusmart.png;Empowering Minds;An educational organization creating resources to enhance learning for students worldwide.;00000000-0000-0000-0000-000000000001
+5;Global Finance;https://example.com/logos/global-finance.png;Your Trustworthy Partner;A finance firm offering a wide range of investment and advisory services.;00000000-0000-0000-0000-000000000001
