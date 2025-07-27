@@ -1,6 +1,7 @@
 package io.flowinquiry.modules.usermanagement.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.flowinquiry.tenant.domain.TenantScopedEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -12,7 +13,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -32,7 +32,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserAuth {
+public class UserAuth extends TenantScopedEntity {
 
     public static final String UP_AUTH_PROVIDER = "UsernameAndPassword";
 
@@ -54,7 +54,4 @@ public class UserAuth {
     @NotNull @Size(min = 60, max = 60) @Column(name = "password_hash", length = 60, nullable = false)
     @ToString.Exclude
     private String passwordHash;
-
-    @Column(name = "tenant_id", nullable = false, updatable = false)
-    private UUID tenantId;
 }

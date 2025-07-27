@@ -1,9 +1,8 @@
 package io.flowinquiry.modules.teams.domain;
 
-import io.flowinquiry.modules.audit.domain.AbstractAuditingEntity;
+import io.flowinquiry.tenant.domain.TenantScopedAuditingEntity;
 import jakarta.persistence.*;
 import java.time.Instant;
-import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,7 +13,7 @@ import org.hibernate.annotations.Formula;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ProjectIteration extends AbstractAuditingEntity<Long> {
+public class ProjectIteration extends TenantScopedAuditingEntity<Long> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,7 +43,4 @@ public class ProjectIteration extends AbstractAuditingEntity<Long> {
 
     @Formula("(SELECT COUNT(r.id) FROM fw_ticket r WHERE r.iteration_id = id)")
     private Long totalTickets;
-
-    @Column(name = "tenant_id", nullable = false, updatable = false)
-    private UUID tenantId;
 }

@@ -1,12 +1,11 @@
 package io.flowinquiry.modules.teams.domain;
 
-import io.flowinquiry.modules.audit.domain.AbstractAuditingEntity;
 import io.flowinquiry.modules.usermanagement.domain.User;
+import io.flowinquiry.tenant.domain.TenantScopedAuditingEntity;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -26,7 +25,7 @@ import org.hibernate.annotations.Formula;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Ticket extends AbstractAuditingEntity<Long> {
+public class Ticket extends TenantScopedAuditingEntity<Long> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -124,7 +123,4 @@ public class Ticket extends AbstractAuditingEntity<Long> {
 
     @OneToMany(mappedBy = "parentTicket", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Ticket> childTickets = new ArrayList<>();
-
-    @Column(name = "tenant_id", nullable = false, updatable = false)
-    private UUID tenantId;
 }

@@ -1,5 +1,6 @@
 package io.flowinquiry.modules.fss.domain;
 
+import io.flowinquiry.tenant.domain.TenantScopedCreationAuditingEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -9,7 +10,6 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.Instant;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -31,7 +31,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class EntityAttachment {
+public class EntityAttachment extends TenantScopedCreationAuditingEntity<Long> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -60,9 +60,6 @@ public class EntityAttachment {
 
     @Column(name = "uploaded_at", nullable = false, updatable = false)
     private Instant uploadedAt;
-
-    @Column(name = "tenant_id", nullable = false, updatable = false)
-    private UUID tenantId;
 
     @PrePersist
     public void prePersist() {

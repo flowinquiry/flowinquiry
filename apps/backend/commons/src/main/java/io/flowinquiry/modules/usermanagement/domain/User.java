@@ -1,9 +1,9 @@
 package io.flowinquiry.modules.usermanagement.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.flowinquiry.modules.audit.domain.AbstractAuditingEntity;
 import io.flowinquiry.modules.collab.domain.EntityWatcher;
 import io.flowinquiry.modules.teams.domain.Team;
+import io.flowinquiry.tenant.domain.TenantScopedAuditingEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -23,11 +23,9 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.io.Serial;
-import java.io.Serializable;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -48,7 +46,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class User extends AbstractAuditingEntity<Long> implements Serializable {
+public class User extends TenantScopedAuditingEntity<Long> {
 
     @Serial private static final long serialVersionUID = 1L;
 
@@ -120,9 +118,6 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
 
     @Column(name = "last_login_time")
     private Instant lastLoginTime;
-
-    @Column(name = "tenant_id", nullable = false, updatable = false)
-    private UUID tenantId;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UserAuth> userAuths = new HashSet<>();

@@ -1,6 +1,7 @@
 package io.flowinquiry.modules.collab.domain;
 
 import io.flowinquiry.modules.usermanagement.domain.User;
+import io.flowinquiry.tenant.domain.TenantScopedEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -13,10 +14,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.Instant;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -33,7 +32,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ActivityLog {
+public class ActivityLog extends TenantScopedEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -56,12 +55,6 @@ public class ActivityLog {
             columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP")
     private Instant createdAt;
 
-    @Column(
-            name = "updated_at",
-            nullable = false,
-            columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP")
-    private Instant updatedAt;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
             name = "created_by",
@@ -69,17 +62,8 @@ public class ActivityLog {
             foreignKey = @ForeignKey(name = "fk_activity_log_user"))
     private User createdBy;
 
-    @Column(name = "tenant_id", nullable = false, updatable = false)
-    private UUID tenantId;
-
     @PrePersist
     public void prePersist() {
         this.createdAt = Instant.now();
-        this.updatedAt = Instant.now();
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        this.updatedAt = Instant.now();
     }
 }

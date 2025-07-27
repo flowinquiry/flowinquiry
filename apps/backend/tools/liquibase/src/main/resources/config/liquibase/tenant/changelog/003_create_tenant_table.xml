@@ -749,4 +749,80 @@
 			<column name="tenant_id" />
 		</createIndex>
 	</changeSet>
+	<changeSet id="003:21-remove-redundant-fields-of-tables"
+		author="flowinquiry">
+		<dropColumn tableName="fw_activity_log"
+			columnName="updated_at" />
+		<dropColumn tableName="fw_notification"
+			columnName="modified_by" />
+		<dropColumn tableName="fw_notification"
+			columnName="modified_at" />
+		<addColumn tableName="fw_entity_attachment">
+			<column name="created_by" type="BIGINT">
+				<constraints nullable="true" />
+			</column>
+			<column name="created_at" type="timestamptz">
+				<constraints nullable="false" />
+			</column>
+		</addColumn>
+		<addForeignKeyConstraint
+			baseTableName="fw_entity_attachment" baseColumnNames="created_by"
+			constraintName="fk_entity_attachment_created_by"
+			referencedTableName="fw_user" referencedColumnNames="id"
+			deferrable="false" initiallyDeferred="false" onDelete="SET NULL" />
+
+		<addColumn tableName="fw_organization">
+			<column name="created_by" type="BIGINT">
+				<constraints nullable="true" />
+			</column>
+			<column name="created_at" type="timestamptz">
+				<constraints nullable="false" />
+			</column>
+			<column name="modified_by" type="BIGINT">
+				<constraints nullable="true" />
+			</column>
+			<column name="modified_at" type="timestamptz">
+				<constraints nullable="false" />
+			</column>
+		</addColumn>
+
+		<addForeignKeyConstraint
+			baseTableName="fw_organization" baseColumnNames="created_by"
+			constraintName="fk_organization_created_by"
+			referencedTableName="fw_user" referencedColumnNames="id"
+			onDelete="SET NULL" />
+
+		<addForeignKeyConstraint
+			baseTableName="fw_organization" baseColumnNames="modified_by"
+			constraintName="fk_organization_modified_by"
+			referencedTableName="fw_user" referencedColumnNames="id"
+			onDelete="SET NULL" />
+
+		<addColumn tableName="fw_authority">
+			<column name="created_by" type="BIGINT">
+				<constraints nullable="true" />
+			</column>
+			<column name="created_at" type="timestamptz">
+				<constraints nullable="false" />
+			</column>
+			<column name="modified_by" type="BIGINT">
+				<constraints nullable="true" />
+			</column>
+			<column name="modified_at" type="timestamptz">
+				<constraints nullable="false" />
+			</column>
+		</addColumn>
+
+		<addForeignKeyConstraint
+			baseTableName="fw_authority" baseColumnNames="created_by"
+			constraintName="fk_authority_created_by"
+			referencedTableName="fw_user" referencedColumnNames="id"
+			onDelete="SET NULL" />
+
+		<addForeignKeyConstraint
+			baseTableName="fw_authority" baseColumnNames="modified_by"
+			constraintName="fk_authority_modified_by"
+			referencedTableName="fw_user" referencedColumnNames="id"
+			onDelete="SET NULL" />
+	</changeSet>
 </databaseChangeLog>

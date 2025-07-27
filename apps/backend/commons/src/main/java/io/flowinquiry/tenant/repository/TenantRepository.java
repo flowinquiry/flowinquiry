@@ -1,6 +1,6 @@
-package io.flowinquiry.modules.tenant.repository;
+package io.flowinquiry.tenant.repository;
 
-import io.flowinquiry.modules.tenant.domain.Tenant;
+import io.flowinquiry.tenant.domain.Tenant;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,10 +1,9 @@
 package io.flowinquiry.modules.teams.domain;
 
-import io.flowinquiry.modules.audit.domain.AbstractAuditingEntity;
+import io.flowinquiry.tenant.domain.TenantScopedAuditingEntity;
 import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.*;
 import java.util.Map;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,7 +20,7 @@ import org.hibernate.type.SqlTypes;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProjectSetting extends AbstractAuditingEntity<Long> {
+public class ProjectSetting extends TenantScopedAuditingEntity<Long> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -53,7 +52,4 @@ public class ProjectSetting extends AbstractAuditingEntity<Long> {
     @Type(JsonBinaryType.class)
     @JdbcTypeCode(SqlTypes.JSON)
     private Map<String, Object> integrationSettings;
-
-    @Column(name = "tenant_id", nullable = false, updatable = false)
-    private UUID tenantId;
 }

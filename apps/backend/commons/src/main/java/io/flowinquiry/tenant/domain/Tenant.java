@@ -1,4 +1,4 @@
-package io.flowinquiry.modules.tenant.domain;
+package io.flowinquiry.tenant.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

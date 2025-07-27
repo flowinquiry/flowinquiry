@@ -1,4 +1,4 @@
-package io.flowinquiry.modules.tenant.domain;
+package io.flowinquiry.tenant.domain;
 
 public enum TenantAccessType {
     SUBDOMAIN, // e.g. acme.flowinquiry.io

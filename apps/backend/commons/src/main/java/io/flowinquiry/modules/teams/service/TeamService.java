@@ -159,15 +159,19 @@ public class TeamService {
 
         List<UserTeam> userTeams =
                 users.stream()
-                        .map(
+                        .<UserTeam>map(
                                 user ->
-                                        new UserTeam(
-                                                new UserTeamId(
-                                                        user.getId(), team.getId(), roleName),
-                                                user,
-                                                team,
-                                                teamRole,
-                                                user.getTenantId()))
+                                        UserTeam.builder()
+                                                .id(
+                                                        new UserTeamId(
+                                                                user.getId(),
+                                                                team.getId(),
+                                                                roleName))
+                                                .user(user)
+                                                .team(team)
+                                                .role(teamRole)
+                                                .tenantId(user.getTenantId())
+                                                .build())
                         .toList();
 
         // Save all UserTeam entities in a batch

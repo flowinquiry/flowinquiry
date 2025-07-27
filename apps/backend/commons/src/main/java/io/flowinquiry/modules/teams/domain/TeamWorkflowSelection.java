@@ -1,6 +1,6 @@
 package io.flowinquiry.modules.teams.domain;
 
-import jakarta.persistence.Column;
+import io.flowinquiry.tenant.domain.TenantScopedEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -8,7 +8,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -25,7 +24,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class TeamWorkflowSelection {
+public class TeamWorkflowSelection extends TenantScopedEntity {
 
     @EqualsAndHashCode.Include
     @Id
@@ -39,7 +38,4 @@ public class TeamWorkflowSelection {
     @ManyToOne
     @JoinColumn(name = "workflow_id", nullable = false)
     private Workflow workflow;
-
-    @Column(name = "tenant_id", nullable = false, updatable = false)
-    private UUID tenantId;
 }

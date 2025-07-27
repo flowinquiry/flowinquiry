@@ -35,7 +35,6 @@ public class ActivityLogMapperTest {
                         .entityId(2L)
                         .content("Test content")
                         .createdAt(now)
-                        .updatedAt(now)
                         .createdBy(user)
                         .build();
 
@@ -71,7 +70,6 @@ public class ActivityLogMapperTest {
                         .entityId(2L)
                         .content("Test content")
                         .createdAt(now)
-                        .updatedAt(now)
                         .createdBy(null)
                         .build();
 

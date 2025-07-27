@@ -1,5 +1,6 @@
 package io.flowinquiry.modules.collab.domain;
 
+import io.flowinquiry.tenant.domain.TenantScopedEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -7,7 +8,6 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.Instant;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,7 +22,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AppSetting {
+public class AppSetting extends TenantScopedEntity {
     @Id
     @Column(name = "setting_key", length = 100, nullable = false)
     private String key;
@@ -41,9 +41,6 @@ public class AppSetting {
 
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
-
-    @Column(name = "tenant_id", nullable = false, updatable = false)
-    private UUID tenantId;
 
     @PrePersist
     @PreUpdate
