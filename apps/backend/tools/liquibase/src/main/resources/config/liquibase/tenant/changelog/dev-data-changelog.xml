@@ -34,6 +34,7 @@
 			<column name="address" type="STRING" />
 			<column name="city" type="STRING" />
 			<column name="state" type="STRING" />
+			<column name="tenant_id" type="uuid" />
 		</loadData>
 		<sql>SELECT setval('fw_user_id_seq', (SELECT MAX(id) FROM fw_user));</sql>
 		<loadData
@@ -44,6 +45,7 @@
 			<column name="auth_provider" type="STRING" />
 			<column name="provider_user_id" type="STRING" />
 			<column name="password_hash" type="STRING" />
+			<column name="tenant_id" type="uuid" />
 		</loadData>
 		<sql>SELECT setval('fw_user_auth_id_seq', (SELECT MAX(id) FROM
 			fw_user_auth));</sql>
@@ -56,6 +58,8 @@
 			separator=";" tableName="fw_user_authority"
 			usePreparedStatements="true">
 			<column name="user_id" type="numeric" />
+			<column name="authority_name" type="numeric" />
+			<column name="tenant_id" type="uuid" />
 		</loadData>
 		<loadData
 			file="config/liquibase/tenant/data/dev/fw_organization_dev.csv"
@@ -66,6 +70,7 @@
 			<column name="logo_url" type="STRING" />
 			<column name="slogan" type="STRING" />
 			<column name="description" type="STRING" />
+			<column name="tenant_id" type="uuid" />
 		</loadData>
 		<sql>SELECT setval('fw_organization_id_seq', (SELECT MAX(id) FROM
 			fw_organization));</sql>
@@ -82,6 +87,7 @@
 			<column name="slogan" type="STRING" />
 			<column name="description" type="STRING" />
 			<column name="organization_id" type="NUMERIC" />
+			<column name="tenant_id" type="uuid" />
 		</loadData>
 		<sql>SELECT setval('fw_team_id_seq', (SELECT MAX(id) FROM fw_team));</sql>
 	</changeSet>
@@ -94,6 +100,7 @@
 			<column name="user_id" type="NUMERIC" />
 			<column name="team_id" type="NUMERIC" />
 			<column name="role_name" type="STRING" />
+			<column name="tenant_id" type="uuid" />
 		</loadData>
 	</changeSet>
 
@@ -107,6 +114,7 @@
 			<column name="name" type="string" />
 			<column name="description" type="string" />
 			<column name="owner_id" type="numeric" />
+			<column name="tenant_id" type="uuid" />
 		</loadData>
 		<sql>SELECT setval('fw_workflow_id_seq', (SELECT MAX(id) FROM
 			fw_workflow));</sql>
@@ -119,6 +127,7 @@
 			<column name="state_name" type="string" />
 			<column name="is_initial" type="boolean" />
 			<column name="is_final" type="boolean" />
+			<column name="tenant_id" type="uuid" />
 		</loadData>
 		<sql>SELECT setval('fw_workflow_state_id_seq', (SELECT MAX(id) FROM
 			fw_workflow_state));</sql>
@@ -133,6 +142,7 @@
 			<column name="event_name" type="string" />
 			<column name="sla_duration" type="numeric" />
 			<column name="escalate_on_violation" type="boolean" />
+			<column name="tenant_id" type="uuid" />
 		</loadData>
 		<sql>SELECT setval('fw_workflow_transition_id_seq', (SELECT MAX(id)
 			FROM fw_workflow_transition));</sql>
@@ -147,6 +157,7 @@
 			<column name="id" type="numeric" />
 			<column name="workflow_id" type="numeric" />
 			<column name="team_id" type="numeric" />
+			<column name="tenant_id" type="uuid" />
 		</loadData>
 		<sql>SELECT setval('fw_team_workflow_selection_id_seq', (SELECT
 			MAX(id) FROM fw_team_workflow_selection));</sql>

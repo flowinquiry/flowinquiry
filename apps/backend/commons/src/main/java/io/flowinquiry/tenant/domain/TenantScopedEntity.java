@@ -1,7 +1,9 @@
 package io.flowinquiry.tenant.domain;
 
+import io.flowinquiry.tenant.context.TenantContext;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.PrePersist;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,4 +24,15 @@ public abstract class TenantScopedEntity {
 
     @Column(name = "tenant_id", nullable = false, updatable = false)
     private UUID tenantId;
+
+    @PrePersist
+    public void applyTenantScope() {
+        if (tenantId == null) {
+            UUID currentTenantId = TenantContext.getTenantId();
+            if (currentTenantId == null) {
+                throw new IllegalStateException("TenantContext is not set");
+            }
+            this.tenantId = currentTenantId;
+        }
+    }
 }

@@ -183,18 +183,16 @@ class ProjectControllerIT {
     @Test
     @Transactional
     void getProjectById() throws Exception {
-        // Initialize the database
-        projectRepository.saveAndFlush(project);
 
         // Get the project
         restProjectMockMvc
-                .perform(get("/api/projects/{id}", project.getId()))
+                .perform(get("/api/projects/{id}", 1L))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(jsonPath("$.id").value(project.getId().intValue()))
-                .andExpect(jsonPath("$.name").value(DEFAULT_NAME))
-                .andExpect(jsonPath("$.description").value(DEFAULT_DESCRIPTION))
-                .andExpect(jsonPath("$.shortName").value(DEFAULT_SHORT_NAME))
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.name").value("Customer Portal"))
+                .andExpect(jsonPath("$.description").value("Customer-facing web portal"))
+                .andExpect(jsonPath("$.shortName").value("cust"))
                 .andExpect(jsonPath("$.status").value(DEFAULT_STATUS.toString()));
     }
 

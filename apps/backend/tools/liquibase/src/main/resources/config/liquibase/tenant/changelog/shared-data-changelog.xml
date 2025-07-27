@@ -42,6 +42,7 @@
 			<column name="address" type="STRING" />
 			<column name="city" type="STRING" />
 			<column name="state" type="STRING" />
+			<column name="tenant_id" type="uuid" />
 		</loadData>
 		<sql>SELECT setval('fw_user_id_seq', (SELECT MAX(id) FROM fw_user));</sql>
 		<loadData
@@ -52,6 +53,7 @@
 			<column name="auth_provider" type="STRING" />
 			<column name="provider_user_id" type="STRING" />
 			<column name="password_hash" type="STRING" />
+			<column name="tenant_id" type="uuid" />
 		</loadData>
 		<sql>SELECT setval('fw_user_auth_id_seq', (SELECT MAX(id) FROM
 			fw_user_auth));</sql>
@@ -64,6 +66,8 @@
 			separator=";" tableName="fw_user_authority"
 			usePreparedStatements="true">
 			<column name="user_id" type="numeric" />
+			<column name="authority_name" type="string" />
+			<column name="tenant_id" type="uuid" />
 		</loadData>
 	</changeSet>
 

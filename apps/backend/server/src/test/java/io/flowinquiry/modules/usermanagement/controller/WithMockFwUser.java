@@ -1,10 +1,13 @@
 package io.flowinquiry.modules.usermanagement.controller;
 
+import static java.util.stream.Collectors.*;
+
 import io.flowinquiry.modules.usermanagement.AuthoritiesConstants;
 import io.flowinquiry.modules.usermanagement.domain.Authority;
 import io.flowinquiry.modules.usermanagement.domain.User;
 import io.flowinquiry.modules.usermanagement.domain.UserAuth;
 import io.flowinquiry.modules.usermanagement.domain.UserStatus;
+import io.flowinquiry.security.SecurityUtils;
 import io.flowinquiry.security.domain.FwUserDetails;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -13,10 +16,12 @@ import java.lang.annotation.Target;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.test.context.support.WithSecurityContext;
 import org.springframework.security.test.context.support.WithSecurityContextFactory;
 
@@ -75,9 +80,21 @@ public @interface WithMockFwUser {
             // Create FwUserDetails from the User object
             FwUserDetails principal = new FwUserDetails(user);
 
-            Authentication auth =
-                    new UsernamePasswordAuthenticationToken(
-                            principal, "password", principal.getAuthorities());
+            // Create a JWT token with claims
+            Jwt jwt =
+                    Jwt.withTokenValue("mock-token")
+                            .header("alg", "HS512")
+                            .subject(principal.getUsername())
+                            .claim(SecurityUtils.TENANT_ID, user.getTenantId())
+                            .claim(SecurityUtils.USER_ID, user.getId())
+                            .claim(
+                                    SecurityUtils.AUTHORITIES_KEY,
+                                    principal.getAuthorities().stream()
+                                            .map(GrantedAuthority::getAuthority)
+                                            .collect(joining(" ")))
+                            .build();
+
+            Authentication auth = new JwtAuthenticationToken(jwt, principal.getAuthorities());
             context.setAuthentication(auth);
             return context;
         }
