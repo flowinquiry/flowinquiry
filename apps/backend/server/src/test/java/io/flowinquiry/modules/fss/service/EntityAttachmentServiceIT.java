@@ -8,7 +8,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import io.flowinquiry.IntegrationTest;
+import io.flowinquiry.it.IntegrationTest;
 import io.flowinquiry.modules.fss.domain.EntityAttachment;
 import io.flowinquiry.modules.fss.repository.EntityAttachmentRepository;
 import io.flowinquiry.modules.fss.service.dto.EntityAttachmentDTO;

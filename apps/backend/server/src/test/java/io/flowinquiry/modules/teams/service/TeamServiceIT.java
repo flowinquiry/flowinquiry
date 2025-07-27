@@ -10,8 +10,8 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import io.flowinquiry.IntegrationTest;
 import io.flowinquiry.exceptions.ResourceNotFoundException;
+import io.flowinquiry.it.IntegrationTest;
 import io.flowinquiry.modules.teams.service.dto.TeamDTO;
 import io.flowinquiry.modules.teams.service.event.NewTeamCreatedEvent;
 import io.flowinquiry.modules.teams.service.event.RemoveUserOutOfTeamEvent;

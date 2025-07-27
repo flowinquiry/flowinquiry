@@ -10,7 +10,7 @@ import static org.mockito.Mockito.when;
 import com.icegreen.greenmail.configuration.GreenMailConfiguration;
 import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.util.ServerSetupTest;
-import io.flowinquiry.IntegrationTest;
+import io.flowinquiry.it.IntegrationTest;
 import io.flowinquiry.modules.shared.Constants;
 import io.flowinquiry.modules.usermanagement.service.dto.UserDTO;
 import jakarta.mail.Multipart;

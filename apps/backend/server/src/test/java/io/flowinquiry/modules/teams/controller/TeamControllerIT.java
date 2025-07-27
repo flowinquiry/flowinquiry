@@ -10,14 +10,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.flowinquiry.IntegrationTest;
+import io.flowinquiry.it.IntegrationTest;
+import io.flowinquiry.it.WithMockFwUser;
 import io.flowinquiry.modules.teams.domain.Team;
 import io.flowinquiry.modules.teams.repository.TeamRepository;
 import io.flowinquiry.modules.teams.service.TeamService;
 import io.flowinquiry.modules.teams.service.dto.TeamDTO;
 import io.flowinquiry.modules.teams.service.mapper.TeamMapper;
 import io.flowinquiry.modules.usermanagement.AuthoritiesConstants;
-import io.flowinquiry.modules.usermanagement.controller.WithMockFwUser;
 import io.flowinquiry.modules.usermanagement.domain.User;
 import io.flowinquiry.modules.usermanagement.domain.UserTeam;
 import io.flowinquiry.modules.usermanagement.domain.UserTeamId;

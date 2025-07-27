@@ -3,7 +3,7 @@ package io.flowinquiry.modules.usermanagement.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
-import io.flowinquiry.IntegrationTest;
+import io.flowinquiry.it.IntegrationTest;
 import io.flowinquiry.modules.usermanagement.domain.Authority;
 import io.flowinquiry.modules.usermanagement.domain.User;
 import io.flowinquiry.modules.usermanagement.repository.AuthorityRepository;

@@ -11,7 +11,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.flowinquiry.IntegrationTest;
+import io.flowinquiry.it.IntegrationTest;
+import io.flowinquiry.it.WithMockFwUser;
+import io.flowinquiry.it.WithTestTenant;
 import io.flowinquiry.modules.teams.domain.Project;
 import io.flowinquiry.modules.teams.domain.ProjectEpic;
 import io.flowinquiry.modules.teams.domain.ProjectIteration;
@@ -27,7 +29,6 @@ import io.flowinquiry.modules.teams.service.ProjectService;
 import io.flowinquiry.modules.teams.service.dto.ProjectDTO;
 import io.flowinquiry.modules.teams.service.mapper.ProjectMapper;
 import io.flowinquiry.modules.usermanagement.AuthoritiesConstants;
-import io.flowinquiry.modules.usermanagement.controller.WithMockFwUser;
 import io.flowinquiry.query.Filter;
 import io.flowinquiry.query.FilterOperator;
 import io.flowinquiry.query.QueryDTO;
@@ -36,7 +37,6 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +50,7 @@ import org.springframework.transaction.annotation.Transactional;
 @WithMockFwUser(
         userId = 1L,
         authorities = {AuthoritiesConstants.ADMIN})
+@WithTestTenant
 @IntegrationTest
 class ProjectControllerIT {
 
@@ -58,9 +59,6 @@ class ProjectControllerIT {
 
     private static final String DEFAULT_DESCRIPTION = "Test Description";
     private static final String UPDATED_DESCRIPTION = "Updated Test Description";
-
-    private static final UUID DEFAULT_TENANT_ID =
-            UUID.fromString("00000000-0000-0000-0000-000000000001");
 
     private static final String DEFAULT_SHORT_NAME = "TEST";
     private static final String UPDATED_SHORT_NAME = "UPDT";

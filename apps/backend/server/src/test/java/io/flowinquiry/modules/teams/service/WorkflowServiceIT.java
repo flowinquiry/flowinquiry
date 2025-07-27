@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 
-import io.flowinquiry.IntegrationTest;
 import io.flowinquiry.exceptions.ResourceNotFoundException;
+import io.flowinquiry.it.IntegrationTest;
 import io.flowinquiry.modules.teams.domain.WorkflowVisibility;
 import io.flowinquiry.modules.teams.service.dto.WorkflowDTO;
 import io.flowinquiry.modules.teams.service.dto.WorkflowDetailedDTO;

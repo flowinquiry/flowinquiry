@@ -1,4 +1,4 @@
-package io.flowinquiry.modules.usermanagement.controller;
+package io.flowinquiry.it;
 
 import static java.util.stream.Collectors.*;
 

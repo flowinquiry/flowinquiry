@@ -11,7 +11,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.flowinquiry.IntegrationTest;
+import io.flowinquiry.it.IntegrationTest;
+import io.flowinquiry.it.WithMockFwUser;
 import io.flowinquiry.modules.teams.domain.Team;
 import io.flowinquiry.modules.teams.domain.Workflow;
 import io.flowinquiry.modules.teams.domain.WorkflowState;
@@ -27,7 +28,6 @@ import io.flowinquiry.modules.teams.service.dto.WorkflowStateDTO;
 import io.flowinquiry.modules.teams.service.dto.WorkflowTransitionDTO;
 import io.flowinquiry.modules.teams.service.mapper.WorkflowMapper;
 import io.flowinquiry.modules.usermanagement.AuthoritiesConstants;
-import io.flowinquiry.modules.usermanagement.controller.WithMockFwUser;
 import io.flowinquiry.query.Filter;
 import io.flowinquiry.query.FilterOperator;
 import io.flowinquiry.query.QueryDTO;

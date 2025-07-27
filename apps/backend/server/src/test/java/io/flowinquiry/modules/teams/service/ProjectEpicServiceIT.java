@@ -3,20 +3,13 @@ package io.flowinquiry.modules.teams.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.flowinquiry.IntegrationTest;
-import io.flowinquiry.modules.teams.domain.Project;
+import io.flowinquiry.it.IntegrationTest;
 import io.flowinquiry.modules.teams.domain.ProjectEpic;
-import io.flowinquiry.modules.teams.domain.ProjectStatus;
-import io.flowinquiry.modules.teams.domain.Team;
 import io.flowinquiry.modules.teams.repository.ProjectEpicRepository;
-import io.flowinquiry.modules.teams.repository.ProjectRepository;
-import io.flowinquiry.modules.teams.repository.TeamRepository;
 import io.flowinquiry.modules.teams.service.dto.ProjectEpicDTO;
-import io.flowinquiry.modules.teams.service.mapper.ProjectEpicMapper;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,53 +19,17 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProjectEpicServiceIT {
 
     @Autowired private ProjectEpicService projectEpicService;
-    @Autowired private ProjectRepository projectRepository;
     @Autowired private ProjectEpicRepository projectEpicRepository;
-    @Autowired private ProjectEpicMapper projectEpicMapper;
-    @Autowired private TeamRepository teamRepository;
-
-    private Team team;
-    private Project project;
-    private ProjectEpic epic;
-
-    @BeforeEach
-    public void setup() {
-        // Create a team
-        team = new Team();
-        team.setName("Test Team");
-        team = teamRepository.save(team);
-
-        // Create a project
-        project = new Project();
-        project.setName("Test Project");
-        project.setShortName(
-                "TP-"
-                        + (System.currentTimeMillis()
-                                % 10000)); // Ensure uniqueness and stay within 10 char limit
-        project.setTeam(team);
-        project.setStatus(ProjectStatus.Active);
-        project = projectRepository.save(project);
-
-        // Create an epic
-        epic = new ProjectEpic();
-        epic.setName("Test Epic");
-        epic.setDescription("Test Description");
-        epic.setProject(project);
-        epic.setStatus("ACTIVE");
-        epic.setStartDate(Instant.now());
-        epic.setEndDate(Instant.now().plusSeconds(86400)); // One day later
-        epic = projectEpicRepository.save(epic);
-    }
 
     @Test
     public void shouldFindEpicsByProjectIdSuccessfully() {
         // When: Finding epics by project ID
-        List<ProjectEpicDTO> epics = projectEpicService.findByProjectId(project.getId());
+        List<ProjectEpicDTO> epics = projectEpicService.findByProjectId(1L);
 
         // Then: Verify epics are returned
         assertThat(epics).isNotEmpty();
-        assertThat(epics).allMatch(epicDto -> epicDto.getProjectId().equals(project.getId()));
-        assertThat(epics).extracting(ProjectEpicDTO::getName).contains(epic.getName());
+        assertThat(epics).allMatch(epicDto -> epicDto.getProjectId().equals(1L));
+        assertThat(epics).extracting(ProjectEpicDTO::getName).contains("Epic Alpha");
     }
 
     @Test
@@ -87,13 +44,13 @@ public class ProjectEpicServiceIT {
     @Test
     public void shouldGetEpicByIdSuccessfully() {
         // When: Getting the epic by ID
-        Optional<ProjectEpicDTO> result = projectEpicService.getEpicById(epic.getId());
+        Optional<ProjectEpicDTO> result = projectEpicService.getEpicById(1L);
 
         // Then: Verify the epic is returned
         assertThat(result).isPresent();
-        assertThat(result.get().getId()).isEqualTo(epic.getId());
-        assertThat(result.get().getName()).isEqualTo(epic.getName());
-        assertThat(result.get().getDescription()).isEqualTo(epic.getDescription());
+        assertThat(result.get().getId()).isEqualTo(1L);
+        assertThat(result.get().getName()).isEqualTo("Epic Alpha");
+        assertThat(result.get().getDescription()).isEqualTo("Description for Epic Alpha");
     }
 
     @Test
@@ -109,7 +66,7 @@ public class ProjectEpicServiceIT {
     public void shouldSaveEpicSuccessfully() {
         // Given: A new epic DTO
         ProjectEpicDTO epicDTO = new ProjectEpicDTO();
-        epicDTO.setProjectId(project.getId());
+        epicDTO.setProjectId(1L);
         epicDTO.setName("New Test Epic");
         epicDTO.setDescription("New Test Description");
         epicDTO.setStartDate(Instant.now());
@@ -123,7 +80,7 @@ public class ProjectEpicServiceIT {
         assertThat(savedEpic.getId()).isNotNull();
         assertThat(savedEpic.getName()).isEqualTo("New Test Epic");
         assertThat(savedEpic.getDescription()).isEqualTo("New Test Description");
-        assertThat(savedEpic.getProjectId()).isEqualTo(project.getId());
+        assertThat(savedEpic.getProjectId()).isEqualTo(1L);
 
         // Verify the epic exists in the database
         assertThat(projectEpicRepository.findById(savedEpic.getId())).isPresent();
@@ -152,16 +109,16 @@ public class ProjectEpicServiceIT {
         updateDTO.setEndDate(Instant.now().plusSeconds(172800)); // Two days later
 
         // When: Updating the epic
-        ProjectEpicDTO updatedEpic = projectEpicService.updateEpic(epic.getId(), updateDTO);
+        ProjectEpicDTO updatedEpic = projectEpicService.updateEpic(1L, updateDTO);
 
         // Then: Verify the epic is updated correctly
         assertThat(updatedEpic).isNotNull();
-        assertThat(updatedEpic.getId()).isEqualTo(epic.getId());
+        assertThat(updatedEpic.getId()).isEqualTo(1L);
         assertThat(updatedEpic.getName()).isEqualTo("Updated Epic Name");
         assertThat(updatedEpic.getDescription()).isEqualTo("Updated Description");
 
         // Verify the epic is updated in the database
-        ProjectEpic dbEpic = projectEpicRepository.findById(epic.getId()).orElseThrow();
+        ProjectEpic dbEpic = projectEpicRepository.findById(1L).orElseThrow();
         assertThat(dbEpic.getName()).isEqualTo("Updated Epic Name");
         assertThat(dbEpic.getDescription()).isEqualTo("Updated Description");
     }
@@ -180,13 +137,11 @@ public class ProjectEpicServiceIT {
 
     @Test
     public void shouldDeleteEpicSuccessfully() {
-        // Given: The ID of the existing epic
-        Long epicId = epic.getId();
 
         // When: Deleting the epic
-        projectEpicService.deleteEpic(epicId);
+        projectEpicService.deleteEpic(1L);
 
         // Then: Verify the epic is deleted from the database
-        assertThat(projectEpicRepository.findById(epicId)).isEmpty();
+        assertThat(projectEpicRepository.findById(1L)).isEmpty();
     }
 }

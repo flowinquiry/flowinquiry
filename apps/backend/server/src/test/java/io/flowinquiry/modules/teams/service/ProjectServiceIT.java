@@ -3,8 +3,8 @@ package io.flowinquiry.modules.teams.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.flowinquiry.IntegrationTest;
 import io.flowinquiry.exceptions.ResourceNotFoundException;
+import io.flowinquiry.it.IntegrationTest;
 import io.flowinquiry.modules.teams.domain.ProjectStatus;
 import io.flowinquiry.modules.teams.service.dto.ProjectDTO;
 import io.flowinquiry.query.Filter;

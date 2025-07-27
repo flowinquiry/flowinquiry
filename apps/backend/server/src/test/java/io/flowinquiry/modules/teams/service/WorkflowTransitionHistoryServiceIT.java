@@ -6,8 +6,8 @@ import static io.flowinquiry.modules.teams.domain.WorkflowTransitionHistoryStatu
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.flowinquiry.IntegrationTest;
 import io.flowinquiry.exceptions.ResourceNotFoundException;
+import io.flowinquiry.it.IntegrationTest;
 import io.flowinquiry.modules.teams.domain.Team;
 import io.flowinquiry.modules.teams.domain.Ticket;
 import io.flowinquiry.modules.teams.domain.TicketPriority;

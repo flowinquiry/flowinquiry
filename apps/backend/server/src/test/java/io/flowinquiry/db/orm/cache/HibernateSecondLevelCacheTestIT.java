@@ -2,7 +2,7 @@ package io.flowinquiry.db.orm.cache;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.flowinquiry.IntegrationTest;
+import io.flowinquiry.it.IntegrationTest;
 import io.flowinquiry.modules.teams.domain.Team;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;

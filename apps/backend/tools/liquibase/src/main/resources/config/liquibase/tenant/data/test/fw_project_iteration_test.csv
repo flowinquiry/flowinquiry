@@ -1,0 +1,4 @@
+id;project_id;name;description;status;start_date;end_date;created_by;created_at;modified_by;modified_at;tenant_id
+1;1;"Iteration 1";"Description for Iteration 1";"ACTIVE";2025-07-01T00:00:00Z;2025-07-14T00:00:00Z;1;2025-07-01T12:00:00Z;1;2025-07-01T12:00:00Z;00000000-0000-0000-0000-000000000001
+2;1;"Iteration 2";"Description for Iteration 2";"ACTIVE";2025-07-15T00:00:00Z;2025-07-28T00:00:00Z;1;2025-07-02T12:00:00Z;1;2025-07-02T12:00:00Z;00000000-0000-0000-0000-000000000001
+3;1;"Iteration 3";"Description for Iteration 3";"ACTIVE";2025-07-29T00:00:00Z;2025-08-11T00:00:00Z;1;2025-07-03T12:00:00Z;1;2025-07-03T12:00:00Z;00000000-0000-0000-0000-000000000001

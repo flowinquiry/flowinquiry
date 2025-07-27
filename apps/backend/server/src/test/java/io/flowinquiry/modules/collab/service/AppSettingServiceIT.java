@@ -4,7 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import io.flowinquiry.IntegrationTest;
+import io.flowinquiry.it.IntegrationTest;
+import io.flowinquiry.it.WithTestTenant;
 import io.flowinquiry.modules.collab.domain.AppSetting;
 import io.flowinquiry.modules.collab.repository.AppSettingRepository;
 import io.flowinquiry.modules.collab.service.dto.AppSettingDTO;
@@ -22,6 +23,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
 
 @IntegrationTest
+@WithTestTenant
 @Transactional
 public class AppSettingServiceIT {
 

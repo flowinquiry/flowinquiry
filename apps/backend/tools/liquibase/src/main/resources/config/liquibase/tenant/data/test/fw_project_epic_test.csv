@@ -1,0 +1,4 @@
+id;project_id;name;description;status;priority;start_date;end_date;created_by;created_at;modified_by;modified_at;tenant_id
+1;1;"Epic Alpha";"Description for Epic Alpha";"ACTIVE";1;2025-07-01T00:00:00Z;2025-07-10T00:00:00Z;1;2025-07-01T12:00:00Z;1;2025-07-01T12:00:00Z;00000000-0000-0000-0000-000000000001
+2;1;"Epic Beta";"Description for Epic Beta";"ACTIVE";2;2025-07-11T00:00:00Z;2025-07-20T00:00:00Z;1;2025-07-02T12:00:00Z;1;2025-07-02T12:00:00Z;00000000-0000-0000-0000-000000000001
+3;1;"Epic Gamma";"Description for Epic Gamma";"ACTIVE";3;2025-07-21T00:00:00Z;2025-07-30T00:00:00Z;1;2025-07-03T12:00:00Z;1;2025-07-03T12:00:00Z;00000000-0000-0000-0000-000000000001

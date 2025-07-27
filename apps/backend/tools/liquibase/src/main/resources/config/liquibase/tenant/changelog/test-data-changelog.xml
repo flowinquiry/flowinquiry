@@ -126,6 +126,52 @@
 	</changeSet>
 
 	<changeSet author="flowinquiry"
+		id="000:09-insert-default-fw-project-epic-data" runOnChange="true">
+		<loadData tableName="fw_project_epic"
+			file="config/liquibase/tenant/data/test/fw_project_epic_test.csv"
+			separator=";">
+			<column name="id" type="NUMERIC" />
+			<column name="project_id" type="NUMERIC" />
+			<column name="name" type="STRING" />
+			<column name="description" type="STRING" />
+			<column name="status" type="STRING" />
+			<column name="priority" type="NUMERIC" />
+			<column name="start_date" type="TIMESTAMP" />
+			<column name="end_date" type="TIMESTAMP" />
+			<column name="created_by" type="NUMERIC" />
+			<column name="created_at" type="TIMESTAMP" />
+			<column name="modified_by" type="NUMERIC" />
+			<column name="modified_at" type="TIMESTAMP" />
+			<column name="tenant_id" type="UUID" />
+		</loadData>
+		<sql>SELECT setval('fw_project_epic_id_seq', (SELECT MAX(id) FROM
+			fw_project_epic));</sql>
+	</changeSet>
+
+	<changeSet author="flowinquiry"
+		id="000:10-insert-default-fw-project-iteration-data"
+		runOnChange="true">
+		<loadData tableName="fw_project_iteration"
+			file="config/liquibase/tenant/data/test/fw_project_iteration_test.csv"
+			separator=";">
+			<column name="id" type="NUMERIC" />
+			<column name="project_id" type="NUMERIC" />
+			<column name="name" type="STRING" />
+			<column name="description" type="STRING" />
+			<column name="status" type="STRING" />
+			<column name="start_date" type="TIMESTAMP" />
+			<column name="end_date" type="TIMESTAMP" />
+			<column name="created_by" type="NUMERIC" />
+			<column name="created_at" type="TIMESTAMP" />
+			<column name="modified_by" type="NUMERIC" />
+			<column name="modified_at" type="TIMESTAMP" />
+			<column name="tenant_id" type="UUID" />
+		</loadData>
+		<sql>SELECT setval('fw_project_iteration_id_seq', (SELECT MAX(id) FROM
+			fw_project_iteration));</sql>
+	</changeSet>
+
+	<changeSet author="flowinquiry"
 		id="000:11-insert-default-fw-app-setting" runOnChange="true">
 		<loadData
 			file="config/liquibase/tenant/data/test/fw_app_settings_test.csv"
@@ -141,7 +187,7 @@
 		</loadData>
 	</changeSet>
 	<changeSet author="flowinquiry"
-		id="001:01-insert-workflow-data" runOnChange="true">
+		id="000:12-insert-workflow-data" runOnChange="true">
 		<loadData
 			file="config/liquibase/tenant/data/test/fw_workflow_test.csv"
 			separator=";" tableName="fw_workflow" usePreparedStatements="true">
@@ -185,7 +231,7 @@
 
 
 	<changeSet author="flowinquiry"
-		id="001:02-insert-team-workflow-usage-data" runOnChange="true">
+		id="000:13-insert-team-workflow-usage-data" runOnChange="true">
 		<loadData
 			file="config/liquibase/tenant/data/test/fw_team_workflow_selection_test.csv"
 			separator=";" tableName="fw_team_workflow_selection"
@@ -199,7 +245,7 @@
 			MAX(id) FROM fw_team_workflow_selection));</sql>
 	</changeSet>
 	<changeSet author="flowinquiry"
-		id="001:03-insert-fw_ticket-data" runOnChange="true">
+		id="000:14-insert-fw_ticket-data" runOnChange="true">
 		<loadData
 			file="config/liquibase/tenant/data/test/fw_ticket_test.csv"
 			separator=";" tableName="fw_ticket">
@@ -231,7 +277,7 @@
 			fw_ticket));</sql>
 	</changeSet>
 	<changeSet author="flowinquiry"
-		id="001:04-insert-fw_ticket_conversation_health-data"
+		id="000:15-insert-fw_ticket_conversation_health-data"
 		runOnChange="true">
 		<loadData
 			file="config/liquibase/tenant/data/test/fw_ticket_conversation_health_test.csv"
@@ -251,7 +297,7 @@
 			MAX(id) FROM fw_ticket_conversation_health));</sql>
 	</changeSet>
 	<changeSet author="flowinquiry"
-		id="001:05-insert-fw_entity_watchers-test" runOnChange="true">
+		id="00:16-insert-fw_entity_watchers-test" runOnChange="true">
 		<loadData
 			file="config/liquibase/tenant/data/test/fw_entity_watchers_test.csv"
 			separator=";" tableName="fw_entity_watchers">
@@ -268,7 +314,7 @@
 			fw_entity_watchers));</sql>
 	</changeSet>
 	<changeSet author="flowinquiry"
-		id="001:06-insert-fw_workflow_actions-test" runOnChange="true">
+		id="000:17-insert-fw_workflow_actions-test" runOnChange="true">
 		<loadData
 			file="config/liquibase/tenant/data/test/fw_workflow_actions_test.csv"
 			separator=";" tableName="fw_workflow_actions">
@@ -282,7 +328,7 @@
 			fw_workflow_actions));</sql>
 	</changeSet>
 	<changeSet author="flowinquiry"
-		id="001:07-insert-fw_workflow_transition_history-test"
+		id="000:18-insert-fw_workflow_transition_history-test"
 		runOnChange="true">
 		<loadData
 			file="config/liquibase/tenant/data/test/fw_workflow_transition_history_test.csv"
@@ -301,7 +347,7 @@
 			MAX(id) FROM fw_workflow_transition_history));</sql>
 	</changeSet>
 	<changeSet author="flowinquiry"
-		id="001:08-insert-fw_escalation_tracking-test" runOnChange="true">
+		id="000:19-insert-fw_escalation_tracking-test" runOnChange="true">
 		<loadData
 			file="config/liquibase/tenant/data/test/fw_escalation_tracking_test.csv"
 			separator=";" tableName="fw_escalation_tracking">
@@ -316,7 +362,7 @@
 			FROM fw_escalation_tracking));</sql>
 	</changeSet>
 	<changeSet author="flowinquiry"
-		id="001:09-insert-fw_entity_attachment-test" runOnChange="true">
+		id="000:20-insert-fw_entity_attachment-test" runOnChange="true">
 		<loadData
 			file="config/liquibase/tenant/data/test/fw_entity_attachment_test.csv"
 			separator=";" tableName="fw_entity_attachment">
@@ -336,7 +382,7 @@
 			fw_entity_attachment));</sql>
 	</changeSet>
 	<changeSet author="flowinquiry"
-		id="001:10-insert-fw_comment-test" runOnChange="true">
+		id="000:21-insert-fw_comment-test" runOnChange="true">
 		<loadData
 			file="config/liquibase/tenant/data/test/fw_comment_test.csv"
 			separator=";" tableName="fw_comment">
@@ -354,7 +400,7 @@
 			fw_comment));</sql>
 	</changeSet>
 	<changeSet author="flowinquiry"
-		id="001:11-insert-fw_notification-test" runOnChange="true">
+		id="000:22-insert-fw_notification-test" runOnChange="true">
 		<loadData
 			file="config/liquibase/tenant/data/test/fw_notification_test.csv"
 			separator=";" tableName="fw_notification">
@@ -371,7 +417,7 @@
 			fw_notification));</sql>
 	</changeSet>
 	<changeSet author="flowinquiry"
-		id="001:12-insert-fw_activity_log-test" runOnChange="true">
+		id="000:23-insert-fw_activity_log-test" runOnChange="true">
 		<loadData
 			file="config/liquibase/tenant/data/test/fw_activity_log_test.csv"
 			separator=";" tableName="fw_activity_log">

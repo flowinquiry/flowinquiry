@@ -73,7 +73,7 @@ public class TenantContextFilter extends OncePerRequestFilter {
                     }
                 } catch (IllegalStateException | PersistenceException ex) {
                     // Hibernate session might not be ready — safe to ignore
-                    log.warn("Exception when filter tenant_id: " + ex.getMessage(), ex);
+                    log.warn("Exception when filter tenant_id: {}", ex.getMessage(), ex);
                 }
             }
 
@@ -89,7 +89,9 @@ public class TenantContextFilter extends OncePerRequestFilter {
         if (auth instanceof JwtAuthenticationToken jwtToken) {
             String tenantId = jwtToken.getToken().getClaimAsString(TENANT_ID);
             return UUID.fromString(tenantId);
+        } else {
+            throw new IllegalStateException(
+                    "Have not support the authentication type " + auth.getClass());
         }
-        throw new IllegalStateException("Missing tenant info in JWT");
     }
 }

@@ -9,7 +9,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.flowinquiry.IntegrationTest;
+import io.flowinquiry.it.IntegrationTest;
+import io.flowinquiry.it.WithTestTenant;
 import io.flowinquiry.modules.shared.Constants;
 import io.flowinquiry.modules.usermanagement.AuthoritiesConstants;
 import io.flowinquiry.modules.usermanagement.domain.User;
@@ -43,6 +44,7 @@ import org.springframework.transaction.annotation.Transactional;
 /** Integration tests for the {@link UserAccountController} REST controller. */
 @AutoConfigureMockMvc
 @IntegrationTest
+@WithTestTenant
 class UserAccountControllerIT {
 
     static final String TEST_USER_LOGIN_EMAIL = "test@localhost.io";
