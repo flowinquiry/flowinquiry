@@ -1,6 +1,5 @@
 package io.flowinquiry.modules.audit.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.flowinquiry.modules.usermanagement.domain.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
@@ -22,9 +21,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
  */
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-@JsonIgnoreProperties(
-        value = {"createdBy", "createdAt", "modifiedBy", "modifiedAt"},
-        allowGetters = true)
 @SuperBuilder
 @NoArgsConstructor
 @Data

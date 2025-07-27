@@ -3,15 +3,20 @@ package io.flowinquiry.tenant.filter;
 import static io.flowinquiry.security.SecurityUtils.TENANT_ID;
 
 import io.flowinquiry.tenant.context.TenantContext;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.PersistenceException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Session;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -26,8 +31,11 @@ import org.springframework.web.filter.OncePerRequestFilter;
  * <p>The tenant ID is extracted from the JWT token's claims and set in the thread-local context,
  * making it available throughout the request processing.
  */
+@Slf4j
 @Component
 public class TenantContextFilter extends OncePerRequestFilter {
+
+    @PersistenceContext private EntityManager entityManager;
 
     /**
      * Processes each HTTP request to extract and set tenant context information.
@@ -53,17 +61,35 @@ public class TenantContextFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         try {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            if (authentication != null && authentication.getPrincipal() instanceof Jwt jwt) {
-                String tenantId = jwt.getClaimAsString(TENANT_ID);
-                if (tenantId != null) {
-                    TenantContext.setTenantId(UUID.fromString(tenantId));
+            UUID tenantId = resolveTenantFromJwt();
+            TenantContext.setTenantId(tenantId);
+
+            // Only enable Hibernate filter if a session exists and is open
+            if (entityManager.isOpen() && entityManager.getEntityManagerFactory().isOpen()) {
+                try {
+                    Session session = entityManager.unwrap(Session.class);
+                    if (session.isOpen() && session.getEnabledFilter("tenantFilter") == null) {
+                        session.enableFilter("tenantFilter").setParameter("tenantId", tenantId);
+                    }
+                } catch (IllegalStateException | PersistenceException ex) {
+                    // Hibernate session might not be ready — safe to ignore
+                    log.warn("Exception when filter tenant_id: " + ex.getMessage(), ex);
                 }
             }
 
             filterChain.doFilter(request, response);
+
         } finally {
-            TenantContext.clear(); // Ensure cleanup for next request/thread
+            TenantContext.clear();
         }
+    }
+
+    private UUID resolveTenantFromJwt() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth instanceof JwtAuthenticationToken jwtToken) {
+            String tenantId = jwtToken.getToken().getClaimAsString(TENANT_ID);
+            return UUID.fromString(tenantId);
+        }
+        throw new IllegalStateException("Missing tenant info in JWT");
     }
 }

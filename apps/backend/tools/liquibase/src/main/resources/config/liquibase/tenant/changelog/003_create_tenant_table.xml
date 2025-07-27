@@ -776,13 +776,13 @@
 				<constraints nullable="true" />
 			</column>
 			<column name="created_at" type="timestamptz">
-				<constraints nullable="false" />
+				<constraints nullable="true" />
 			</column>
 			<column name="modified_by" type="BIGINT">
 				<constraints nullable="true" />
 			</column>
 			<column name="modified_at" type="timestamptz">
-				<constraints nullable="false" />
+				<constraints nullable="true" />
 			</column>
 		</addColumn>
 
@@ -803,13 +803,13 @@
 				<constraints nullable="true" />
 			</column>
 			<column name="created_at" type="timestamptz">
-				<constraints nullable="false" />
+				<constraints nullable="true" />
 			</column>
 			<column name="modified_by" type="BIGINT">
 				<constraints nullable="true" />
 			</column>
 			<column name="modified_at" type="timestamptz">
-				<constraints nullable="false" />
+				<constraints nullable="true" />
 			</column>
 		</addColumn>
 
