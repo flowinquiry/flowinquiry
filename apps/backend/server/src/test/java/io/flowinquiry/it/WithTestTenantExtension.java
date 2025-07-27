@@ -1,27 +1,34 @@
 package io.flowinquiry.it;
 
 import io.flowinquiry.tenant.context.TenantContext;
+import java.lang.reflect.AnnotatedElement;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
+import org.springframework.core.annotation.AnnotationUtils;
 
 public class WithTestTenantExtension implements BeforeEachCallback, AfterEachCallback {
     @Override
     public void beforeEach(ExtensionContext context) {
-        Optional<WithTestTenant> annotation =
-                context.getElement()
-                        .flatMap(el -> Optional.ofNullable(el.getAnnotation(WithTestTenant.class)))
-                        .or(
-                                () ->
-                                        context.getTestClass()
-                                                .map(
-                                                        cls ->
-                                                                cls.getAnnotation(
-                                                                        WithTestTenant.class)));
+        Optional<AnnotatedElement> testElement = context.getElement();
 
-        annotation.ifPresent(a -> TenantContext.setTenantId(UUID.fromString(a.value())));
+        // First try on method, then class
+        WithTestTenant tenantAnnotation =
+                testElement
+                        .map(el -> AnnotationUtils.findAnnotation(el, WithTestTenant.class))
+                        .orElseGet(
+                                () ->
+                                        AnnotationUtils.findAnnotation(
+                                                Objects.requireNonNull(
+                                                        context.getTestClass().orElse(null)),
+                                                WithTestTenant.class));
+
+        if (tenantAnnotation != null) {
+            TenantContext.setTenantId(UUID.fromString(tenantAnnotation.value()));
+        }
     }
 
     @Override

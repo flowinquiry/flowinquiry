@@ -12,7 +12,6 @@ import io.flowinquiry.it.IntegrationTest;
 import io.flowinquiry.modules.fss.domain.EntityAttachment;
 import io.flowinquiry.modules.fss.repository.EntityAttachmentRepository;
 import io.flowinquiry.modules.fss.service.dto.EntityAttachmentDTO;
-import io.flowinquiry.modules.fss.service.mapper.EntityAttachmentMapper;
 import java.io.InputStream;
 import java.time.Instant;
 import java.util.List;
@@ -34,10 +33,6 @@ public class EntityAttachmentServiceIT {
     @Autowired private EntityAttachmentService entityAttachmentService;
 
     @Autowired private EntityAttachmentRepository entityAttachmentRepository;
-
-    @Autowired private EntityAttachmentMapper entityAttachmentMapper;
-
-    @Autowired private StorageService realStorageService;
 
     private StorageService mockStorageService;
 
@@ -67,15 +62,12 @@ public class EntityAttachmentServiceIT {
                             String containerName = invocation.getArgument(0);
                             String fileName = invocation.getArgument(1);
 
-                            if (fileName.equals(FILE_NAME)) {
-                                return FILE_URL;
-                            } else if (fileName.equals("file1.txt")) {
-                                return FILE_URL_1;
-                            } else if (fileName.equals("file2.txt")) {
-                                return FILE_URL_2;
-                            } else {
-                                return "attachments/" + fileName;
-                            }
+                            return switch (fileName) {
+                                case FILE_NAME -> FILE_URL;
+                                case "file1.txt" -> FILE_URL_1;
+                                case "file2.txt" -> FILE_URL_2;
+                                default -> "attachments/" + fileName;
+                            };
                         })
                 .when(mockStorageService)
                 .uploadFile(anyString(), anyString(), any(InputStream.class));
@@ -93,7 +85,7 @@ public class EntityAttachmentServiceIT {
         testAttachment.setFileSize(FILE_SIZE);
         testAttachment.setFileUrl(FILE_URL);
         testAttachment.setUploadedAt(Instant.now());
-        entityAttachmentRepository.save(testAttachment);
+        entityAttachmentService.saveEntityAttachment(testAttachment);
     }
 
     @AfterEach

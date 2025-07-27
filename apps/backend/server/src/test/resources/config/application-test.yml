@@ -50,6 +50,3 @@ spring:
             redirect-uri: http://localhost
             authorization-grant-type: authorization_code
             client-name: Google
-flowinquiry:
-  edition: community
-  version: 1.2.1

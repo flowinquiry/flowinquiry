@@ -1,6 +1,9 @@
 package io.flowinquiry.it;
 
-import java.lang.annotation.ElementType;
+import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -29,7 +32,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
  * }</pre>
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.METHOD})
+@Target({ANNOTATION_TYPE, TYPE, METHOD})
 @ExtendWith(WithTestTenantExtension.class)
 public @interface WithTestTenant {
     /**

@@ -89,6 +89,10 @@ public class EntityAttachmentService {
         return entityAttachmentRepository.saveAll(attachments);
     }
 
+    public EntityAttachment saveEntityAttachment(EntityAttachment entityAttachment) {
+        return entityAttachmentRepository.save(entityAttachment);
+    }
+
     /**
      * Retrieves all attachments associated with a specific entity.
      *
