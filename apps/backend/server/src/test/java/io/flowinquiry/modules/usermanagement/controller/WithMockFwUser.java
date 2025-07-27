@@ -5,7 +5,7 @@ import io.flowinquiry.modules.usermanagement.domain.Authority;
 import io.flowinquiry.modules.usermanagement.domain.User;
 import io.flowinquiry.modules.usermanagement.domain.UserAuth;
 import io.flowinquiry.modules.usermanagement.domain.UserStatus;
-import io.flowinquiry.modules.usermanagement.service.dto.FwUserDetails;
+import io.flowinquiry.security.domain.FwUserDetails;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
