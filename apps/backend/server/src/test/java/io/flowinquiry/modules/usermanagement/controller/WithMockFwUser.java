@@ -12,6 +12,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -27,6 +28,7 @@ import org.springframework.security.test.context.support.WithSecurityContextFact
 @Retention(RetentionPolicy.RUNTIME)
 @WithSecurityContext(factory = WithMockFwUser.Factory.class)
 public @interface WithMockFwUser {
+
     /**
      * The user ID to use for the authenticated user. Defaults to 1L, which should be a valid user
      * ID in the test database.
@@ -35,6 +37,8 @@ public @interface WithMockFwUser {
 
     /** The username to use for the authenticated user. Defaults to "admin". */
     String username() default "admin";
+
+    String tenantIdAsString() default "00000000-0000-0000-0000-000000000001";
 
     /** The authorities to grant to the authenticated user. Defaults to ROLE_ADMIN. */
     String[] authorities() default {AuthoritiesConstants.ADMIN};
@@ -49,6 +53,7 @@ public @interface WithMockFwUser {
             user.setId(annotation.userId());
             user.setEmail(annotation.username());
             user.setStatus(UserStatus.ACTIVE);
+            user.setTenantId(UUID.fromString(annotation.tenantIdAsString()));
 
             // Set up authorities
             Set<Authority> authorities = new HashSet<>();

@@ -33,6 +33,7 @@
 			<column name="address" type="STRING" />
 			<column name="city" type="STRING" />
 			<column name="state" type="STRING" />
+			<column name="tenant_id" type="uuid" />
 		</loadData>
 		<sql>SELECT setval('fw_user_id_seq', (SELECT MAX(id) FROM fw_user));</sql>
 		<loadData
@@ -43,6 +44,7 @@
 			<column name="auth_provider" type="STRING" />
 			<column name="provider_user_id" type="STRING" />
 			<column name="password_hash" type="STRING" />
+			<column name="tenant_id" type="uuid" />
 		</loadData>
 		<sql>SELECT setval('fw_user_auth_id_seq', (SELECT MAX(id) FROM
 			fw_user_auth));</sql>
@@ -66,6 +68,7 @@
 			<column name="logo_url" type="STRING" />
 			<column name="slogan" type="STRING" />
 			<column name="description" type="STRING" />
+			<column name="tenant_id" type="uuid" />
 		</loadData>
 		<sql>SELECT setval('fw_organization_id_seq', (SELECT MAX(id) FROM
 			fw_organization));</sql>
@@ -82,6 +85,7 @@
 			<column name="slogan" type="STRING" />
 			<column name="description" type="STRING" />
 			<column name="organization_id" type="NUMERIC" />
+			<column name="tenant_id" type="uuid" />
 		</loadData>
 		<sql>SELECT setval('fw_team_id_seq', (SELECT MAX(id) FROM fw_team));</sql>
 	</changeSet>
@@ -103,6 +107,7 @@
 			<column name="status" type="STRING" />
 			<column name="start_date" type="TIMESTAMP" />
 			<column name="end_date" type="TIMESTAMP" />
+			<column name="tenant_id" type="uuid" />
 		</loadData>
 		<sql>SELECT setval('fw_project_id_seq', (SELECT MAX(id) FROM
 			fw_project));</sql>
@@ -116,6 +121,7 @@
 			<column name="user_id" type="NUMERIC" />
 			<column name="team_id" type="NUMERIC" />
 			<column name="role_name" type="STRING" />
+			<column name="tenant_id" type="uuid" />
 		</loadData>
 	</changeSet>
 
@@ -131,6 +137,7 @@
 			<column name="setting_group" type="STRING" />
 			<column name="description" type="STRING" />
 			<column name="updated_at" type="TIMESTAMP" />
+			<column name="tenant_id" type="uuid" />
 		</loadData>
 	</changeSet>
 	<changeSet author="flowinquiry"
@@ -142,6 +149,7 @@
 			<column name="name" type="string" />
 			<column name="description" type="string" />
 			<column name="owner_id" type="numeric" />
+			<column name="tenant_id" type="uuid" />
 		</loadData>
 		<sql>SELECT setval('fw_workflow_id_seq', (SELECT MAX(id) FROM
 			fw_workflow));</sql>
@@ -154,6 +162,7 @@
 			<column name="state_name" type="string" />
 			<column name="is_initial" type="boolean" />
 			<column name="is_final" type="boolean" />
+			<column name="tenant_id" type="uuid" />
 		</loadData>
 		<sql>SELECT setval('fw_workflow_state_id_seq', (SELECT MAX(id) FROM
 			fw_workflow_state));</sql>
@@ -168,6 +177,7 @@
 			<column name="event_name" type="string" />
 			<column name="sla_duration" type="numeric" />
 			<column name="escalate_on_violation" type="boolean" />
+			<column name="tenant_id" type="uuid" />
 		</loadData>
 		<sql>SELECT setval('fw_workflow_transition_id_seq', (SELECT MAX(id)
 			FROM fw_workflow_transition));</sql>
@@ -183,6 +193,7 @@
 			<column name="id" type="numeric" />
 			<column name="workflow_id" type="numeric" />
 			<column name="team_id" type="numeric" />
+			<column name="tenant_id" type="uuid" />
 		</loadData>
 		<sql>SELECT setval('fw_team_workflow_selection_id_seq', (SELECT
 			MAX(id) FROM fw_team_workflow_selection));</sql>
@@ -214,6 +225,7 @@
 			<column name="modified_at" type="timestamp" />
 			<column name="size" type="string" />
 			<column name="estimate" type="number" />
+			<column name="tenant_id" type="uuid" />
 		</loadData>
 		<sql>SELECT setval('fw_ticket_id_seq', (SELECT MAX(id) FROM
 			fw_ticket));</sql>
@@ -232,6 +244,7 @@
 			<column name="total_messages" type="integer" />
 			<column name="total_questions" type="integer" />
 			<column name="resolved_questions" type="integer" />
+			<column name="tenant_id" type="uuid" />
 		</loadData>
 		<sql>SELECT setval('fw_ticket_conversation_health_id_seq',
 			(SELECT
@@ -248,6 +261,7 @@
 			<column name="watch_user_id" type="numeric" />
 			<column name="created_at" type="timestamp" />
 			<column name="created_by" type="numeric" />
+			<column name="tenant_id" type="uuid" />
 		</loadData>
 		<sql>SELECT setval('fw_entity_watchers_id_seq', (SELECT MAX(id)
 			FROM
@@ -262,6 +276,7 @@
 			<column name="transition_id" type="numeric" />
 			<column name="action_type" type="string" />
 			<column name="action_data" type="json" />
+			<column name="tenant_id" type="uuid" />
 		</loadData>
 		<sql>SELECT setval('fw_workflow_actions_id_seq', (SELECT MAX(id) FROM
 			fw_workflow_actions));</sql>
@@ -280,6 +295,7 @@
 			<column name="transition_date" type="timestamp" />
 			<column name="sla_due_date" type="timestamp" />
 			<column name="status" type="string" />
+			<column name="tenant_id" type="uuid" />
 		</loadData>
 		<sql>SELECT setval('fw_workflow_transition_history_id_seq', (SELECT
 			MAX(id) FROM fw_workflow_transition_history));</sql>
@@ -294,6 +310,7 @@
 			<column name="escalation_level" type="integer" />
 			<column name="escalated_to_user_id" type="numeric" />
 			<column name="escalation_time" type="timestamp" />
+			<column name="tenant_id" type="uuid" />
 		</loadData>
 		<sql>SELECT setval('fw_escalation_tracking_id_seq', (SELECT MAX(id)
 			FROM fw_escalation_tracking));</sql>
@@ -311,6 +328,9 @@
 			<column name="file_size" type="numeric" />
 			<column name="file_url" type="string" />
 			<column name="uploaded_at" type="timestamp" />
+			<column name="tenant_id" type="uuid" />
+			<column name="created_by" type="numeric" />
+			<column name="created_at" type="timestamp" />
 		</loadData>
 		<sql>SELECT setval('fw_entity_attachment_id_seq', (SELECT MAX(id) FROM
 			fw_entity_attachment));</sql>
@@ -328,6 +348,7 @@
 			<column name="created_at" type="timestamp" />
 			<column name="modified_by" type="numeric" />
 			<column name="modified_at" type="timestamp" />
+			<column name="tenant_id" type="uuid" />
 		</loadData>
 		<sql>SELECT setval('fw_comment_id_seq', (SELECT MAX(id) FROM
 			fw_comment));</sql>
@@ -341,10 +362,10 @@
 			<column name="content" type="string" />
 			<column name="user_id" type="numeric" />
 			<column name="is_read" type="boolean" />
+			<column name="notification_type" type="string" />
 			<column name="created_by" type="numeric" />
 			<column name="created_at" type="timestamp" />
-			<column name="modified_by" type="numeric" />
-			<column name="modified_at" type="timestamp" />
+			<column name="tenant_id" type="uuid" />
 		</loadData>
 		<sql>SELECT setval('fw_notification_id_seq', (SELECT MAX(id) FROM
 			fw_notification));</sql>
@@ -359,8 +380,8 @@
 			<column name="entity_id" type="numeric" />
 			<column name="content" type="string" />
 			<column name="created_at" type="timestamp" />
-			<column name="updated_at" type="timestamp" />
 			<column name="created_by" type="numeric" />
+			<column name="tenant_id" type="uuid" />
 		</loadData>
 		<sql>SELECT setval('fw_activity_log_id_seq', (SELECT MAX(id) FROM
 			fw_activity_log));</sql>
