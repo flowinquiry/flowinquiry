@@ -1,18 +1,16 @@
 package io.flowinquiry.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Aspect
 @Component
+@Slf4j
 public class RepositoryLoggingAspect {
-
-    private static final Logger LOG = LoggerFactory.getLogger(RepositoryLoggingAspect.class);
 
     // Pointcut to match all repository methods
     @Pointcut("within(@org.springframework.stereotype.Repository *)")
@@ -23,6 +21,6 @@ public class RepositoryLoggingAspect {
     public void logAfterMethodCall(JoinPoint joinPoint) {
         String methodName = joinPoint.getSignature().toShortString();
         Object[] methodArgs = joinPoint.getArgs();
-        LOG.debug("Repository method called: {} with arguments: {}", methodName, methodArgs);
+        log.debug("Repository method called: {} with arguments: {}", methodName, methodArgs);
     }
 }

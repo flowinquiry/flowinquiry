@@ -6,8 +6,7 @@ import io.flowinquiry.modules.ai.service.ChatModelService;
 import io.flowinquiry.modules.teams.domain.Ticket;
 import io.flowinquiry.modules.teams.domain.TicketConversationHealth;
 import io.flowinquiry.modules.teams.repository.TicketConversationHealthRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -16,9 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @ConditionalOnBean(ChatModelService.class)
+@Slf4j
 public class TicketHealthEvalService {
-
-    private static final Logger LOG = LoggerFactory.getLogger(TicketHealthEvalService.class);
 
     private final TicketConversationHealthRepository ticketConversationHealthRepository;
     private final ChatModelService chatModelService;
@@ -54,11 +52,11 @@ public class TicketHealthEvalService {
 
         // Step 1: Evaluate sentiment of the new message
         float sentimentScore = evaluateSentiment(polishedMessage);
-        LOG.debug("Message '{}' has sentiment score: {}", polishedMessage, sentimentScore);
+        log.debug("Message '{}' has sentiment score: {}", polishedMessage, sentimentScore);
 
         // Step 2: Check if the message resolves an issue (only for customer responses)
         boolean resolvesIssue = isCustomerResponse && determineIfResolved(polishedMessage);
-        LOG.debug(
+        log.debug(
                 "Message '{}' resolved: {}, Customer response: {}",
                 polishedMessage,
                 resolvesIssue,

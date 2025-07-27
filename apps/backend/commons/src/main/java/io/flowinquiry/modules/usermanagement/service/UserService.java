@@ -35,8 +35,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -51,9 +50,8 @@ import org.springframework.transaction.annotation.Transactional;
 /** Service class for managing users. */
 @Service
 @Transactional
+@Slf4j
 public class UserService {
-
-    private static final Logger LOG = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
 
@@ -83,7 +81,7 @@ public class UserService {
     }
 
     public Optional<User> activateRegistration(String key) {
-        LOG.debug("Activating user for activation key {}", key);
+        log.debug("Activating user for activation key {}", key);
         return userRepository
                 .findOneByActivationKey(key)
                 .map(
@@ -91,13 +89,13 @@ public class UserService {
                             // activate given user for the registration key.
                             user.setStatus(UserStatus.ACTIVE);
                             user.setActivationKey(null);
-                            LOG.debug("Activated user: {}", user);
+                            log.debug("Activated user: {}", user);
                             return user;
                         });
     }
 
     public Optional<User> completePasswordReset(String newPassword, String key) {
-        LOG.debug("Reset user password for reset key {}", key);
+        log.debug("Reset user password for reset key {}", key);
 
         return userRepository
                 .findOneByResetKey(key)
@@ -130,7 +128,7 @@ public class UserService {
                             // Save changes to the user
                             userRepository.save(user);
 
-                            LOG.debug("Password reset successfully for user: {}", user.getEmail());
+                            log.debug("Password reset successfully for user: {}", user.getEmail());
                             return user;
                         });
     }
@@ -189,7 +187,7 @@ public class UserService {
         // Save the user
         userRepository.save(newUser);
 
-        LOG.debug("Created Information for User: {}", newUser);
+        log.debug("Created Information for User: {}", newUser);
         return newUser;
     }
 
@@ -235,7 +233,7 @@ public class UserService {
         user.setUserAuths(userAuths);
 
         userRepository.save(user);
-        LOG.debug("Created Information for User: {}", user);
+        log.debug("Created Information for User: {}", user);
 
         UserDTO savedUser = userMapper.toDto(user);
         eventPublisher.publishEvent(new CreatedUserEvent(this, savedUser));
@@ -273,7 +271,7 @@ public class UserService {
                 .ifPresent(
                         user -> {
                             userRepository.delete(user);
-                            LOG.debug("Deleted User: {}", user);
+                            log.debug("Deleted User: {}", user);
                         });
     }
 
@@ -284,7 +282,7 @@ public class UserService {
                         user -> {
                             user.setIsDeleted(true);
                             userRepository.save(user);
-                            LOG.debug("Soft deleted User: {}", user);
+                            log.debug("Soft deleted User: {}", user);
                         });
         eventPublisher.publishEvent(new DeleteUserEvent(this, userId));
     }
@@ -313,7 +311,7 @@ public class UserService {
                             user.setLangKey(langKey);
                             user.setImageUrl(imageUrl);
                             userRepository.save(user);
-                            LOG.debug("Changed Information for User: {}", user);
+                            log.debug("Changed Information for User: {}", user);
                         });
     }
 
@@ -351,7 +349,7 @@ public class UserService {
                             // Save changes
                             userAuthRepository.save(localAuth);
 
-                            LOG.debug("Changed password for User: {}", user.getEmail());
+                            log.debug("Changed password for User: {}", user.getEmail());
                         });
     }
 

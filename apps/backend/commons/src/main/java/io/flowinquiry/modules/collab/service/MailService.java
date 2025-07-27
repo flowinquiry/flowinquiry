@@ -10,8 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Properties;
 import lombok.Getter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.context.event.EventListener;
 import org.springframework.mail.MailException;
@@ -29,9 +28,8 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
  * <p>We use the {@link Async} annotation to send emails asynchronously.
  */
 @Service
+@Slf4j
 public class MailService {
-
-    private static final Logger LOG = LoggerFactory.getLogger(MailService.class);
 
     private static final String USER = "user";
     private static final String BASE_URL = "baseUrl";
@@ -75,7 +73,7 @@ public class MailService {
 
     @EventListener
     public void onMailSettingsUpdated(MailSettingsUpdatedEvent event) {
-        LOG.info("Mail settings changed — reloading mail sender.");
+        log.info("Mail settings changed — reloading mail sender.");
         reloadMailSender();
     }
 
@@ -85,7 +83,7 @@ public class MailService {
 
         if (host == null || portStr == null) {
             mailEnabled = false;
-            LOG.warn("MailService not configured. 'mail.host' or 'mail.port' is missing.");
+            log.warn("MailService not configured. 'mail.host' or 'mail.port' is missing.");
             return;
         }
 
@@ -112,10 +110,10 @@ public class MailService {
 
             this.mailSender = sender;
             this.mailEnabled = true;
-            LOG.info("MailService configured and ready to send emails.");
+            log.info("MailService configured and ready to send emails.");
         } catch (Exception ex) {
             this.mailEnabled = false;
-            LOG.error(
+            log.error(
                     "Failed to initialize MailService due to invalid config: {}",
                     ex.getMessage(),
                     ex);
@@ -137,7 +135,7 @@ public class MailService {
             String content,
             boolean isMultipart,
             boolean isHtml) {
-        LOG.debug(
+        log.debug(
                 "Send email[multipart '{}' and html '{}'] to '{}' with subject '{}' and content={}",
                 isMultipart,
                 isHtml,
@@ -154,16 +152,16 @@ public class MailService {
             message.setSubject(subject);
             message.setText(content, isHtml);
             sender.send(mimeMessage);
-            LOG.debug("Sent email to User '{}'", to);
+            log.debug("Sent email to User '{}'", to);
         } catch (MailException | MessagingException e) {
-            LOG.warn("Email could not be sent to user '{}'", to, e);
+            log.warn("Email could not be sent to user '{}'", to, e);
         }
     }
 
     @Async
     public void sendEmailFromTemplate(UserDTO user, String templateName, String titleKey) {
         if (user.getEmail() == null) {
-            LOG.debug("Email doesn't exist for user '{}'", user);
+            log.debug("Email doesn't exist for user '{}'", user);
             return;
         }
         Locale locale = Locale.forLanguageTag(user.getLangKey() != null ? user.getLangKey() : "en");
@@ -181,7 +179,7 @@ public class MailService {
         if (emailContext.getToUser() == null
                 || emailContext.getToUser().getEmail() == null
                 || emailContext.getSubject() == null) {
-            LOG.debug(
+            log.debug(
                     "Email doesn't exist for user '{}' or no subject for email context '{}'",
                     emailContext.getToUser(),
                     emailContext.getSubject());
@@ -201,19 +199,19 @@ public class MailService {
 
     @Async
     public void sendActivationEmail(UserDTO user) {
-        LOG.debug("Sending activation email to '{}'", user.getEmail());
+        log.debug("Sending activation email to '{}'", user.getEmail());
         this.sendEmailFromTemplate(user, "mail/activationEmail", "email.activation.title");
     }
 
     @Async
     public void sendCreationEmail(UserDTO user) {
-        LOG.debug("Sending creation email to '{}'", user.getEmail());
+        log.debug("Sending creation email to '{}'", user.getEmail());
         this.sendEmailFromTemplate(user, "mail/creationEmail", "email.activation.title");
     }
 
     @Async
     public void sendPasswordResetMail(UserDTO user) {
-        LOG.debug("Sending password reset email to '{}'", user.getEmail());
+        log.debug("Sending password reset email to '{}'", user.getEmail());
         this.sendEmailFromTemplate(user, "mail/passwordResetEmail", "email.reset.title");
     }
 }

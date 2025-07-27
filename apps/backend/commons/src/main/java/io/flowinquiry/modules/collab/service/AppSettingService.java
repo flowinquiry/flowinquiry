@@ -5,8 +5,7 @@ import io.flowinquiry.modules.collab.repository.AppSettingRepository;
 import io.flowinquiry.modules.collab.service.dto.AppSettingDTO;
 import io.flowinquiry.modules.collab.service.event.MailSettingsUpdatedEvent;
 import java.util.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
@@ -14,9 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Slf4j
 public class AppSettingService {
-
-    private static final Logger logger = LoggerFactory.getLogger(AppSettingService.class);
 
     private final AppSettingRepository appSettingRepository;
     private final ApplicationEventPublisher eventPublisher;
@@ -105,7 +103,7 @@ public class AppSettingService {
         setting.setValue(value);
         appSettingRepository.save(setting);
 
-        logger.info("Updated setting: {} = {}", key, value);
+        log.info("Updated setting: {} = {}", key, value);
 
         if (key.startsWith("mail.")) {
             eventPublisher.publishEvent(new MailSettingsUpdatedEvent(this));
@@ -127,7 +125,7 @@ public class AppSettingService {
             appSettingRepository.save(setting);
             cacheEvict(dto.getKey());
 
-            logger.info("Bulk updated setting: {} = {}", dto.getKey(), dto.getValue());
+            log.info("Bulk updated setting: {} = {}", dto.getKey(), dto.getValue());
 
             // Check if this is a mail setting, but don't publish event yet
             if (dto.getKey().startsWith("mail.")) {

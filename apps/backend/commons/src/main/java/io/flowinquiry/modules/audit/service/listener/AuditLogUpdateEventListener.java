@@ -11,8 +11,7 @@ import io.flowinquiry.modules.collab.repository.ActivityLogRepository;
 import io.flowinquiry.security.SecurityUtils;
 import java.lang.reflect.Field;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
@@ -20,9 +19,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
+@Slf4j
 public class AuditLogUpdateEventListener {
-
-    private static final Logger LOG = LoggerFactory.getLogger(AuditLogUpdateEventListener.class);
 
     private final ActivityLogRepository activityLogRepository;
     private final EntityFieldHandlerRegistryFactory registryFactory;
@@ -63,7 +61,7 @@ public class AuditLogUpdateEventListener {
             }
         } catch (Exception e) {
             // Log the exception
-            LOG.error("Error in async logEntityChanges", e);
+            log.error("Error in async logEntityChanges", e);
         }
     }
 

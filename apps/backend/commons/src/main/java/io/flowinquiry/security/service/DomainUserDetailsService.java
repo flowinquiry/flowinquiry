@@ -5,9 +5,8 @@ import io.flowinquiry.modules.usermanagement.domain.User;
 import io.flowinquiry.modules.usermanagement.domain.UserStatus;
 import io.flowinquiry.modules.usermanagement.repository.UserRepository;
 import io.flowinquiry.security.domain.FwUserDetails;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.internal.constraintvalidators.hv.EmailValidator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -20,9 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
  * user is active before creating a security user object.
  */
 @Component("appUserDetailService")
+@Slf4j
 public class DomainUserDetailsService implements UserDetailsService {
-
-    private static final Logger LOG = LoggerFactory.getLogger(DomainUserDetailsService.class);
 
     private final UserRepository userRepository;
 
@@ -46,7 +44,7 @@ public class DomainUserDetailsService implements UserDetailsService {
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(final String email) {
-        LOG.debug("Authenticating {}", email);
+        log.debug("Authenticating {}", email);
 
         if (new EmailValidator().isValid(email, null)) {
             return userRepository

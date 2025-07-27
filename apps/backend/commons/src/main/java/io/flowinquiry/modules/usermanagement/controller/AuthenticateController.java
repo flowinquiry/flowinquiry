@@ -10,8 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -30,9 +29,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api")
 @Tag(name = "Authentication", description = "API endpoints for user authentication")
+@Slf4j
 public class AuthenticateController {
-
-    private static final Logger LOG = LoggerFactory.getLogger(AuthenticateController.class);
 
     private final JwtService jwtService;
 
@@ -96,7 +94,7 @@ public class AuthenticateController {
             })
     public String isAuthenticated(
             @Parameter(description = "HTTP request", hidden = true) HttpServletRequest request) {
-        LOG.debug("REST request to check if the current user is authenticated");
+        log.debug("REST request to check if the current user is authenticated");
         return request.getRemoteUser();
     }
 

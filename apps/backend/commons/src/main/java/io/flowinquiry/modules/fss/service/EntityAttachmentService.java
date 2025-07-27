@@ -7,16 +7,14 @@ import io.flowinquiry.modules.fss.service.mapper.EntityAttachmentMapper;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
+@Slf4j
 public class EntityAttachmentService {
-
-    private static final Logger LOG = LoggerFactory.getLogger(EntityAttachmentService.class);
 
     private final EntityAttachmentRepository entityAttachmentRepository;
     private final EntityAttachmentMapper entityAttachmentMapper;
@@ -139,7 +137,7 @@ public class EntityAttachmentService {
                                 try {
                                     storageService.deleteFile(attachment.getFileUrl());
                                 } catch (Exception e) {
-                                    LOG.error("Can not delete file {}", attachment.getFileUrl(), e);
+                                    log.error("Can not delete file {}", attachment.getFileUrl(), e);
                                 }
                             }
 

@@ -1,7 +1,6 @@
 package io.flowinquiry.config;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.aop.interceptor.SimpleAsyncUncaughtExceptionHandler;
 import org.springframework.boot.autoconfigure.task.TaskExecutionProperties;
@@ -17,9 +16,8 @@ import org.springframework.security.task.DelegatingSecurityContextTaskExecutor;
 @Configuration
 @EnableAsync
 @Profile("!test")
+@Slf4j
 public class AsyncConfiguration implements AsyncConfigurer {
-
-    private static final Logger LOG = LoggerFactory.getLogger(AsyncConfiguration.class);
 
     private final TaskExecutionProperties taskExecutionProperties;
 

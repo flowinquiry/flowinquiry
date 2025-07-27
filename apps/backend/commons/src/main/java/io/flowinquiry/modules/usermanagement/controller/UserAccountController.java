@@ -21,9 +21,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,6 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api")
 @Tag(name = "User Account", description = "User account management API")
+@Slf4j
 public class UserAccountController {
 
     private static class AccountResourceException extends RuntimeException {
@@ -45,8 +45,6 @@ public class UserAccountController {
             super(message);
         }
     }
-
-    private static final Logger log = LoggerFactory.getLogger(UserAccountController.class);
 
     private final UserRepository userRepository;
 

@@ -12,8 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.json.Json;
 import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,9 +24,8 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api/files")
 @Tag(name = "File Upload", description = "API for uploading files to the storage system")
+@Slf4j
 public class FileUploadController {
-
-    private static final Logger LOG = LoggerFactory.getLogger(FileUploadController.class);
 
     private final StorageService storageService;
 
@@ -69,7 +67,7 @@ public class FileUploadController {
                     Optional<String> parentPath)
             throws Exception {
         String currentUser = SecurityUtils.getCurrentUserLogin().map(UserKey::getEmail).orElse("");
-        LOG.debug(
+        log.debug(
                 "User {} saves file {} into the storage with options {}",
                 currentUser,
                 file.getOriginalFilename(),

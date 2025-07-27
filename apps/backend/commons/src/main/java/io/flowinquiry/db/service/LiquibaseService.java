@@ -11,15 +11,13 @@ import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.resource.ClassLoaderResourceAccessor;
 import lombok.SneakyThrows;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Slf4j
 public class LiquibaseService {
-
-    private static final Logger LOG = LoggerFactory.getLogger(LiquibaseService.class);
 
     private final DataSource dataSource;
 
@@ -32,7 +30,7 @@ public class LiquibaseService {
     public void updateLiquibaseSchema(
             String classpathChangeset, String schema, Collection<String> activeProfiles) {
         try (Connection connection = dataSource.getConnection()) {
-            LOG.info("Going to create a schema {}", schema);
+            log.info("Going to create a schema {}", schema);
             connection.prepareCall("CREATE SCHEMA IF NOT EXISTS " + schema).execute();
             // Create the database for the default tenant
             Database database =

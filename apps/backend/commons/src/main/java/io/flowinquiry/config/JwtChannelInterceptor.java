@@ -3,8 +3,7 @@ package io.flowinquiry.config;
 import io.flowinquiry.security.service.JwtService;
 import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
@@ -29,8 +28,8 @@ import org.springframework.stereotype.Component;
  * @author Hai Nguyen
  */
 @Component
+@Slf4j
 public class JwtChannelInterceptor implements ChannelInterceptor {
-    private static final Logger LOG = LoggerFactory.getLogger(JwtChannelInterceptor.class);
 
     private final JwtService jwtService;
 
@@ -64,7 +63,7 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
                         String token = authHeader.substring(7);
                         Authentication authentication = jwtService.authenticateToken(token);
                         if (authentication != null) {
-                            LOG.debug(
+                            log.debug(
                                     "🔐 STOMP Message Authenticated for user: {}",
                                     authentication.getName());
                             SecurityContextHolder.getContext().setAuthentication(authentication);

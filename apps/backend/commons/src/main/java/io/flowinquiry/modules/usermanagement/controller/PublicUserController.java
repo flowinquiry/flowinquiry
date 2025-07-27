@@ -30,8 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -61,12 +60,11 @@ import tech.jhipster.web.util.ResponseUtil;
 @RestController
 @RequestMapping("/api/users")
 @Tag(name = "User Management", description = "API endpoints for managing users")
+@Slf4j
 public class PublicUserController {
 
     private static final List<String> ALLOWED_ORDERED_PROPERTIES =
             List.of("id", "login", "firstName", "lastName", "email", "activated", "langKey");
-
-    private static final Logger LOG = LoggerFactory.getLogger(PublicUserController.class);
 
     private final UserRepository userRepository;
     private final UserService userService;
@@ -114,7 +112,7 @@ public class PublicUserController {
             @Parameter(description = "Query parameters for filtering users") @Valid @RequestBody
                     Optional<QueryDTO> queryDTO,
             @Parameter(description = "Pagination information") Pageable pageable) {
-        LOG.debug("REST request to get all public User names");
+        log.debug("REST request to get all public User names");
 
         // Check for allowed properties in pageable
         if (!onlyContainsAllowedProperties(pageable)) {
@@ -333,7 +331,7 @@ public class PublicUserController {
             @Parameter(description = "User data to create", required = true) @Valid @RequestBody
                     UserDTO userDTO)
             throws URISyntaxException {
-        LOG.debug("REST request to save User : {}", userDTO);
+        log.debug("REST request to save User : {}", userDTO);
 
         if (userDTO.getId() != null) {
             throw new IllegalArgumentException("A new user cannot already have an ID");
@@ -367,7 +365,7 @@ public class PublicUserController {
             @Parameter(description = "ID of the user to delete", required = true)
                     @PathVariable("userId")
                     Long userId) {
-        LOG.debug("REST request to delete User: {}", userId);
+        log.debug("REST request to delete User: {}", userId);
         userService.softDeleteUserById(userId);
         return ResponseEntity.noContent().build();
     }

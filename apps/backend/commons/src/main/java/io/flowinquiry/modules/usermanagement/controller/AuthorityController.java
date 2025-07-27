@@ -16,8 +16,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -40,9 +39,8 @@ import tech.jhipster.web.util.ResponseUtil;
 @RequestMapping("/api/authorities")
 @Transactional
 @Tag(name = "Authorities", description = "API endpoints for managing authorities and permissions")
+@Slf4j
 public class AuthorityController {
-
-    private static final Logger LOG = LoggerFactory.getLogger(AuthorityController.class);
 
     private static final String ENTITY_NAME = "adminAuthority";
 
@@ -84,7 +82,7 @@ public class AuthorityController {
             @Parameter(description = "Authority to create", required = true) @Valid @RequestBody
                     Authority authority)
             throws URISyntaxException {
-        LOG.debug("REST request to save Authority : {}", authority);
+        log.debug("REST request to save Authority : {}", authority);
 
         AuthorityDTO savedAuthority = authorityService.createAuthority(authority);
         return ResponseEntity.created(new URI("/api/authorities/" + savedAuthority.getName()))

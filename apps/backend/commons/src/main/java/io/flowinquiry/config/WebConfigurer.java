@@ -7,8 +7,7 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.Objects;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.server.WebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
@@ -24,10 +23,9 @@ import org.springframework.web.filter.CorsFilter;
 
 /** Configuration of web application with Servlet 3.0 APIs. */
 @Configuration
+@Slf4j
 public class WebConfigurer
         implements ServletContextInitializer, WebServerFactoryCustomizer<WebServerFactory> {
-
-    private static final Logger LOG = LoggerFactory.getLogger(WebConfigurer.class);
 
     private final Environment env;
 
@@ -41,12 +39,12 @@ public class WebConfigurer
     @Override
     public void onStartup(ServletContext servletContext) {
         if (env.getActiveProfiles().length != 0) {
-            LOG.info(
+            log.info(
                     "Web application configuration, using profiles: {}",
                     (Object[]) env.getActiveProfiles());
         }
 
-        LOG.info("Web application fully configured");
+        log.info("Web application fully configured");
     }
 
     /** Customize the Servlet engine: Mime types, the document root, the cache. */
@@ -87,7 +85,7 @@ public class WebConfigurer
         CorsConfiguration config = flowInquiryProperties.getCors();
         if (!CollectionUtils.isEmpty(config.getAllowedOrigins())
                 || !CollectionUtils.isEmpty(config.getAllowedOriginPatterns())) {
-            LOG.debug("Registering CORS filter");
+            log.debug("Registering CORS filter");
             source.registerCorsConfiguration("/api/**", config);
             source.registerCorsConfiguration("/management/**", config);
         }

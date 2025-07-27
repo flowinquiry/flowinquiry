@@ -1,7 +1,6 @@
 package io.flowinquiry.modules.usermanagement.controller.errors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -10,9 +9,8 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @ControllerAdvice
+@Slf4j
 public class ExceptionTranslator extends ResponseEntityExceptionHandler {
-
-    private static final Logger LOG = LoggerFactory.getLogger(ExceptionTranslator.class);
 
     @ExceptionHandler
     public ResponseEntity<Object> handleAnyException(Throwable ex, NativeWebRequest request) {
@@ -31,7 +29,7 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
     }
 
     private ResponseEntity<Object> handleUserError(Throwable ex, HttpStatus status, String path) {
-        LOG.warn("User error ({}): {}", status, ex.getMessage(), ex);
+        log.warn("User error ({}): {}", status, ex.getMessage(), ex);
 
         ErrorResponse errorResponse =
                 new ErrorResponse(status.value(), status.getReasonPhrase(), ex.getMessage(), path);
@@ -39,7 +37,7 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
     }
 
     private ResponseEntity<Object> handleServerError(Throwable ex, String path) {
-        LOG.error("Server error: {}", ex.getMessage(), ex);
+        log.error("Server error: {}", ex.getMessage(), ex);
 
         ErrorResponse errorResponse =
                 new ErrorResponse(

@@ -11,8 +11,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -34,10 +33,8 @@ import org.springframework.stereotype.Service;
  * token validity.
  */
 @Service
+@Slf4j
 public class JwtService {
-
-    /** Logger for this class */
-    private static final Logger LOG = LoggerFactory.getLogger(JwtService.class);
 
     /** Encoder for creating JWT tokens */
     private final JwtEncoder jwtEncoder;
@@ -124,7 +121,7 @@ public class JwtService {
             Jwt jwt = jwtDecoder.decode(token);
             return new JwtAuthenticationConverter().convert(jwt);
         } catch (JwtException e) {
-            LOG.error("❌ Invalid JWT Token: " + e.getMessage(), e);
+            log.error("❌ Invalid JWT Token: " + e.getMessage(), e);
             return null;
         }
     }

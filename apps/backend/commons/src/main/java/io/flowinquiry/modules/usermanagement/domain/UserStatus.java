@@ -1,13 +1,11 @@
 package io.flowinquiry.modules.usermanagement.domain;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public enum UserStatus {
     ACTIVE,
     PENDING;
-
-    private static final Logger log = LoggerFactory.getLogger(UserStatus.class);
 
     public static UserStatus from(String value) {
         try {
