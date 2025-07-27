@@ -1,8 +1,8 @@
-id;workflow_id;state_name;is_initial;is_final
-1;1;Backlog;True;False
-2;1;Ready;True;False
-3;1;In Progress;True;False
-4;1;Review;True;False
-5;1;Done;False;True
-6;2;Open;True;False
-7;2;Closed;False;True
+id;workflow_id;state_name;is_initial;is_final;tenant_id
+1;1;Backlog;True;False;00000000-0000-0000-0000-000000000001
+2;1;Ready;True;False;00000000-0000-0000-0000-000000000001
+3;1;In Progress;True;False;00000000-0000-0000-0000-000000000001
+4;1;Review;True;False;00000000-0000-0000-0000-000000000001
+5;1;Done;False;True;00000000-0000-0000-0000-000000000001
+6;2;Open;True;False;00000000-0000-0000-0000-000000000001
+7;2;Closed;False;True;00000000-0000-0000-0000-000000000001

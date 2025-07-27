@@ -69,7 +69,7 @@ public class ProjectService {
 
     @Transactional(readOnly = true)
     public Page<ProjectDTO> findProjects(Optional<QueryDTO> queryDTO, Pageable pageable) {
-        Specification<Project> spec = createSpecification(queryDTO);
+        Specification<Project> spec = createSpecification(queryDTO.orElse(null));
         return projectRepository.findAll(spec, pageable).map(projectMapper::toDto);
     }
 

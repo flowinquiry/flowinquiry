@@ -1,2 +1,2 @@
-id;user_id;auth_provider;provider_user_id;password_hash
-1;1;UsernameAndPassword;;$2a$10$gSAhZrxMllrbgj/kkK9UceBPpChGWJA7SYIb1Mqo.n5aNLq1/oRrC
+id;user_id;auth_provider;provider_user_id;password_hash;tenant_id
+1;1;UsernameAndPassword;;$2a$10$gSAhZrxMllrbgj/kkK9UceBPpChGWJA7SYIb1Mqo.n5aNLq1/oRrC;00000000-0000-0000-0000-000000000001

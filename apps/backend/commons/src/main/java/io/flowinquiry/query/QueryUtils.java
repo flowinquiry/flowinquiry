@@ -11,43 +11,32 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.data.jpa.domain.Specification;
 
 public class QueryUtils {
 
-    public static <Entity> Specification<Entity> createSpecification(Optional<QueryDTO> queryDTO) {
-        return queryDTO.map(
-                        dto ->
-                                (Specification<Entity>)
-                                        (root, query, cb) -> {
-                                            if (dto.getGroups() != null) {
-                                                // Process group-based queries
-                                                List<Predicate> groupPredicates =
-                                                        dto.getGroups().stream()
-                                                                .map(
-                                                                        group ->
-                                                                                createGroupPredicate(
-                                                                                        group, root,
-                                                                                        cb))
-                                                                .toList();
-                                                return cb.and(
-                                                        groupPredicates.toArray(new Predicate[0]));
-                                            } else if (dto.getFilters() != null) {
-                                                // Backward compatibility: process simple filters
-                                                List<Predicate> predicates =
-                                                        dto.getFilters().stream()
-                                                                .map(
-                                                                        filter ->
-                                                                                createPredicate(
-                                                                                        filter,
-                                                                                        root, cb))
-                                                                .toList();
-                                                return cb.and(predicates.toArray(new Predicate[0]));
-                                            }
-                                            return cb.conjunction(); // Return a no-op predicate
-                                        })
-                .orElse(null); // Return null if queryDTO is not present
+    public static <Entity> Specification<Entity> createSpecification(QueryDTO queryDTO) {
+        if (queryDTO == null) {
+            return null;
+        }
+
+        return (root, query, cb) -> {
+            if (queryDTO.getGroups() != null) {
+                // Process group-based queries
+                List<Predicate> groupPredicates =
+                        queryDTO.getGroups().stream()
+                                .map(group -> createGroupPredicate(group, root, cb))
+                                .toList();
+                return cb.and(groupPredicates.toArray(new Predicate[0]));
+            } else if (queryDTO.getFilters() != null) {
+                List<Predicate> predicates =
+                        queryDTO.getFilters().stream()
+                                .map(filter -> createPredicate(filter, root, cb))
+                                .toList();
+                return cb.and(predicates.toArray(new Predicate[0]));
+            }
+            return cb.conjunction();
+        };
     }
 
     private static <Entity> Predicate createGroupPredicate(
@@ -231,8 +220,7 @@ public class QueryUtils {
                             cb.lower(root.get(field)), "%" + value.toString().toLowerCase() + "%");
                 case IN:
                     // Handle enum type for IN operator
-                    if (fieldType.isEnum() && value instanceof List<?>) {
-                        List<?> valueList = (List<?>) value;
+                    if (fieldType.isEnum() && value instanceof List<?> valueList) {
                         List<Object> enumValues = new ArrayList<>();
                         for (Object item : valueList) {
                             if (item instanceof String) {
@@ -263,8 +251,7 @@ public class QueryUtils {
             return value;
         }
 
-        if (value instanceof String) {
-            String stringValue = (String) value;
+        if (value instanceof String stringValue) {
 
             if (targetType.equals(Instant.class)) {
                 return Instant.parse(stringValue);

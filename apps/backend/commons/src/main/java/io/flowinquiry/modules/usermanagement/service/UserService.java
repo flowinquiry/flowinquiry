@@ -357,14 +357,19 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public Page<UserDTO> findAllPublicUsers(Optional<QueryDTO> queryDTO, Pageable pageable) {
-        Specification<User> spec = createSpecification(queryDTO);
+        Specification<User> spec = createSpecification(queryDTO.orElse(null));
         if (spec == null) {
-            spec = Specification.where(null);
+            // Create an empty specification that matches all entities
+            spec = (root, query, criteriaBuilder) -> criteriaBuilder.conjunction();
         }
-        spec.and((root, query, criteriaBuilder) -> criteriaBuilder.isNotNull(root.get(User_.ID)))
-                .and(
-                        (root, query, criteriaBuilder) ->
-                                criteriaBuilder.equal(root.get(User_.STATUS), UserStatus.ACTIVE));
+        spec =
+                spec.and(
+                                (root, query, criteriaBuilder) ->
+                                        criteriaBuilder.isNotNull(root.get(User_.ID)))
+                        .and(
+                                (root, query, criteriaBuilder) ->
+                                        criteriaBuilder.equal(
+                                                root.get(User_.STATUS), UserStatus.ACTIVE));
         return userRepository.findAll(spec, pageable).map(userMapper::toDto);
     }
 

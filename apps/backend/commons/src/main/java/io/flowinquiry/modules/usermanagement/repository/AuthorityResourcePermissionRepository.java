@@ -14,7 +14,7 @@ public interface AuthorityResourcePermissionRepository
             "SELECT new io.flowinquiry.modules.usermanagement.domain.AuthorityResourcePermission( "
                     + "    :authorityName, "
                     + "    r.name, "
-                    + "    COALESCE(CAST(arp.permission AS integer), 0) "
+                    + "    COALESCE(CAST(arp.permission AS integer), 0), arp.tenantId "
                     + ") "
                     + "FROM Resource r "
                     + "LEFT JOIN AuthorityResourcePermission arp "

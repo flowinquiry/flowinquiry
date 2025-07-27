@@ -1,13 +1,13 @@
-setting_key;setting_value;setting_type;setting_group;description;updated_at
-mail.host;localhost;string;email;SMTP server hostname;
-mail.port;3025;int;email;SMTP server port;
-mail.username;user;string;email;SMTP account username;
-mail.password;pass;string;email;SMTP account password (encrypted);
-mail.protocol;smtp;string;email;Mail transport protocol (smtp/smtps);
-mail.from;noreply@flowinquiry.io;string;email;Default "from" address for outgoing mail;
-mail.fromName;FlowInquiry;string;email;Display name for the sender;
-mail.smtp.auth;true;boolean;email;Enable SMTP authentication;
-mail.smtp.starttls.enable;true;boolean;email;Enable STARTTLS for secure email;
-mail.smtp.ssl.enable;false;boolean;email;Enable SSL (for SMTPS);
-mail.debug;false;boolean;email;Enable debug logging for mail session;
-mail.base_url;http://localhost:8080;string;email;Base url;
+setting_key;setting_value;setting_type;setting_group;description;updated_at;tenant_id
+mail.host;localhost;string;email;SMTP server hostname;;00000000-0000-0000-0000-000000000001
+mail.port;3025;int;email;SMTP server port;;00000000-0000-0000-0000-000000000001
+mail.username;user;string;email;SMTP account username;;00000000-0000-0000-0000-000000000001
+mail.password;pass;string;email;SMTP account password (encrypted);;00000000-0000-0000-0000-000000000001
+mail.protocol;smtp;string;email;Mail transport protocol (smtp/smtps);;00000000-0000-0000-0000-000000000001
+mail.from;noreply@flowinquiry.io;string;email;Default "from" address for outgoing mail;;00000000-0000-0000-0000-000000000001
+mail.fromName;FlowInquiry;string;email;Display name for the sender;;00000000-0000-0000-0000-000000000001
+mail.smtp.auth;true;boolean;email;Enable SMTP authentication;;00000000-0000-0000-0000-000000000001
+mail.smtp.starttls.enable;true;boolean;email;Enable STARTTLS for secure email;;00000000-0000-0000-0000-000000000001
+mail.smtp.ssl.enable;false;boolean;email;Enable SSL (for SMTPS);;00000000-0000-0000-0000-000000000001
+mail.debug;false;boolean;email;Enable debug logging for mail session;;00000000-0000-0000-0000-000000000001
+mail.base_url;http://localhost:8080;string;email;Base url;;00000000-0000-0000-0000-000000000001

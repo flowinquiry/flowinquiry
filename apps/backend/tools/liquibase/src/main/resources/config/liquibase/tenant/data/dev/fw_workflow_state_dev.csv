@@ -1,30 +1,30 @@
-id;workflow_id;state_name;is_initial;is_final
-1;1;Backlog;True;False
-2;1;Ready;True;False
-3;1;In Progress;True;False
-4;1;Review;True;False
-5;1;Done;False;True
-6;2;New;True;False
-7;2;Request Evidence;False;False
-8;2;Evidence Provided;False;False
-9;2;Refund Approved;False;False
-10;2;Refund Denied;False;True
-11;2;Refund Completed;False;True
-12;3;New;True;False
-13;3;Assigned;False;False
-14;3;In Progress;False;False
-15;3;Not an Issue;False;True
-16;3;Fixed;False;False
-17;3;Verified;False;True
-18;4;New;True;False
-19;4;Manager Approval;False;False
-20;4;IT Approval;False;False
-21;4;Vendor Procurement;False;False
-22;4;Delivered;False;True
-23;4;Rejected;False;True
-24;5;New;True;False
-25;5;Manager Approval;False;False
-26;5;IT Approval;False;False
-27;5;Procurement;False;False
-28;5;Delivered;False;True
-29;5;Rejected;False;True
+id;workflow_id;state_name;is_initial;is_final;tenant_id
+1;1;Backlog;True;False;00000000-0000-0000-0000-000000000001
+2;1;Ready;True;False;00000000-0000-0000-0000-000000000001
+3;1;In Progress;True;False;00000000-0000-0000-0000-000000000001
+4;1;Review;True;False;00000000-0000-0000-0000-000000000001
+5;1;Done;False;True;00000000-0000-0000-0000-000000000001
+6;2;New;True;False;00000000-0000-0000-0000-000000000001
+7;2;Request Evidence;False;False;00000000-0000-0000-0000-000000000001
+8;2;Evidence Provided;False;False;00000000-0000-0000-0000-000000000001
+9;2;Refund Approved;False;False;00000000-0000-0000-0000-000000000001
+10;2;Refund Denied;False;True;00000000-0000-0000-0000-000000000001
+11;2;Refund Completed;False;True;00000000-0000-0000-0000-000000000001
+12;3;New;True;False;00000000-0000-0000-0000-000000000001
+13;3;Assigned;False;False;00000000-0000-0000-0000-000000000001
+14;3;In Progress;False;False;00000000-0000-0000-0000-000000000001
+15;3;Not an Issue;False;True;00000000-0000-0000-0000-000000000001
+16;3;Fixed;False;False;00000000-0000-0000-0000-000000000001
+17;3;Verified;False;True;00000000-0000-0000-0000-000000000001
+18;4;New;True;False;00000000-0000-0000-0000-000000000001
+19;4;Manager Approval;False;False;00000000-0000-0000-0000-000000000001
+20;4;IT Approval;False;False;00000000-0000-0000-0000-000000000001
+21;4;Vendor Procurement;False;False;00000000-0000-0000-0000-000000000001
+22;4;Delivered;False;True;00000000-0000-0000-0000-000000000001
+23;4;Rejected;False;True;00000000-0000-0000-0000-000000000001
+24;5;New;True;False;00000000-0000-0000-0000-000000000001
+25;5;Manager Approval;False;False;00000000-0000-0000-0000-000000000001
+26;5;IT Approval;False;False;00000000-0000-0000-0000-000000000001
+27;5;Procurement;False;False;00000000-0000-0000-0000-000000000001
+28;5;Delivered;False;True;00000000-0000-0000-0000-000000000001
+29;5;Rejected;False;True;00000000-0000-0000-0000-000000000001

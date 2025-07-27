@@ -18,8 +18,7 @@ public class AppAuthenticationManagerConfiguration {
     public AuthenticationManager appAuthenticationManager(
             @Qualifier("appUserDetailService") UserDetailsService appUserDetailService,
             PasswordEncoder passwordEncoder) {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(appUserDetailService);
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(appUserDetailService);
         provider.setPasswordEncoder(passwordEncoder);
         return new ProviderManager(provider);
     }

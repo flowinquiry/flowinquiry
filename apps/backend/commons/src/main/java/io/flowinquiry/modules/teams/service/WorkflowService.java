@@ -135,7 +135,7 @@ public class WorkflowService {
 
     @Transactional(readOnly = true)
     public Page<WorkflowDTO> findWorkflows(Optional<QueryDTO> queryDTO, Pageable pageable) {
-        Specification<Workflow> spec = createSpecification(queryDTO);
+        Specification<Workflow> spec = createSpecification(queryDTO.orElse(null));
         return workflowRepository.findAll(spec, pageable).map(workflowMapper::toDto);
     }
 

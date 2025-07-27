@@ -67,7 +67,7 @@ public class OrganizationService {
     }
 
     public Page<Organization> findOrganizations(Optional<QueryDTO> queryDTO, Pageable pageable) {
-        Specification<Organization> spec = createSpecification(queryDTO);
+        Specification<Organization> spec = createSpecification(queryDTO.orElse(null));
         return organizationRepository.findAll(spec, pageable);
     }
 }

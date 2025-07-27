@@ -22,6 +22,8 @@
 		file="config/liquibase/tenant/changelog/003_create_tenant_table.xml" />
 
 	<include
+		file="config/liquibase/tenant/changelog/shared-data-changelog.xml" />
+	<include
 		file="config/liquibase/tenant/changelog/dev-data-changelog.xml"
 		context="dev" />
 	<include

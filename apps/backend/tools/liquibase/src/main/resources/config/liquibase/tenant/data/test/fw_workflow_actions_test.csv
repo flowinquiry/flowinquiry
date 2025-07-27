@@ -1,11 +1,11 @@
-id;transition_id;action_type;action_data
-1;1;NOTIFY_USER;{"userRole": "Manager", "message": "A refund request has been received."}
-2;2;ESCALATE;{"level": 2, "escalationTime": "24h"}
-3;3;AUTO_APPROVE;{"condition": "userRole == 'Admin'"}
-4;4;NOTIFY_USER;{"userRole": "Finance", "message": "A new refund request is pending approval."}
-5;5;NOTIFY_USER;{"userRole": "QA", "message": "Bug fix request assigned to QA team."}
-6;6;ESCALATE;{"level": 3, "escalationTime": "12h"}
-7;7;AUTO_APPROVE;{"condition": "workflowState == 'Final Approval'"}
-8;8;NOTIFY_USER;{"userRole": "IT", "message": "New hardware request needs approval."}
-9;9;ESCALATE;{"level": 1, "escalationTime": "48h"}
-10;10;NOTIFY_USER;{"userRole": "Security", "message": "A security tool request needs review."}
+id;transition_id;action_type;action_data;tenant_id
+1;1;NOTIFY_USER;{"userRole": "Manager", "message": "A refund request has been received."};00000000-0000-0000-0000-000000000001
+2;2;ESCALATE;{"level": 2, "escalationTime": "24h"};00000000-0000-0000-0000-000000000001
+3;3;AUTO_APPROVE;{"condition": "userRole == 'Admin'"};00000000-0000-0000-0000-000000000001
+4;4;NOTIFY_USER;{"userRole": "Finance", "message": "A new refund request is pending approval."};00000000-0000-0000-0000-000000000001
+5;5;NOTIFY_USER;{"userRole": "QA", "message": "Bug fix request assigned to QA team."};00000000-0000-0000-0000-000000000001
+6;6;ESCALATE;{"level": 3, "escalationTime": "12h"};00000000-0000-0000-0000-000000000001
+7;7;AUTO_APPROVE;{"condition": "workflowState == 'Final Approval'"};00000000-0000-0000-0000-000000000001
+8;8;NOTIFY_USER;{"userRole": "IT", "message": "New hardware request needs approval."};00000000-0000-0000-0000-000000000001
+9;9;ESCALATE;{"level": 1, "escalationTime": "48h"};00000000-0000-0000-0000-000000000001
+10;10;NOTIFY_USER;{"userRole": "Security", "message": "A security tool request needs review."};00000000-0000-0000-0000-000000000001

@@ -1,3 +1,3 @@
-name;descriptive_name;system_role
-ROLE_ADMIN;Administrator;true
-ROLE_USER;User;false
+name;descriptive_name;system_role;tenant_id
+ROLE_ADMIN;Administrator;true;00000000-0000-0000-0000-000000000001
+ROLE_USER;User;false;00000000-0000-0000-0000-000000000001

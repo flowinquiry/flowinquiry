@@ -1,2 +1,2 @@
-id;first_name;last_name;email;timezone;last_login_time;image_url;role;title;manager_id;status;is_deleted;lang_key;activation_key;reset_key;created_by;created_at;reset_date;modified_by;modified_at;about;address;city;state;country
-1;John;Doe;admin@flowinquiry.io;America/Los_Angeles;;;USER;Software Engineer;;ACTIVE;false;en;ACT123;RST123;;;;;;Experienced software engineer;123 Main St;San Francisco;CA;US
+id;first_name;last_name;email;timezone;last_login_time;image_url;role;title;manager_id;status;is_deleted;lang_key;activation_key;reset_key;created_by;created_at;reset_date;modified_by;modified_at;about;address;city;state;country;tenant_id
+1;John;Doe;admin@flowinquiry.io;America/Los_Angeles;;;USER;Software Engineer;;ACTIVE;false;en;ACT123;RST123;;;;;;Experienced software engineer;123 Main St;San Francisco;CA;US;00000000-0000-0000-0000-000000000001

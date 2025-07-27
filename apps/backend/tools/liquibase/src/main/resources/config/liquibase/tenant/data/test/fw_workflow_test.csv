@@ -1,6 +1,6 @@
-id;name;description;owner_id;visibility;request_name;use_for_project
-1;Project Workflow;Manages project task statuses across different phases.;;PUBLIC;Project Task;true
-2;Refund Process Workflow;Handles customer refund requests.;;PUBLIC;Refund;false
-3;Bug Fix Workflow;Tracks the lifecycle of software bug fixes.;;PUBLIC;Bug;false
-4;New Hardware Request;Manages team-specific hardware requests.;;PUBLIC;Hardware Request;false
-5;Software Approval Workflow;Tracks software license or tool requests.;;PUBLIC;License Request;false
+id;name;description;owner_id;visibility;request_name;use_for_project;tenant_id
+1;Project Workflow;Manages project task statuses across different phases.;;PUBLIC;Project Task;true;00000000-0000-0000-0000-000000000001
+2;Refund Process Workflow;Handles customer refund requests.;;PUBLIC;Refund;false;00000000-0000-0000-0000-000000000001
+3;Bug Fix Workflow;Tracks the lifecycle of software bug fixes.;;PUBLIC;Bug;false;00000000-0000-0000-0000-000000000001
+4;New Hardware Request;Manages team-specific hardware requests.;;PUBLIC;Hardware Request;false;00000000-0000-0000-0000-000000000001
+5;Software Approval Workflow;Tracks software license or tool requests.;;PUBLIC;License Request;false;00000000-0000-0000-0000-000000000001

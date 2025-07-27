@@ -1,5 +1,5 @@
-name;description
-manager;Responsible for managing the team and its members
-member;Participates in team activities and contributes to team goals
-guest;Has limited access to the team resources for specific purposes
-none;No specific role assigned, default placeholder
+name;description;tenant_id
+manager;Responsible for managing the team and its members;00000000-0000-0000-0000-000000000001
+member;Participates in team activities and contributes to team goals;00000000-0000-0000-0000-000000000001
+guest;Has limited access to the team resources for specific purposes;00000000-0000-0000-0000-000000000001
+none;No specific role assigned, default placeholder;00000000-0000-0000-0000-000000000001

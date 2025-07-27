@@ -21,7 +21,7 @@ public class LiquibaseService {
 
     private static final Logger LOG = LoggerFactory.getLogger(LiquibaseService.class);
 
-    private DataSource dataSource;
+    private final DataSource dataSource;
 
     public LiquibaseService(DataSource dataSource) {
         this.dataSource = dataSource;

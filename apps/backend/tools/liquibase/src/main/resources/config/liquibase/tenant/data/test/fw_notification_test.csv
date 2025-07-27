@@ -1,11 +1,11 @@
-id;content;user_id;is_read;notification_type;created_by;created_at;modified_by;modified_at
-1;Your refund request has been received.;1;false;INFO;3;2025-01-29T10:40:00+00:00;3;2025-01-29T10:50:00+00:00
-2;A bug fix has been assigned to you.;2;false;INFO;5;2025-01-29T11:55:00+00:00;5;2025-01-29T12:05:00+00:00
-3;Your laptop request is under review.;3;true;INFO;6;2025-01-29T12:25:00+00:00;6;2025-01-29T12:35:00+00:00
-4;Software license request has been approved.;4;false;INFO;7;2025-01-29T13:15:00+00:00;7;2025-01-29T13:25:00+00:00
-5;Follow-up on refund request, please check status.;5;true;INFO;8;2025-01-29T14:30:00+00:00;8;2025-01-29T14:40:00+00:00
-6;Bug fix verification needed.;6;false;INFO;9;2025-01-29T15:45:00+00:00;9;2025-01-29T15:55:00+00:00
-7;Hardware procurement has started.;7;true;INFO;10;2025-01-29T16:20:00+00:00;10;2025-01-29T16:30:00+00:00
-8;Security audit request requires additional documents.;8;false;INFO;11;2025-01-29T17:35:00+00:00;11;2025-01-29T17:45:00+00:00
-9;Your refund request has been escalated.;9;true;INFO;12;2025-01-29T18:50:00+00:00;12;2025-01-29T19:00:00+00:00
-10;Critical bug fix has been completed.;10;false;INFO;13;2025-01-29T20:05:00+00:00;13;2025-01-29T20:15:00+00:00
+id;content;user_id;is_read;notification_type;created_by;created_at;modified_by;modified_at;tenant_id
+1;Your refund request has been received.;1;false;INFO;3;2025-01-29T10:40:00+00:00;3;2025-01-29T10:50:00+00:00;00000000-0000-0000-0000-000000000001
+2;A bug fix has been assigned to you.;2;false;INFO;5;2025-01-29T11:55:00+00:00;5;2025-01-29T12:05:00+00:00;00000000-0000-0000-0000-000000000001
+3;Your laptop request is under review.;3;true;INFO;6;2025-01-29T12:25:00+00:00;6;2025-01-29T12:35:00+00:00;00000000-0000-0000-0000-000000000001
+4;Software license request has been approved.;4;false;INFO;7;2025-01-29T13:15:00+00:00;7;2025-01-29T13:25:00+00:00;00000000-0000-0000-0000-000000000001
+5;Follow-up on refund request, please check status.;5;true;INFO;8;2025-01-29T14:30:00+00:00;8;2025-01-29T14:40:00+00:00;00000000-0000-0000-0000-000000000001
+6;Bug fix verification needed.;6;false;INFO;9;2025-01-29T15:45:00+00:00;9;2025-01-29T15:55:00+00:00;00000000-0000-0000-0000-000000000001
+7;Hardware procurement has started.;7;true;INFO;10;2025-01-29T16:20:00+00:00;10;2025-01-29T16:30:00+00:00;00000000-0000-0000-0000-000000000001
+8;Security audit request requires additional documents.;8;false;INFO;11;2025-01-29T17:35:00+00:00;11;2025-01-29T17:45:00+00:00;00000000-0000-0000-0000-000000000001
+9;Your refund request has been escalated.;9;true;INFO;12;2025-01-29T18:50:00+00:00;12;2025-01-29T19:00:00+00:00;00000000-0000-0000-0000-000000000001
+10;Critical bug fix has been completed.;10;false;INFO;13;2025-01-29T20:05:00+00:00;13;2025-01-29T20:15:00+00:00;00000000-0000-0000-0000-000000000001

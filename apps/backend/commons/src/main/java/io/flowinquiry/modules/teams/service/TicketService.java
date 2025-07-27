@@ -91,7 +91,7 @@ public class TicketService {
     }
 
     public Page<TicketDTO> findTickets(QueryDTO queryDTO, Pageable pageable) {
-        Specification<Ticket> spec = createSpecification(Optional.of(queryDTO));
+        Specification<Ticket> spec = createSpecification(queryDTO);
         return ticketRepository.findAll(spec, pageable).map(ticketMapper::toDto);
     }
 

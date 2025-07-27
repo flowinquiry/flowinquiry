@@ -36,6 +36,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +58,9 @@ class ProjectControllerIT {
 
     private static final String DEFAULT_DESCRIPTION = "Test Description";
     private static final String UPDATED_DESCRIPTION = "Updated Test Description";
+
+    private static final UUID DEFAULT_TENANT_ID =
+            UUID.fromString("00000000-0000-0000-0000-000000000001");
 
     private static final String DEFAULT_SHORT_NAME = "TEST";
     private static final String UPDATED_SHORT_NAME = "UPDT";

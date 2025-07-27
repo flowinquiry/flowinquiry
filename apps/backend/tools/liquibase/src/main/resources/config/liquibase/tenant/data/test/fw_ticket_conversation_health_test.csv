@@ -1,11 +1,11 @@
-id;ticket_id;summary;conversation_health;cumulative_sentiment;total_messages;total_questions;resolved_questions
-1;1;Customer inquired about refund timeline.;0.7;0.6;15;3;2
-2;2;User reported a bug and discussed fixes.;0.4;0.3;12;5;4
-3;3;Request for a new laptop, discussed specs.;0.8;0.7;10;2;2
-4;4;Manager reviewed software approval request.;0.6;0.5;8;1;1
-5;5;Follow-up on refund with additional questions.;0.3;0.2;20;6;5
-6;6;Bug fix discussion, engineer needed details.;0.5;0.4;14;4;3
-7;7;Urgent hardware replacement, escalated case.;-0.2;-0.1;25;8;6
-8;8;Security tool approval, required additional documents.;0.7;0.6;9;3;2
-9;9;Escalated refund request due to long delay.;-0.5;-0.6;30;10;7
-10;10;High-priority bug fix, discussions with dev team.;0.2;0.1;18;7;5
+id;ticket_id;summary;conversation_health;cumulative_sentiment;total_messages;total_questions;resolved_questions;tenant_id
+1;1;Customer inquired about refund timeline.;0.7;0.6;15;3;2;00000000-0000-0000-0000-000000000001
+2;2;User reported a bug and discussed fixes.;0.4;0.3;12;5;4;00000000-0000-0000-0000-000000000001
+3;3;Request for a new laptop, discussed specs.;0.8;0.7;10;2;2;00000000-0000-0000-0000-000000000001
+4;4;Manager reviewed software approval request.;0.6;0.5;8;1;1;00000000-0000-0000-0000-000000000001
+5;5;Follow-up on refund with additional questions.;0.3;0.2;20;6;5;00000000-0000-0000-0000-000000000001
+6;6;Bug fix discussion, engineer needed details.;0.5;0.4;14;4;3;00000000-0000-0000-0000-000000000001
+7;7;Urgent hardware replacement, escalated case.;-0.2;-0.1;25;8;6;00000000-0000-0000-0000-000000000001
+8;8;Security tool approval, required additional documents.;0.7;0.6;9;3;2;00000000-0000-0000-0000-000000000001
+9;9;Escalated refund request due to long delay.;-0.5;-0.6;30;10;7;00000000-0000-0000-0000-000000000001
+10;10;High-priority bug fix, discussions with dev team.;0.2;0.1;18;7;5;00000000-0000-0000-0000-000000000001
