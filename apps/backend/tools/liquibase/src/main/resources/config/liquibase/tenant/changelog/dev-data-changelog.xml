@@ -59,7 +59,6 @@
 			usePreparedStatements="true">
 			<column name="user_id" type="numeric" />
 			<column name="authority_name" type="numeric" />
-			<column name="tenant_id" type="uuid" />
 		</loadData>
 		<loadData
 			file="config/liquibase/tenant/data/dev/fw_organization_dev.csv"
