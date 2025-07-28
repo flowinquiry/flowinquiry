@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import javax.imageio.ImageIO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -116,6 +117,8 @@ public class LocalFileStorageService implements StorageService {
 
     @Override
     public void deleteFile(String objectPath) throws Exception {
-        Files.deleteIfExists(Paths.get(rootDirectory, objectPath));
+        if (!StringUtils.isEmpty(objectPath)) {
+            Files.deleteIfExists(Paths.get(rootDirectory, objectPath));
+        }
     }
 }

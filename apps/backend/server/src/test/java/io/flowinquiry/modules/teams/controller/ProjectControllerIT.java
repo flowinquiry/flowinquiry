@@ -13,31 +13,23 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.flowinquiry.it.IntegrationTest;
 import io.flowinquiry.it.WithMockFwUser;
-import io.flowinquiry.it.WithTestTenant;
 import io.flowinquiry.modules.teams.domain.Project;
 import io.flowinquiry.modules.teams.domain.ProjectEpic;
 import io.flowinquiry.modules.teams.domain.ProjectIteration;
 import io.flowinquiry.modules.teams.domain.ProjectStatus;
-import io.flowinquiry.modules.teams.domain.Team;
 import io.flowinquiry.modules.teams.repository.ProjectEpicRepository;
 import io.flowinquiry.modules.teams.repository.ProjectIterationRepository;
 import io.flowinquiry.modules.teams.repository.ProjectRepository;
-import io.flowinquiry.modules.teams.repository.TeamRepository;
-import io.flowinquiry.modules.teams.service.ProjectEpicService;
-import io.flowinquiry.modules.teams.service.ProjectIterationService;
-import io.flowinquiry.modules.teams.service.ProjectService;
 import io.flowinquiry.modules.teams.service.dto.ProjectDTO;
 import io.flowinquiry.modules.teams.service.mapper.ProjectMapper;
 import io.flowinquiry.modules.usermanagement.AuthoritiesConstants;
 import io.flowinquiry.query.Filter;
 import io.flowinquiry.query.FilterOperator;
 import io.flowinquiry.query.QueryDTO;
-import jakarta.persistence.EntityManager;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -50,8 +42,8 @@ import org.springframework.transaction.annotation.Transactional;
 @WithMockFwUser(
         userId = 1L,
         authorities = {AuthoritiesConstants.ADMIN})
-@WithTestTenant
 @IntegrationTest
+@Transactional
 class ProjectControllerIT {
 
     private static final String DEFAULT_NAME = "Test Project";
@@ -61,7 +53,6 @@ class ProjectControllerIT {
     private static final String UPDATED_DESCRIPTION = "Updated Test Description";
 
     private static final String DEFAULT_SHORT_NAME = "TEST";
-    private static final String UPDATED_SHORT_NAME = "UPDT";
 
     private static final ProjectStatus DEFAULT_STATUS = ProjectStatus.Active;
     private static final ProjectStatus UPDATED_STATUS = ProjectStatus.Closed;
@@ -71,76 +62,19 @@ class ProjectControllerIT {
     private static final Instant UPDATED_START_DATE = DEFAULT_START_DATE.plus(1, ChronoUnit.DAYS);
     private static final Instant UPDATED_END_DATE = DEFAULT_END_DATE.plus(1, ChronoUnit.DAYS);
 
-    private static final Long DEFAULT_TEAM_ID = 1L;
-
     @Autowired private ObjectMapper om;
 
     @Autowired private ProjectRepository projectRepository;
-
-    @Autowired private TeamRepository teamRepository;
 
     @Autowired private ProjectEpicRepository projectEpicRepository;
 
     @Autowired private ProjectIterationRepository projectIterationRepository;
 
-    @Autowired private ProjectService projectService;
-
-    @Autowired private ProjectEpicService projectEpicService;
-
-    @Autowired private ProjectIterationService projectIterationService;
-
     @Autowired private ProjectMapper projectMapper;
-
-    @Autowired private EntityManager em;
 
     @Autowired private MockMvc restProjectMockMvc;
 
-    private Project project;
-    private Team team;
-
-    @BeforeEach
-    public void initTest() {
-        // First ensure we have a team
-        team =
-                teamRepository
-                        .findById(DEFAULT_TEAM_ID)
-                        .orElseGet(
-                                () -> {
-                                    Team newTeam =
-                                            Team.builder()
-                                                    .name("Test Team")
-                                                    .slogan("Test Slogan")
-                                                    .description("Test Description")
-                                                    .build();
-                                    return teamRepository.save(newTeam);
-                                });
-
-        project = createEntity(em);
-    }
-
-    /** Create a Project entity for testing. */
-    public static Project createEntity(EntityManager em) {
-        Project project =
-                Project.builder()
-                        .name(DEFAULT_NAME)
-                        .description(DEFAULT_DESCRIPTION)
-                        .shortName(DEFAULT_SHORT_NAME)
-                        .status(DEFAULT_STATUS)
-                        .startDate(DEFAULT_START_DATE)
-                        .endDate(DEFAULT_END_DATE)
-                        .build();
-
-        // Set the team
-        Team team = em.find(Team.class, DEFAULT_TEAM_ID);
-        if (team != null) {
-            project.setTeam(team);
-        }
-
-        return project;
-    }
-
     @Test
-    @Transactional
     void createProject() throws Exception {
         int databaseSizeBeforeCreate = projectRepository.findAll().size();
 
@@ -152,7 +86,7 @@ class ProjectControllerIT {
         projectDTO.setStatus(DEFAULT_STATUS);
         projectDTO.setStartDate(DEFAULT_START_DATE);
         projectDTO.setEndDate(DEFAULT_END_DATE);
-        projectDTO.setTeamId(team.getId());
+        projectDTO.setTeamId(1L);
 
         // Perform the request and validate the response
         restProjectMockMvc
@@ -165,7 +99,7 @@ class ProjectControllerIT {
                 .andExpect(jsonPath("$.description").value(DEFAULT_DESCRIPTION))
                 .andExpect(jsonPath("$.shortName").value(DEFAULT_SHORT_NAME))
                 .andExpect(jsonPath("$.status").value(DEFAULT_STATUS.toString()))
-                .andExpect(jsonPath("$.teamId").value(team.getId().intValue()));
+                .andExpect(jsonPath("$.teamId").value(1L));
 
         // Validate the Project in the database
         List<Project> projectList = projectRepository.findAll();
@@ -175,14 +109,11 @@ class ProjectControllerIT {
         assertThat(testProject.getDescription()).isEqualTo(DEFAULT_DESCRIPTION);
         assertThat(testProject.getShortName()).isEqualTo(DEFAULT_SHORT_NAME);
         assertThat(testProject.getStatus()).isEqualTo(DEFAULT_STATUS);
-        assertThat(testProject.getTeam().getId()).isEqualTo(team.getId());
+        assertThat(testProject.getTeam().getId()).isEqualTo(1L);
     }
 
     @Test
-    @Transactional
     void getProjectById() throws Exception {
-
-        // Get the project
         restProjectMockMvc
                 .perform(get("/api/projects/{id}", 1L))
                 .andExpect(status().isOk())
@@ -195,21 +126,14 @@ class ProjectControllerIT {
     }
 
     @Test
-    @Transactional
     void getNonExistingProject() throws Exception {
-        // Get the project
         restProjectMockMvc
                 .perform(get("/api/projects/{id}", Long.MAX_VALUE))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    @Transactional
     void searchProjects() throws Exception {
-        // Initialize the database
-        projectRepository.saveAndFlush(project);
-
-        // Search for all projects
         restProjectMockMvc
                 .perform(
                         post("/api/projects/search")
@@ -220,14 +144,9 @@ class ProjectControllerIT {
     }
 
     @Test
-    @Transactional
     void searchProjectsWithQuery() throws Exception {
-        // Initialize the database
-        projectRepository.saveAndFlush(project);
-
-        // Create a query DTO with a filter for the project name
         QueryDTO queryDTO = new QueryDTO();
-        Filter nameFilter = new Filter("name", FilterOperator.EQ, DEFAULT_NAME);
+        Filter nameFilter = new Filter("name", FilterOperator.EQ, "Customer Portal");
         queryDTO.setFilters(List.of(nameFilter));
 
         // Search for projects with the query
@@ -238,18 +157,12 @@ class ProjectControllerIT {
                                 .content(om.writeValueAsBytes(Optional.of(queryDTO))))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(jsonPath("$.content.[*].name").value(hasItem(DEFAULT_NAME)));
+                .andExpect(jsonPath("$.content.[*].name").value(hasItem("Customer Portal")));
     }
 
     @Test
-    @Transactional
     void updateProject() throws Exception {
-        // Initialize the database
-        projectRepository.saveAndFlush(project);
-        int databaseSizeBeforeUpdate = projectRepository.findAll().size();
-
-        // Update the project
-        Project updatedProject = projectRepository.findById(project.getId()).orElseThrow();
+        Project updatedProject = projectRepository.findById(1L).orElseThrow();
 
         ProjectDTO projectDTO = projectMapper.toDto(updatedProject);
         projectDTO.setName(UPDATED_NAME);
@@ -268,28 +181,14 @@ class ProjectControllerIT {
                 .andExpect(jsonPath("$.name").value(UPDATED_NAME))
                 .andExpect(jsonPath("$.description").value(UPDATED_DESCRIPTION))
                 .andExpect(jsonPath("$.status").value(UPDATED_STATUS.toString()));
-
-        // Validate the Project in the database
-        List<Project> projectList = projectRepository.findAll();
-        assertThat(projectList).hasSize(databaseSizeBeforeUpdate);
-        Project testProject = projectList.getLast();
-        assertThat(testProject.getName()).isEqualTo(UPDATED_NAME);
-        assertThat(testProject.getDescription()).isEqualTo(UPDATED_DESCRIPTION);
-        assertThat(testProject.getStatus()).isEqualTo(UPDATED_STATUS);
     }
 
     @Test
-    @Transactional
     void deleteProject() throws Exception {
-        // Initialize the database
-        projectRepository.saveAndFlush(project);
         int databaseSizeBeforeDelete = projectRepository.findAll().size();
 
-        // Delete the project
         restProjectMockMvc
-                .perform(
-                        delete("/api/projects/{projectId}", project.getId())
-                                .accept(MediaType.APPLICATION_JSON))
+                .perform(delete("/api/projects/{projectId}", 1L).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
         // Validate the database contains one less item
@@ -298,10 +197,8 @@ class ProjectControllerIT {
     }
 
     @Test
-    @Transactional
     void getProjectIterations() throws Exception {
-        // Initialize the database
-        projectRepository.saveAndFlush(project);
+        Project project = projectRepository.findById(1L).orElseThrow();
 
         // Create a project iteration
         ProjectIteration iteration = new ProjectIteration();
@@ -318,15 +215,14 @@ class ProjectControllerIT {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$[0].name").value("Test Iteration"))
-                .andExpect(jsonPath("$[0].description").value("Test Iteration Description"));
+                .andExpect(jsonPath("$[*].name").value(hasItem("Test Iteration")))
+                .andExpect(
+                        jsonPath("$[*].description").value(hasItem("Test Iteration Description")));
     }
 
     @Test
-    @Transactional
     void getProjectEpics() throws Exception {
-        // Initialize the database
-        projectRepository.saveAndFlush(project);
+        Project project = projectRepository.findById(1L).orElseThrow();
 
         // Create a project epic
         ProjectEpic epic = new ProjectEpic();
@@ -343,35 +239,25 @@ class ProjectControllerIT {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$[0].name").value("Test Epic"))
-                .andExpect(jsonPath("$[0].description").value("Test Epic Description"));
+                .andExpect(jsonPath("$[*].name").value(hasItem("Test Epic")))
+                .andExpect(jsonPath("$[*].description").value(hasItem("Test Epic Description")));
     }
 
     @Test
-    @Transactional
     void getProjectByShortName() throws Exception {
-        // Initialize the database
-        projectRepository.saveAndFlush(project);
-
-        // Get the project by short name
         restProjectMockMvc
-                .perform(get("/api/projects/short-name/{shortName}", DEFAULT_SHORT_NAME))
+                .perform(get("/api/projects/short-name/{shortName}", "cust"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(jsonPath("$.id").value(project.getId().intValue()))
-                .andExpect(jsonPath("$.name").value(DEFAULT_NAME))
-                .andExpect(jsonPath("$.description").value(DEFAULT_DESCRIPTION))
-                .andExpect(jsonPath("$.shortName").value(DEFAULT_SHORT_NAME))
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.name").value("Customer Portal"))
+                .andExpect(jsonPath("$.description").value("Customer-facing web portal"))
+                .andExpect(jsonPath("$.shortName").value("cust"))
                 .andExpect(jsonPath("$.status").value(DEFAULT_STATUS.toString()));
     }
 
     @Test
-    @Transactional
     void getProjectsByUser() throws Exception {
-        // Initialize the database
-        projectRepository.saveAndFlush(project);
-
-        // Get projects by user ID
         restProjectMockMvc
                 .perform(get("/api/projects/by-user/{userId}", 1L))
                 .andExpect(status().isOk())

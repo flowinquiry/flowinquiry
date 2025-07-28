@@ -21,11 +21,9 @@ import io.flowinquiry.modules.usermanagement.AuthoritiesConstants;
 import io.flowinquiry.modules.usermanagement.domain.User;
 import io.flowinquiry.modules.usermanagement.domain.UserTeam;
 import io.flowinquiry.modules.usermanagement.domain.UserTeamId;
-import io.flowinquiry.modules.usermanagement.repository.UserRepository;
 import io.flowinquiry.modules.usermanagement.repository.UserTeamRepository;
 import jakarta.persistence.EntityManager;
 import java.util.List;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -66,24 +64,6 @@ class TeamControllerIT {
     @Autowired private EntityManager em;
 
     @Autowired private MockMvc restTeamMockMvc;
-
-    @Autowired private UserRepository userRepository;
-
-    private Team team;
-
-    @BeforeEach
-    public void initTest() {
-        team = createEntity(em);
-    }
-
-    /** Create a Team entity for testing. */
-    public static Team createEntity(EntityManager em) {
-        return Team.builder()
-                .name(DEFAULT_NAME)
-                .slogan(DEFAULT_SLOGAN)
-                .description(DEFAULT_DESCRIPTION)
-                .build();
-    }
 
     @Test
     @Transactional
@@ -238,12 +218,10 @@ class TeamControllerIT {
     @Test
     @Transactional
     void updateTeam() throws Exception {
-        // Initialize the database
-        teamRepository.saveAndFlush(team);
         int databaseSizeBeforeUpdate = teamRepository.findAll().size();
 
         // Update the team
-        Team updatedTeam = teamRepository.findById(team.getId()).orElseThrow();
+        Team updatedTeam = teamRepository.findById(1L).orElseThrow();
 
         TeamDTO teamDTO = teamMapper.toDto(updatedTeam);
         teamDTO.setName(UPDATED_NAME);
@@ -364,12 +342,10 @@ class TeamControllerIT {
     @Test
     @Transactional
     void updateTeamWithoutLogo() throws Exception {
-        // Initialize the database
-        teamRepository.saveAndFlush(team);
         int databaseSizeBeforeUpdate = teamRepository.findAll().size();
 
         // Update the team
-        Team updatedTeam = teamRepository.findById(team.getId()).orElseThrow();
+        Team updatedTeam = teamRepository.findById(1L).orElseThrow();
 
         TeamDTO teamDTO = teamMapper.toDto(updatedTeam);
         teamDTO.setName(UPDATED_NAME);
@@ -412,13 +388,11 @@ class TeamControllerIT {
     @Test
     @Transactional
     void deleteTeam() throws Exception {
-        // Initialize the database
-        teamRepository.saveAndFlush(team);
         int databaseSizeBeforeDelete = teamRepository.findAll().size();
 
         // Delete the team
         restTeamMockMvc
-                .perform(delete("/api/teams/{id}", team.getId()).accept(MediaType.APPLICATION_JSON))
+                .perform(delete("/api/teams/{id}", 1L).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
         // Validate the database contains one less item
@@ -429,17 +403,6 @@ class TeamControllerIT {
     @Test
     @Transactional
     void deleteTeams() throws Exception {
-        // Initialize the database with two teams
-        teamRepository.saveAndFlush(team);
-
-        Team anotherTeam =
-                Team.builder()
-                        .name("Another Team")
-                        .slogan("Another Slogan")
-                        .description("Another Description")
-                        .build();
-        teamRepository.saveAndFlush(anotherTeam);
-
         int databaseSizeBeforeDelete = teamRepository.findAll().size();
 
         // Delete the teams
@@ -447,9 +410,7 @@ class TeamControllerIT {
                 .perform(
                         delete("/api/teams")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(
-                                        om.writeValueAsBytes(
-                                                List.of(team.getId(), anotherTeam.getId()))))
+                                .content(om.writeValueAsBytes(List.of(1L, 2L))))
                 .andExpect(status().isOk());
 
         // Validate the database contains two less items
@@ -460,18 +421,16 @@ class TeamControllerIT {
     @Test
     @Transactional
     void getTeam() throws Exception {
-        // Initialize the database
-        teamRepository.saveAndFlush(team);
-
-        // Get the team
         restTeamMockMvc
-                .perform(get("/api/teams/{id}", team.getId()))
+                .perform(get("/api/teams/{id}", 1L))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(jsonPath("$.id").value(team.getId().intValue()))
-                .andExpect(jsonPath("$.name").value(DEFAULT_NAME))
-                .andExpect(jsonPath("$.slogan").value(DEFAULT_SLOGAN))
-                .andExpect(jsonPath("$.description").value(DEFAULT_DESCRIPTION));
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.name").value("Development Team"))
+                .andExpect(jsonPath("$.slogan").value("Building the Future"))
+                .andExpect(
+                        jsonPath("$.description")
+                                .value("Focused on developing new products and features."));
     }
 
     @Test
@@ -486,14 +445,6 @@ class TeamControllerIT {
     @Test
     @Transactional
     void searchTeams() throws Exception {
-        // Initialize the database
-        teamRepository.saveAndFlush(team);
-
-        // Verify the team was saved
-        List<Team> teams = teamRepository.findAll();
-        assertThat(teams).isNotEmpty();
-        assertThat(teams.stream().anyMatch(t -> t.getName().equals(DEFAULT_NAME))).isTrue();
-
         // Search for all teams - we're not testing the search functionality here,
         // just verifying that the endpoint works and returns a valid response
         restTeamMockMvc
@@ -508,16 +459,6 @@ class TeamControllerIT {
     @Test
     @Transactional
     void searchTeamsWithQuery() throws Exception {
-        // Initialize the database
-        teamRepository.saveAndFlush(team);
-
-        // Verify the team was saved
-        List<Team> teams = teamRepository.findAll();
-        assertThat(teams).isNotEmpty();
-        assertThat(teams.stream().anyMatch(t -> t.getName().equals(DEFAULT_NAME))).isTrue();
-
-        // Search for teams with an empty query - we're not testing the search functionality here,
-        // just verifying that the endpoint works and returns a valid response
         restTeamMockMvc
                 .perform(
                         post("/api/teams/search")
@@ -530,16 +471,12 @@ class TeamControllerIT {
     @Test
     @Transactional
     void getTeamMembers() throws Exception {
-        // Initialize the database
-        teamRepository.saveAndFlush(team);
-
-        // Get team members (should be empty for a new team)
         restTeamMockMvc
-                .perform(get("/api/teams/{teamId}/members", team.getId()))
+                .perform(get("/api/teams/{teamId}/members", 1L))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$").isEmpty());
+                .andExpect(jsonPath("$").isNotEmpty());
     }
 
     @Test
@@ -559,19 +496,15 @@ class TeamControllerIT {
     @Test
     @Transactional
     void addUsersToTeam() throws Exception {
-        // Initialize the database
-        teamRepository.saveAndFlush(team);
-
-        // Create the request body
         TeamController.ListUserIdsAndRoleDTO userIdsAndRoleDTO =
                 new TeamController.ListUserIdsAndRoleDTO();
-        userIdsAndRoleDTO.setUserIds(List.of(1L, 2L));
+        userIdsAndRoleDTO.setUserIds(List.of(15L, 16L));
         userIdsAndRoleDTO.setRole("member");
 
         // Add users to the team
         restTeamMockMvc
                 .perform(
-                        post("/api/teams/{teamId}/add-users", team.getId())
+                        post("/api/teams/{teamId}/add-users", 1L)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(om.writeValueAsBytes(userIdsAndRoleDTO)))
                 .andExpect(status().isOk());
@@ -579,27 +512,25 @@ class TeamControllerIT {
         // Verify users were added to the team
         List<UserTeam> userTeams =
                 userTeamRepository.findAll().stream()
-                        .filter(ut -> ut.getId().getTeamId().equals(team.getId()))
+                        .filter(ut -> ut.getId().getTeamId().equals(1L))
                         .toList();
-        assertThat(userTeams).hasSize(2);
-        assertThat(userTeams.stream().map(ut -> ut.getId().getUserId()).toList())
-                .containsExactlyInAnyOrder(1L, 2L);
-        assertThat(userTeams.stream().map(ut -> ut.getId().getRoleName()).toList())
-                .containsOnly("member");
+        assertThat(userTeams).hasSize(14);
+        assertThat(userTeams.stream().map(ut -> ut.getId().getUserId()).toList()).contains(1L, 2L);
+        assertThat(userTeams)
+                .filteredOn(ut -> List.of(15L, 16L).contains(ut.getId().getUserId()))
+                .allSatisfy(ut -> assertThat(ut.getId().getRoleName()).isEqualTo("member"));
     }
 
     @Test
     @Transactional
     void findUsersNotInTeam() throws Exception {
-        // Initialize the database
-        teamRepository.saveAndFlush(team);
 
         // Search for users not in the team
         restTeamMockMvc
                 .perform(
                         get("/api/teams/searchUsersNotInTeam")
                                 .param("userTerm", "")
-                                .param("teamId", team.getId().toString()))
+                                .param("teamId", "1"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(jsonPath("$").isArray());
@@ -608,24 +539,8 @@ class TeamControllerIT {
     @Test
     @Transactional
     void removeUserFromTeam() throws Exception {
-        // Initialize the database
-        teamRepository.saveAndFlush(team);
 
-        // Add a user to the team first
-        UserTeamId userTeamId = new UserTeamId(1L, team.getId(), "member");
-        UserTeam userTeam = new UserTeam();
-        userTeam.setId(userTeamId);
-
-        // Get the user and team entities
-        User user = em.find(User.class, 1L);
-        if (user == null) {
-            throw new IllegalStateException("User with ID 1 not found");
-        }
-
-        userTeam.setUser(user);
-        userTeam.setTeam(team);
-
-        userTeamRepository.saveAndFlush(userTeam);
+        Team team = teamRepository.findById(1L).orElseThrow();
 
         // Remove the user from the team
         restTeamMockMvc
@@ -633,26 +548,26 @@ class TeamControllerIT {
                 .andExpect(status().isOk());
 
         // Verify the user was removed
-        List<UserTeam> userTeams =
+        List<Long> userIds =
                 userTeamRepository.findAll().stream()
                         .filter(ut -> ut.getId().getTeamId().equals(team.getId()))
+                        .map(it -> it.getUser().getId())
                         .toList();
-        assertThat(userTeams).isEmpty();
+        assertThat(userIds).doesNotContain(1L);
     }
 
     @Test
     @Transactional
     void getUserRoleInTeam() throws Exception {
-        // Initialize the database
-        teamRepository.saveAndFlush(team);
+        Team team = teamRepository.findById(1L).orElseThrow();
 
         // Add a user to the team with a specific role
-        UserTeamId userTeamId = new UserTeamId(1L, team.getId(), "manager");
+        UserTeamId userTeamId = new UserTeamId(14L, team.getId(), "manager");
         UserTeam userTeam = new UserTeam();
         userTeam.setId(userTeamId);
 
         // Get the user and team entities
-        User user = em.find(User.class, 1L);
+        User user = em.find(User.class, 14L);
         if (user == null) {
             throw new IllegalStateException("User with ID 1 not found");
         }
@@ -664,7 +579,7 @@ class TeamControllerIT {
 
         // Get the user's role in the team
         restTeamMockMvc
-                .perform(get("/api/teams/{teamId}/users/{userId}/role", team.getId(), 1L))
+                .perform(get("/api/teams/{teamId}/users/{userId}/role", team.getId(), 14L))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("text/plain;charset=UTF-8"))
                 .andExpect(jsonPath("$.role").value("manager"));
@@ -673,37 +588,16 @@ class TeamControllerIT {
     @Test
     @Transactional
     void checkIfTeamHasManager() throws Exception {
-        // Initialize the database
-        teamRepository.saveAndFlush(team);
-
-        // Initially, the team has no manager
         restTeamMockMvc
-                .perform(get("/api/teams/{teamId}/has-manager", team.getId()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(jsonPath("$.result").value(false));
-
-        // Add a manager to the team
-        UserTeamId userTeamId = new UserTeamId(1L, team.getId(), "manager");
-        UserTeam userTeam = new UserTeam();
-        userTeam.setId(userTeamId);
-
-        // Get the user and team entities
-        User user = em.find(User.class, 1L);
-        if (user == null) {
-            throw new IllegalStateException("User with ID 1 not found");
-        }
-
-        userTeam.setUser(user);
-        userTeam.setTeam(team);
-
-        userTeamRepository.saveAndFlush(userTeam);
-
-        // Now the team has a manager
-        restTeamMockMvc
-                .perform(get("/api/teams/{teamId}/has-manager", team.getId()))
+                .perform(get("/api/teams/{teamId}/has-manager", 1L))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(jsonPath("$.result").value(true));
+
+        restTeamMockMvc
+                .perform(get("/api/teams/{teamId}/has-manager", 18L))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(jsonPath("$.result").value(false));
     }
 }

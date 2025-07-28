@@ -824,5 +824,15 @@
 			constraintName="fk_authority_modified_by"
 			referencedTableName="fw_user" referencedColumnNames="id"
 			onDelete="SET NULL" />
+
+		<!-- Drop old FK -->
+		<dropForeignKeyConstraint
+			baseTableName="fw_ticket" constraintName="fk_team_request_team_id" />
+
+		<!-- Add FK with ON DELETE CASCADE -->
+		<addForeignKeyConstraint
+			baseTableName="fw_ticket" baseColumnNames="team_id"
+			constraintName="fk_ticket_team_id" referencedTableName="fw_team"
+			referencedColumnNames="id" onDelete="CASCADE" />
 	</changeSet>
 </databaseChangeLog>
