@@ -4,6 +4,7 @@ import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.TYPE;
 
+import io.flowinquiry.tenant.TenantContext;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -12,7 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 /**
  * Annotation for setting up a specific tenant context in tests for a multi-tenant application. When
  * applied to a test class or method, it automatically sets the specified tenant ID in the {@link
- * io.flowinquiry.tenant.context.TenantContext} before test execution and clears it afterward.
+ * TenantContext} before test execution and clears it afterward.
  *
  * <p>This annotation is processed by {@link WithTestTenantExtension} which handles the tenant
  * context setup and cleanup.

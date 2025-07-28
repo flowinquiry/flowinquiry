@@ -2,7 +2,7 @@ package io.flowinquiry.tenant.filter;
 
 import static io.flowinquiry.security.SecurityUtils.TENANT_ID;
 
-import io.flowinquiry.tenant.context.TenantContext;
+import io.flowinquiry.tenant.TenantContext;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.PersistenceException;

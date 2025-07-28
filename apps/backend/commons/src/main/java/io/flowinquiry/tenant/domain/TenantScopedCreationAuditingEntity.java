@@ -1,7 +1,7 @@
 package io.flowinquiry.tenant.domain;
 
 import io.flowinquiry.modules.audit.domain.AbstractCreationAuditingEntity;
-import io.flowinquiry.tenant.context.TenantContext;
+import io.flowinquiry.tenant.TenantContext;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
@@ -27,11 +27,9 @@ public abstract class TenantScopedCreationAuditingEntity<T>
     @PrePersist
     public void applyTenantScope() {
         if (tenantId == null) {
-            UUID currentTenantId = TenantContext.getTenantId();
-            if (currentTenantId == null) {
-                throw new IllegalStateException("TenantContext is not set");
-            }
-            this.tenantId = currentTenantId;
+            this.tenantId =
+                    TenantContext.getTenantId()
+                            .orElseThrow(() -> new IllegalStateException("tenantId is null"));
         }
     }
 }

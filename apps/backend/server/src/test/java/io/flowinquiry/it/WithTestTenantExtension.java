@@ -1,6 +1,6 @@
 package io.flowinquiry.it;
 
-import io.flowinquiry.tenant.context.TenantContext;
+import io.flowinquiry.tenant.TenantContext;
 import java.lang.reflect.AnnotatedElement;
 import java.util.Objects;
 import java.util.Optional;

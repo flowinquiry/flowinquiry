@@ -6,6 +6,7 @@ import io.flowinquiry.modules.usermanagement.service.dto.UserKey;
 import io.flowinquiry.security.domain.FwUserDetails;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -53,7 +54,10 @@ public final class SecurityUtils {
                     springSecurityUser.getUsername(),
                     springSecurityUser.getTenantId());
         } else if (authentication.getPrincipal() instanceof Jwt jwt) {
-            return new UserKey(jwt.getClaim(USER_ID), jwt.getSubject(), jwt.getClaim(TENANT_ID));
+            return new UserKey(
+                    jwt.getClaim(USER_ID),
+                    jwt.getSubject(),
+                    UUID.fromString(jwt.getClaim(TENANT_ID)));
         } else if (authentication.getPrincipal() instanceof UserDetails) {
             return null;
         } else if (authentication.getPrincipal() instanceof String) {

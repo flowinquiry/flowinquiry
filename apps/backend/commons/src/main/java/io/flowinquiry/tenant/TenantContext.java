@@ -1,5 +1,6 @@
-package io.flowinquiry.tenant.context;
+package io.flowinquiry.tenant;
 
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -62,11 +63,9 @@ public class TenantContext {
      * @return the current tenant ID, or null if filtering is suppressed
      * @throws IllegalStateException if tenant ID is not set and filtering is not suppressed
      */
-    public static UUID getTenantId() {
-        if (suppress.get()) return null;
-        UUID tenantId = currentTenant.get();
-        if (tenantId == null) throw new IllegalStateException("Tenant ID is not set");
-        return tenantId;
+    public static Optional<UUID> getTenantId() {
+        if (suppress.get()) return Optional.empty();
+        return Optional.of(currentTenant.get());
     }
 
     /**
