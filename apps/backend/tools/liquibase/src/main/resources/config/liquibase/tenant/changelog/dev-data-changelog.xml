@@ -58,7 +58,7 @@
 			separator=";" tableName="fw_user_authority"
 			usePreparedStatements="true">
 			<column name="user_id" type="numeric" />
-			<column name="authority_name" type="numeric" />
+			<column name="authority_name" type="string" />
 		</loadData>
 		<loadData
 			file="config/liquibase/tenant/data/dev/fw_organization_dev.csv"
