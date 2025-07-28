@@ -249,7 +249,7 @@ class AuthorityServiceIT {
         userIds.add(adminUser.getId());
         authorityService.addUsersToAuthority(userIds, TEST_AUTHORITY_NAME);
 
-        // Find all users by authority
+        //         Find all users by authority
         Pageable pageable = PageRequest.of(0, 10);
         Page<UserDTO> users =
                 authorityService.findAllUsersByAuthority(TEST_AUTHORITY_NAME, pageable);

@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Session;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -61,19 +62,24 @@ public class TenantContextFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         try {
-            UUID tenantId = resolveTenantFromJwt();
-            TenantContext.setTenantId(tenantId);
+            UUID tenantId = resolveTenantId(request);
 
-            // Only enable Hibernate filter if a session exists and is open
-            if (entityManager.isOpen() && entityManager.getEntityManagerFactory().isOpen()) {
+            if (tenantId != null) {
+                TenantContext.setTenantId(tenantId);
+            } else {
+                log.debug("Anonymous request with no tenant ID for: {}", request.getRequestURI());
+            }
+
+            if (tenantId != null
+                    && entityManager.isOpen()
+                    && entityManager.getEntityManagerFactory().isOpen()) {
                 try {
                     Session session = entityManager.unwrap(Session.class);
                     if (session.isOpen() && session.getEnabledFilter("tenantFilter") == null) {
                         session.enableFilter("tenantFilter").setParameter("tenantId", tenantId);
                     }
                 } catch (IllegalStateException | PersistenceException ex) {
-                    // Hibernate session might not be ready — safe to ignore
-                    log.warn("Exception when filter tenant_id: {}", ex.getMessage(), ex);
+                    log.warn("Exception when enabling tenant filter: {}", ex.getMessage(), ex);
                 }
             }
 
@@ -84,14 +90,29 @@ public class TenantContextFilter extends OncePerRequestFilter {
         }
     }
 
-    private UUID resolveTenantFromJwt() {
+    private UUID resolveTenantId(HttpServletRequest request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth instanceof JwtAuthenticationToken jwtToken) {
+
+        // Case 1: Authenticated user with JWT
+        if (auth instanceof JwtAuthenticationToken jwtToken && auth.isAuthenticated()) {
             String tenantId = jwtToken.getToken().getClaimAsString(TENANT_ID);
-            return UUID.fromString(tenantId);
-        } else {
-            throw new IllegalStateException(
-                    "Have not support the authentication type " + auth.getClass());
+            if (tenantId != null) {
+                return UUID.fromString(tenantId);
+            }
         }
+
+        // Case 2: Anonymous access — try header or query param
+        if (auth == null || auth instanceof AnonymousAuthenticationToken) {
+            String tenantIdHeader = request.getHeader("X-Tenant-ID");
+            if (tenantIdHeader != null && !tenantIdHeader.isBlank()) {
+                return UUID.fromString(tenantIdHeader);
+            }
+
+            String tenantIdParam = request.getParameter("tenant");
+            if (tenantIdParam != null && !tenantIdParam.isBlank()) {
+                return UUID.fromString(tenantIdParam);
+            }
+        }
+        return null;
     }
 }

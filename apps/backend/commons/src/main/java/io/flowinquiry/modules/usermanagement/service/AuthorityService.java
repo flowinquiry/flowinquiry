@@ -122,8 +122,6 @@ public class AuthorityService {
         for (User user : users) {
             user.getAuthorities().add(authority);
         }
-
-        // Save all updated users
         userRepository.saveAll(users);
     }
 

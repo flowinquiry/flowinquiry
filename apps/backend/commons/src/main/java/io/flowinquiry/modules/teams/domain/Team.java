@@ -1,6 +1,7 @@
 package io.flowinquiry.modules.teams.domain;
 
 import io.flowinquiry.modules.usermanagement.domain.User;
+import io.flowinquiry.tenant.domain.TenantScopedAuditingEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -29,12 +30,13 @@ import org.hibernate.annotations.Formula;
 @Entity
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "fw_team")
+@EqualsAndHashCode(callSuper = false)
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Team {
+public class Team extends TenantScopedAuditingEntity<Long> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

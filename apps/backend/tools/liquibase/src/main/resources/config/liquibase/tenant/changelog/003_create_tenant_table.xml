@@ -573,31 +573,7 @@
 			<column name="tenant_id" />
 		</createIndex>
 	</changeSet>
-	<changeSet
-		id="003:22-alter-tenant_relationship-to-user-authority-table"
-		author="flowinquiry">
-		<addColumn tableName="fw_user_authority">
-			<column name="tenant_id" type="UUID" />
-		</addColumn>
 
-		<update tableName="fw_user_authority">
-			<column name="tenant_id"
-				value="00000000-0000-0000-0000-000000000001" />
-		</update>
-
-		<addNotNullConstraint
-			tableName="fw_user_authority" columnName="tenant_id"
-			columnDataType="UUID" />
-
-		<addForeignKeyConstraint
-			baseTableName="fw_user_authority" baseColumnNames="tenant_id"
-			constraintName="fk_fw_user_authority_tenant"
-			referencedTableName="fw_tenant" referencedColumnNames="id" />
-		<createIndex indexName="idx_fw_user_authority_tenant_id"
-			tableName="fw_user_authority">
-			<column name="tenant_id" />
-		</createIndex>
-	</changeSet>
 	<changeSet
 		id="003:23-alter-tenant_relationship-to-user-team-table"
 		author="flowinquiry">
@@ -834,5 +810,20 @@
 			baseTableName="fw_ticket" baseColumnNames="team_id"
 			constraintName="fk_ticket_team_id" referencedTableName="fw_team"
 			referencedColumnNames="id" onDelete="CASCADE" />
+
+		<addColumn tableName="fw_team">
+			<column name="created_by" type="BIGINT">
+				<constraints nullable="true" />
+			</column>
+			<column name="created_at" type="timestamptz">
+				<constraints nullable="true" />
+			</column>
+			<column name="modified_by" type="BIGINT">
+				<constraints nullable="true" />
+			</column>
+			<column name="modified_at" type="timestamptz">
+				<constraints nullable="true" />
+			</column>
+		</addColumn>
 	</changeSet>
 </databaseChangeLog>

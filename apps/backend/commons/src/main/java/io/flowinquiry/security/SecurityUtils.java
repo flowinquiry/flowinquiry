@@ -11,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
 
@@ -53,6 +54,10 @@ public final class SecurityUtils {
                     springSecurityUser.getTenantId());
         } else if (authentication.getPrincipal() instanceof Jwt jwt) {
             return new UserKey(jwt.getClaim(USER_ID), jwt.getSubject(), jwt.getClaim(TENANT_ID));
+        } else if (authentication.getPrincipal() instanceof UserDetails) {
+            return null;
+        } else if (authentication.getPrincipal() instanceof String) {
+            return null;
         } else {
             throw new IllegalArgumentException(
                     "Can not extract principal from "

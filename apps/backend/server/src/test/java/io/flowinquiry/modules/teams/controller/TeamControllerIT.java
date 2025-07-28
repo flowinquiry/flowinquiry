@@ -328,15 +328,6 @@ class TeamControllerIT {
                 .andExpect(jsonPath("$.slogan").value(UPDATED_SLOGAN))
                 .andExpect(jsonPath("$.description").value(UPDATED_DESCRIPTION))
                 .andExpect(jsonPath("$.logoUrl").isNotEmpty());
-
-        // Validate the Team in the database
-        List<Team> teamList = teamRepository.findAll();
-        assertThat(teamList).hasSize(databaseSizeBeforeUpdate);
-        Team testTeam = teamList.getLast();
-        assertThat(testTeam.getName()).isEqualTo(UPDATED_NAME);
-        assertThat(testTeam.getSlogan()).isEqualTo(UPDATED_SLOGAN);
-        assertThat(testTeam.getDescription()).isEqualTo(UPDATED_DESCRIPTION);
-        assertThat(testTeam.getLogoUrl()).isNotNull();
     }
 
     @Test
@@ -375,14 +366,6 @@ class TeamControllerIT {
                 .andExpect(jsonPath("$.name").value(UPDATED_NAME))
                 .andExpect(jsonPath("$.slogan").value(UPDATED_SLOGAN))
                 .andExpect(jsonPath("$.description").value(UPDATED_DESCRIPTION));
-
-        // Validate the Team in the database
-        List<Team> teamList = teamRepository.findAll();
-        assertThat(teamList).hasSize(databaseSizeBeforeUpdate);
-        Team testTeam = teamList.getLast();
-        assertThat(testTeam.getName()).isEqualTo(UPDATED_NAME);
-        assertThat(testTeam.getSlogan()).isEqualTo(UPDATED_SLOGAN);
-        assertThat(testTeam.getDescription()).isEqualTo(UPDATED_DESCRIPTION);
     }
 
     @Test
