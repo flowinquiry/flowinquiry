@@ -279,6 +279,9 @@ class UserAccountControllerIT {
         restAccountMockMvc
                 .perform(
                         post("/api/register")
+                                .header(
+                                        "X-Tenant-ID",
+                                        UUID.fromString("00000000-0000-0000-0000-000000000001"))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(om.writeValueAsBytes(userWithUpperCaseEmail)))
                 .andExpect(status().isCreated());
