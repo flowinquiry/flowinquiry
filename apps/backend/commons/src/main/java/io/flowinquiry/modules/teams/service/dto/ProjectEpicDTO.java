@@ -18,4 +18,5 @@ public class ProjectEpicDTO {
     private Instant startDate;
     private Instant endDate;
     private Long totalTickets;
+    private Long totalStoryPoints;
 }

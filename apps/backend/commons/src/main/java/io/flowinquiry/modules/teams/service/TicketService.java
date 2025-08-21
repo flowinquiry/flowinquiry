@@ -25,6 +25,8 @@ import io.flowinquiry.modules.teams.service.dto.TicketActionCountByDateDTO;
 import io.flowinquiry.modules.teams.service.dto.TicketDTO;
 import io.flowinquiry.modules.teams.service.dto.TicketDistributionDTO;
 import io.flowinquiry.modules.teams.service.event.NewTicketCreatedEvent;
+import io.flowinquiry.modules.teams.service.event.ProjectEpicChangedByTicketEvent;
+import io.flowinquiry.modules.teams.service.event.ProjectIterationChangedByTicketEvent;
 import io.flowinquiry.modules.teams.service.event.TicketWorkStateTransitionEvent;
 import io.flowinquiry.modules.teams.service.mapper.TicketMapper;
 import io.flowinquiry.modules.usermanagement.domain.User;
@@ -170,6 +172,13 @@ public class TicketService {
 
         TicketDTO savedTicketDTO = ticketMapper.toDto(ticket);
         eventPublisher.publishEvent(new NewTicketCreatedEvent(this, savedTicketDTO));
+
+        if (ticketDTO.getEstimate() > 0 && ticketDTO.getEpicId() != null) {
+            eventPublisher.publishEvent(new ProjectEpicChangedByTicketEvent(this, ticketDTO));
+        }
+        if (ticketDTO.getEstimate() > 0 && ticketDTO.getIterationId() != null) {
+            eventPublisher.publishEvent(new ProjectIterationChangedByTicketEvent(this, ticketDTO));
+        }
         return savedTicketDTO;
     }
 
@@ -224,6 +233,14 @@ public class TicketService {
 
         eventPublisher.publishEvent(new AuditLogUpdateEvent(this, previousTicket, ticketDTO));
 
+        if (ticketDTO.getEpicId() != null) {
+            eventPublisher.publishEvent(new ProjectEpicChangedByTicketEvent(this, ticketDTO));
+        }
+
+        if (ticketDTO.getIterationId() != null) {
+            eventPublisher.publishEvent(new ProjectIterationChangedByTicketEvent(this, ticketDTO));
+        }
+
         Long currentState = savedTicket.getCurrentStateId();
         if (!Objects.equals(previousState, currentState)) {
             eventPublisher.publishEvent(
@@ -236,8 +253,20 @@ public class TicketService {
 
     @Transactional
     public void deleteTicket(Long id) {
-        if (!ticketRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Ticket not found with id: " + id);
+        Ticket ticket =
+                ticketRepository
+                        .findById(id)
+                        .orElseThrow(
+                                () ->
+                                        new ResourceNotFoundException(
+                                                "Ticket not found with id: " + id));
+        if (ticket.getEpic() != null) {
+            eventPublisher.publishEvent(
+                    new ProjectEpicChangedByTicketEvent(this, ticketMapper.toDto(ticket)));
+        }
+        if (ticket.getIteration() != null) {
+            eventPublisher.publishEvent(
+                    new ProjectIterationChangedByTicketEvent(this, ticketMapper.toDto(ticket)));
         }
         ticketRepository.deleteById(id);
     }

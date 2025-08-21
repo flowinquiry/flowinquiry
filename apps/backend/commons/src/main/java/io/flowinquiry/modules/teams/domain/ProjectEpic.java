@@ -3,6 +3,7 @@ package io.flowinquiry.modules.teams.domain;
 import io.flowinquiry.tenant.domain.TenantScopedAuditingEntity;
 import jakarta.persistence.*;
 import java.time.Instant;
+import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -41,6 +42,12 @@ public class ProjectEpic extends TenantScopedAuditingEntity<Long> {
 
     @Column private Instant endDate;
 
+    @OneToMany(mappedBy = "epic", cascade = CascadeType.ALL)
+    private List<Ticket> tickets;
+
     @Formula("(SELECT COUNT(r.id) FROM fw_ticket r WHERE r.epic_id = id)")
     private Long totalTickets;
+
+    @Formula("(SELECT SUM(r.estimate) FROM fw_ticket r WHERE r.epic_id = id)")
+    private Long totalStoryPoints;
 }

@@ -296,4 +296,10 @@ public interface TicketRepository
             @Param("toDate") Instant toDate);
 
     boolean existsByWorkflowIdAndIsDeletedFalse(Long workflowId);
+
+    @Query("SELECT SUM(t.estimate) FROM Ticket t WHERE t.epic.id = :epicId")
+    Long getTotalStoryPointsByEpicId(@Param("epicId") Long epicId);
+
+    @Query("SELECT SUM(t.estimate) FROM Ticket t WHERE t.iteration.id = :iterationId")
+    Long getTotalStoryPointsByIterationId(@Param("iterationId") Long iterationId);
 }

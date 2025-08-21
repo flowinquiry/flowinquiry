@@ -43,4 +43,7 @@ public class ProjectIteration extends TenantScopedAuditingEntity<Long> {
 
     @Formula("(SELECT COUNT(r.id) FROM fw_ticket r WHERE r.iteration_id = id)")
     private Long totalTickets;
+
+    @Formula("(SELECT SUM(r.estimate) FROM fw_ticket r WHERE r.iteration_id = id)")
+    private Long totalStoryPoints;
 }
