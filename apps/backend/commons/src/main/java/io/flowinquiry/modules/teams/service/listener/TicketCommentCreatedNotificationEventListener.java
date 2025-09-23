@@ -1,5 +1,7 @@
 package io.flowinquiry.modules.teams.service.listener;
 
+import static io.flowinquiry.modules.collab.domain.EntityType.Team;
+import static io.flowinquiry.modules.shared.domain.EventPayloadType.NEW_TICKET_COMMENT;
 import static io.flowinquiry.modules.teams.utils.PathUtils.buildTicketPath;
 import static j2html.TagCreator.a;
 import static j2html.TagCreator.p;
@@ -7,12 +9,12 @@ import static j2html.TagCreator.text;
 
 import io.flowinquiry.exceptions.ResourceNotFoundException;
 import io.flowinquiry.modules.collab.domain.ActivityLog;
-import io.flowinquiry.modules.collab.domain.EntityType;
 import io.flowinquiry.modules.collab.domain.Notification;
 import io.flowinquiry.modules.collab.domain.NotificationType;
 import io.flowinquiry.modules.collab.repository.ActivityLogRepository;
 import io.flowinquiry.modules.collab.repository.NotificationRepository;
 import io.flowinquiry.modules.collab.service.dto.CommentDTO;
+import io.flowinquiry.modules.shared.controller.SseController;
 import io.flowinquiry.modules.teams.repository.TeamRepository;
 import io.flowinquiry.modules.teams.service.TicketService;
 import io.flowinquiry.modules.teams.service.dto.TicketDTO;
@@ -24,36 +26,22 @@ import io.flowinquiry.utils.Obfuscator;
 import io.flowinquiry.utils.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.AllArgsConstructor;
 import org.springframework.context.event.EventListener;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
+@AllArgsConstructor
 public class TicketCommentCreatedNotificationEventListener {
 
-    private final SimpMessagingTemplate messageTemplate;
     private final UserRepository userRepository;
     private final TicketService ticketService;
     private final TeamRepository teamRepository;
     private final NotificationRepository notificationRepository;
     private final ActivityLogRepository activityLogRepository;
-
-    public TicketCommentCreatedNotificationEventListener(
-            SimpMessagingTemplate messageTemplate,
-            UserRepository userRepository,
-            TicketService ticketService,
-            TeamRepository teamRepository,
-            NotificationRepository notificationRepository,
-            ActivityLogRepository activityLogRepository) {
-        this.messageTemplate = messageTemplate;
-        this.userRepository = userRepository;
-        this.ticketService = ticketService;
-        this.teamRepository = teamRepository;
-        this.notificationRepository = notificationRepository;
-        this.activityLogRepository = activityLogRepository;
-    }
+    private final SseController sseController;
 
     @Async("asyncTaskExecutor")
     @Transactional
@@ -110,16 +98,14 @@ public class TicketCommentCreatedNotificationEventListener {
         List<Notification> savedNotifications = notificationRepository.saveAll(notifications);
 
         for (Notification notification : savedNotifications) {
-            messageTemplate.convertAndSendToUser(
-                    String.valueOf(notification.getUser().getId()),
-                    "/queue/notifications",
-                    notification);
+            sseController.sendEventToUser(
+                    notification.getUser().getId(), NEW_TICKET_COMMENT, notification);
         }
 
         ActivityLog activityLog =
                 ActivityLog.builder()
                         .entityId(ticket.getTeamId())
-                        .entityType(EntityType.Team)
+                        .entityType(Team)
                         .content(html)
                         .build();
         activityLogRepository.save(activityLog);

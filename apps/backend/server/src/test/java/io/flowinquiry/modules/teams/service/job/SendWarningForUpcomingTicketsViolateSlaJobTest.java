@@ -1,7 +1,9 @@
 package io.flowinquiry.modules.teams.service.job;
 
+import static io.flowinquiry.modules.shared.domain.EventPayloadType.NOTIFICATION;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -10,6 +12,7 @@ import static org.mockito.Mockito.when;
 
 import io.flowinquiry.modules.collab.domain.Notification;
 import io.flowinquiry.modules.collab.domain.NotificationType;
+import io.flowinquiry.modules.shared.controller.SseController;
 import io.flowinquiry.modules.shared.service.cache.DeduplicationCacheService;
 import io.flowinquiry.modules.teams.domain.Team;
 import io.flowinquiry.modules.teams.domain.Ticket;
@@ -30,7 +33,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 @ExtendWith(MockitoExtension.class)
 public class SendWarningForUpcomingTicketsViolateSlaJobTest {
@@ -39,11 +41,11 @@ public class SendWarningForUpcomingTicketsViolateSlaJobTest {
 
     @Mock private WorkflowTransitionHistoryService workflowTransitionHistoryService;
 
-    @Mock private SimpMessagingTemplate messageTemplate;
-
     @Mock private DeduplicationCacheService deduplicationCacheService;
 
     @Mock private TeamService teamService;
+
+    @Mock private SseController sseController;
 
     private SendWarningForUpcomingTicketsViolateSlaJob job;
 
@@ -51,10 +53,10 @@ public class SendWarningForUpcomingTicketsViolateSlaJobTest {
     public void setup() {
         job =
                 new SendWarningForUpcomingTicketsViolateSlaJob(
-                        messageTemplate,
                         teamService,
                         workflowTransitionHistoryService,
-                        deduplicationCacheService);
+                        deduplicationCacheService,
+                        sseController);
     }
 
     @Test
@@ -114,21 +116,19 @@ public class SendWarningForUpcomingTicketsViolateSlaJobTest {
 
         // Then
         // Verify notification sent to assigned user
-        ArgumentCaptor<String> userIdCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<Long> userIdCaptor = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<Notification> notificationCaptor =
                 ArgumentCaptor.forClass(Notification.class);
 
-        verify(messageTemplate)
-                .convertAndSendToUser(
-                        userIdCaptor.capture(),
-                        eq("/queue/notifications"),
-                        notificationCaptor.capture());
+        verify(sseController)
+                .sendEventToUser(
+                        userIdCaptor.capture(), eq(NOTIFICATION), notificationCaptor.capture());
 
-        String capturedUserId = userIdCaptor.getValue();
+        Long capturedUserId = userIdCaptor.getValue();
         Notification capturedNotification = notificationCaptor.getValue();
 
         // Verify notification properties
-        assertEquals(String.valueOf(assignUser.getId()), capturedUserId);
+        assertEquals(assignUser.getId(), capturedUserId);
         assertEquals(NotificationType.SLA_WARNING, capturedNotification.getType());
         assertTrue(capturedNotification.getContent().contains("Test Ticket"));
         assertTrue(capturedNotification.getContent().contains("approaching its SLA deadline"));
@@ -149,7 +149,7 @@ public class SendWarningForUpcomingTicketsViolateSlaJobTest {
         job.run();
 
         // Then
-        verify(messageTemplate, never()).convertAndSendToUser(anyString(), anyString(), any());
+        verify(sseController, never()).sendEventToUser(anyLong(), any(), any());
         verify(deduplicationCacheService, never()).put(anyString(), any(Duration.class));
     }
 
@@ -214,21 +214,19 @@ public class SendWarningForUpcomingTicketsViolateSlaJobTest {
 
         // Then
         // Verify notification sent to team manager
-        ArgumentCaptor<String> userIdCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<Long> userIdCaptor = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<Notification> notificationCaptor =
                 ArgumentCaptor.forClass(Notification.class);
 
-        verify(messageTemplate)
-                .convertAndSendToUser(
-                        userIdCaptor.capture(),
-                        eq("/queue/notifications"),
-                        notificationCaptor.capture());
+        verify(sseController)
+                .sendEventToUser(
+                        userIdCaptor.capture(), eq(NOTIFICATION), notificationCaptor.capture());
 
-        String capturedUserId = userIdCaptor.getValue();
+        Long capturedUserId = userIdCaptor.getValue();
         Notification capturedNotification = notificationCaptor.getValue();
 
         // Verify notification properties
-        assertEquals(String.valueOf(teamManager.getId()), capturedUserId);
+        assertEquals(teamManager.getId(), capturedUserId);
         assertEquals(NotificationType.SLA_WARNING, capturedNotification.getType());
         assertTrue(capturedNotification.getContent().contains("Test Ticket"));
         assertTrue(capturedNotification.getContent().contains("approaching its SLA deadline"));
@@ -297,7 +295,7 @@ public class SendWarningForUpcomingTicketsViolateSlaJobTest {
 
         // Then
         // Verify no notifications are sent for duplicate warnings
-        verify(messageTemplate, never()).convertAndSendToUser(anyString(), anyString(), any());
+        verify(sseController, never()).sendEventToUser(anyLong(), any(), any());
         verify(deduplicationCacheService, never()).put(anyString(), any(Duration.class));
     }
 }

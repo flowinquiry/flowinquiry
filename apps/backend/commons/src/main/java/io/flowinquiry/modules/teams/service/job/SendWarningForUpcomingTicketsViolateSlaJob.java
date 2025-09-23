@@ -8,6 +8,8 @@ import static j2html.TagCreator.text;
 
 import io.flowinquiry.modules.collab.domain.Notification;
 import io.flowinquiry.modules.collab.domain.NotificationType;
+import io.flowinquiry.modules.shared.controller.SseController;
+import io.flowinquiry.modules.shared.domain.EventPayloadType;
 import io.flowinquiry.modules.shared.service.cache.DeduplicationCacheService;
 import io.flowinquiry.modules.teams.domain.Ticket;
 import io.flowinquiry.modules.teams.domain.WorkflowTransitionHistory;
@@ -21,16 +23,17 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.context.annotation.Profile;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Profile("!test")
 @Component
+@AllArgsConstructor
 public class SendWarningForUpcomingTicketsViolateSlaJob {
 
     // send the warning to people before 30 minutes the SLAs are violated, this value should get
@@ -39,24 +42,13 @@ public class SendWarningForUpcomingTicketsViolateSlaJob {
 
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm z");
 
-    private final SimpMessagingTemplate messageTemplate;
-
     private final TeamService teamService;
 
     private final WorkflowTransitionHistoryService workflowTransitionHistoryService;
 
     private final DeduplicationCacheService deduplicationCacheService;
 
-    public SendWarningForUpcomingTicketsViolateSlaJob(
-            SimpMessagingTemplate messageTemplate,
-            TeamService teamService,
-            WorkflowTransitionHistoryService workflowTransitionHistoryService,
-            DeduplicationCacheService deduplicationCacheService) {
-        this.messageTemplate = messageTemplate;
-        this.teamService = teamService;
-        this.workflowTransitionHistoryService = workflowTransitionHistoryService;
-        this.deduplicationCacheService = deduplicationCacheService;
-    }
+    private final SseController sseController;
 
     @Scheduled(cron = "0 0/15 * * * ?")
     @SchedulerLock(name = "SendWarningForUpcomingTicketsViolateSlaJob")
@@ -119,8 +111,8 @@ public class SendWarningForUpcomingTicketsViolateSlaJob {
                                 .isRead(false)
                                 .build();
 
-                messageTemplate.convertAndSendToUser(
-                        String.valueOf(recipient.getId()), "/queue/notifications", notification);
+                sseController.sendEventToUser(
+                        recipient.getId(), EventPayloadType.NOTIFICATION, notification);
 
                 // ✅ Store Key in Deduplication Cache
                 deduplicationCacheService.put(cacheKey, Duration.ofHours(24));

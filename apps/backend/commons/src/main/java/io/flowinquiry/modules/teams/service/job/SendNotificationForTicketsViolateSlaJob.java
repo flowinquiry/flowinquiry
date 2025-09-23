@@ -1,5 +1,6 @@
 package io.flowinquiry.modules.teams.service.job;
 
+import static io.flowinquiry.modules.shared.domain.EventPayloadType.NOTIFICATION;
 import static io.flowinquiry.modules.teams.utils.DeduplicationKeyBuilder.buildSlaWarningKey;
 import static j2html.TagCreator.a;
 import static j2html.TagCreator.p;
@@ -10,6 +11,7 @@ import io.flowinquiry.modules.collab.EmailContext;
 import io.flowinquiry.modules.collab.domain.Notification;
 import io.flowinquiry.modules.collab.domain.NotificationType;
 import io.flowinquiry.modules.collab.service.MailService;
+import io.flowinquiry.modules.shared.controller.SseController;
 import io.flowinquiry.modules.shared.service.cache.DeduplicationCacheService;
 import io.flowinquiry.modules.teams.domain.Ticket;
 import io.flowinquiry.modules.teams.domain.WorkflowTransitionHistory;
@@ -26,11 +28,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Profile;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,11 +40,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Profile("!test")
 @Component
+@AllArgsConstructor
 public class SendNotificationForTicketsViolateSlaJob {
 
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm z");
-
-    private final SimpMessagingTemplate messageTemplate;
 
     private final TeamService teamService;
 
@@ -56,22 +57,7 @@ public class SendNotificationForTicketsViolateSlaJob {
 
     private final MessageSource messageSource;
 
-    public SendNotificationForTicketsViolateSlaJob(
-            SimpMessagingTemplate messageTemplate,
-            TeamService teamService,
-            WorkflowTransitionHistoryService workflowTransitionHistoryService,
-            MailService mailService,
-            DeduplicationCacheService deduplicationCacheService,
-            UserMapper userMapper,
-            MessageSource messageSource) {
-        this.messageTemplate = messageTemplate;
-        this.teamService = teamService;
-        this.workflowTransitionHistoryService = workflowTransitionHistoryService;
-        this.mailService = mailService;
-        this.deduplicationCacheService = deduplicationCacheService;
-        this.userMapper = userMapper;
-        this.messageSource = messageSource;
-    }
+    private final SseController sseController;
 
     @Scheduled(cron = "0 0/1 * * * ?")
     @SchedulerLock(name = "SendNotificationForTicketsViolateSlaJob")
@@ -144,8 +130,7 @@ public class SendNotificationForTicketsViolateSlaJob {
                                 .build();
 
                 // ✅ Send WebSocket notification
-                messageTemplate.convertAndSendToUser(
-                        String.valueOf(recipient.getId()), "/queue/notifications", notification);
+                sseController.sendEventToUser(recipient.getId(), NOTIFICATION, notification);
 
                 EmailContext emailContext =
                         new EmailContext(

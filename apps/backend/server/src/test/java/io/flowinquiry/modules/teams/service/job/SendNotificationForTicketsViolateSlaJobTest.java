@@ -1,5 +1,6 @@
 package io.flowinquiry.modules.teams.service.job;
 
+import static io.flowinquiry.modules.shared.domain.EventPayloadType.NOTIFICATION;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -13,6 +14,7 @@ import io.flowinquiry.modules.collab.EmailContext;
 import io.flowinquiry.modules.collab.domain.Notification;
 import io.flowinquiry.modules.collab.domain.NotificationType;
 import io.flowinquiry.modules.collab.service.MailService;
+import io.flowinquiry.modules.shared.controller.SseController;
 import io.flowinquiry.modules.shared.service.cache.DeduplicationCacheService;
 import io.flowinquiry.modules.teams.domain.Team;
 import io.flowinquiry.modules.teams.domain.Ticket;
@@ -36,14 +38,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.MessageSource;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 @ExtendWith(MockitoExtension.class)
 public class SendNotificationForTicketsViolateSlaJobTest {
 
     @Mock private WorkflowTransitionHistoryService workflowTransitionHistoryService;
-
-    @Mock private SimpMessagingTemplate messageTemplate;
 
     @Mock private MailService mailService;
 
@@ -55,19 +54,21 @@ public class SendNotificationForTicketsViolateSlaJobTest {
 
     @Mock private MessageSource messageSource;
 
+    @Mock private SseController sseController;
+
     private SendNotificationForTicketsViolateSlaJob job;
 
     @BeforeEach
     public void setup() {
         job =
                 new SendNotificationForTicketsViolateSlaJob(
-                        messageTemplate,
                         teamService,
                         workflowTransitionHistoryService,
                         mailService,
                         deduplicationCacheService,
                         userMapper,
-                        messageSource);
+                        messageSource,
+                        sseController);
     }
 
     @Test
@@ -149,18 +150,16 @@ public class SendNotificationForTicketsViolateSlaJobTest {
         verify(workflowTransitionHistoryService).escalateTransition(violatingTicket.getId());
 
         // Verify notifications sent to both assign user and team manager
-        ArgumentCaptor<String> userIdCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<Long> userIdCaptor = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<Notification> notificationCaptor =
                 ArgumentCaptor.forClass(Notification.class);
 
         // Should send 2 notifications (one to assignUser, one to teamManager)
-        verify(messageTemplate, times(2))
-                .convertAndSendToUser(
-                        userIdCaptor.capture(),
-                        eq("/queue/notifications"),
-                        notificationCaptor.capture());
+        verify(sseController, times(2))
+                .sendEventToUser(
+                        userIdCaptor.capture(), eq(NOTIFICATION), notificationCaptor.capture());
 
-        List<String> capturedUserIds = userIdCaptor.getAllValues();
+        List<Long> capturedUserIds = userIdCaptor.getAllValues();
         List<Notification> capturedNotifications = notificationCaptor.getAllValues();
 
         // Verify notification properties
@@ -189,7 +188,7 @@ public class SendNotificationForTicketsViolateSlaJobTest {
         // Then
         verify(workflowTransitionHistoryService, never()).escalateTransition(anyLong());
         verify(teamService, never()).getTeamManagers(anyLong());
-        verify(messageTemplate, never()).convertAndSendToUser(anyString(), anyString(), any());
+        verify(sseController, never()).sendEventToUser(anyLong(), any(), any());
         verify(mailService, never()).sendEmail(any(EmailContext.class));
         verify(deduplicationCacheService, never()).put(anyString(), any(Duration.class));
     }
@@ -261,22 +260,20 @@ public class SendNotificationForTicketsViolateSlaJobTest {
         verify(workflowTransitionHistoryService).escalateTransition(violatingTicket.getId());
 
         // Verify notifications sent to team manager only
-        ArgumentCaptor<String> userIdCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<Long> userIdCaptor = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<Notification> notificationCaptor =
                 ArgumentCaptor.forClass(Notification.class);
 
         // Should send 1 notification (to teamManager only)
-        verify(messageTemplate, times(1))
-                .convertAndSendToUser(
-                        userIdCaptor.capture(),
-                        eq("/queue/notifications"),
-                        notificationCaptor.capture());
+        verify(sseController, times(1))
+                .sendEventToUser(
+                        userIdCaptor.capture(), eq(NOTIFICATION), notificationCaptor.capture());
 
-        String capturedUserId = userIdCaptor.getValue();
+        Long capturedUserId = userIdCaptor.getValue();
         Notification capturedNotification = notificationCaptor.getValue();
 
         // Verify notification properties
-        assert capturedUserId.equals(String.valueOf(teamManager.getId()));
+        assert capturedUserId.equals(teamManager.getId());
         assert capturedNotification.getType() == NotificationType.SLA_BREACH;
         assert capturedNotification.getContent().contains("Test Ticket");
         assert !capturedNotification.getIsRead();
@@ -359,7 +356,7 @@ public class SendNotificationForTicketsViolateSlaJobTest {
         verify(workflowTransitionHistoryService).escalateTransition(violatingTicket.getId());
 
         // Verify no notifications are sent for duplicate violations
-        verify(messageTemplate, never()).convertAndSendToUser(anyString(), anyString(), any());
+        verify(sseController, never()).sendEventToUser(anyLong(), any(), any());
         verify(mailService, never()).sendEmail(any(EmailContext.class));
         verify(deduplicationCacheService, never()).put(anyString(), any(Duration.class));
     }

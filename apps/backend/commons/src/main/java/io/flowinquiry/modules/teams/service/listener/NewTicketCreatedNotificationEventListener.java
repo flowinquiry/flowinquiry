@@ -1,5 +1,6 @@
 package io.flowinquiry.modules.teams.service.listener;
 
+import static io.flowinquiry.modules.shared.domain.EventPayloadType.NEW_TICKET;
 import static io.flowinquiry.modules.teams.utils.PathUtils.buildTicketPath;
 import static j2html.TagCreator.a;
 import static j2html.TagCreator.p;
@@ -12,6 +13,7 @@ import io.flowinquiry.modules.collab.domain.Notification;
 import io.flowinquiry.modules.collab.domain.NotificationType;
 import io.flowinquiry.modules.collab.repository.ActivityLogRepository;
 import io.flowinquiry.modules.collab.repository.NotificationRepository;
+import io.flowinquiry.modules.shared.controller.SseController;
 import io.flowinquiry.modules.teams.repository.TeamRepository;
 import io.flowinquiry.modules.teams.service.TicketService;
 import io.flowinquiry.modules.teams.service.dto.TicketDTO;
@@ -22,35 +24,21 @@ import io.flowinquiry.modules.usermanagement.service.dto.UserWithTeamRoleDTO;
 import io.flowinquiry.utils.Obfuscator;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.AllArgsConstructor;
 import org.springframework.context.event.EventListener;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
+@AllArgsConstructor
 public class NewTicketCreatedNotificationEventListener {
     private final TicketService ticketService;
-    private final SimpMessagingTemplate messageTemplate;
     private final NotificationRepository notificationRepository;
     private final TeamRepository teamRepository;
     private final ActivityLogRepository activityLogRepository;
     private final UserRepository userRepository;
-
-    public NewTicketCreatedNotificationEventListener(
-            TicketService ticketService,
-            SimpMessagingTemplate messageTemplate,
-            NotificationRepository notificationRepository,
-            TeamRepository teamRepository,
-            ActivityLogRepository activityLogRepository,
-            UserRepository userRepository) {
-        this.ticketService = ticketService;
-        this.messageTemplate = messageTemplate;
-        this.notificationRepository = notificationRepository;
-        this.teamRepository = teamRepository;
-        this.activityLogRepository = activityLogRepository;
-        this.userRepository = userRepository;
-    }
+    private final SseController sseController;
 
     @Async("asyncTaskExecutor")
     @Transactional
@@ -95,12 +83,8 @@ public class NewTicketCreatedNotificationEventListener {
         }
 
         List<Notification> savedNotifications = notificationRepository.saveAll(notifications);
-
         for (Notification notification : savedNotifications) {
-            messageTemplate.convertAndSendToUser(
-                    String.valueOf(notification.getUser().getId()),
-                    "/queue/notifications",
-                    notification);
+            sseController.sendEventToUser(notification.getUser().getId(), NEW_TICKET, notification);
         }
 
         ActivityLog activityLog =

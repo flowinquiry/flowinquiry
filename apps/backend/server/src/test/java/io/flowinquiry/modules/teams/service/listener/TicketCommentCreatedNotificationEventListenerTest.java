@@ -1,7 +1,7 @@
 package io.flowinquiry.modules.teams.service.listener;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -15,6 +15,8 @@ import io.flowinquiry.modules.collab.domain.NotificationType;
 import io.flowinquiry.modules.collab.repository.ActivityLogRepository;
 import io.flowinquiry.modules.collab.repository.NotificationRepository;
 import io.flowinquiry.modules.collab.service.dto.CommentDTO;
+import io.flowinquiry.modules.shared.controller.SseController;
+import io.flowinquiry.modules.shared.domain.EventPayloadType;
 import io.flowinquiry.modules.teams.repository.TeamRepository;
 import io.flowinquiry.modules.teams.service.TicketService;
 import io.flowinquiry.modules.teams.service.dto.TicketDTO;
@@ -31,12 +33,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 @ExtendWith(MockitoExtension.class)
 public class TicketCommentCreatedNotificationEventListenerTest {
-
-    @Mock private SimpMessagingTemplate messageTemplate;
 
     @Mock private UserRepository userRepository;
 
@@ -48,18 +47,20 @@ public class TicketCommentCreatedNotificationEventListenerTest {
 
     @Mock private ActivityLogRepository activityLogRepository;
 
+    @Mock private SseController sseController;
+
     private TicketCommentCreatedNotificationEventListener listener;
 
     @BeforeEach
     public void setup() {
         listener =
                 new TicketCommentCreatedNotificationEventListener(
-                        messageTemplate,
                         userRepository,
                         ticketService,
                         teamRepository,
                         notificationRepository,
-                        activityLogRepository);
+                        activityLogRepository,
+                        sseController);
     }
 
     @Test
@@ -160,9 +161,11 @@ public class TicketCommentCreatedNotificationEventListenerTest {
             assert notification.getIsRead().equals(false);
         }
 
-        verify(messageTemplate, times(2))
-                .convertAndSendToUser(
-                        anyString(), eq("/queue/notifications"), any(Notification.class));
+        verify(sseController, times(2))
+                .sendEventToUser(
+                        anyLong(),
+                        eq(EventPayloadType.NEW_TICKET_COMMENT),
+                        any(Notification.class));
 
         ArgumentCaptor<ActivityLog> activityLogCaptor = ArgumentCaptor.forClass(ActivityLog.class);
         verify(activityLogRepository).save(activityLogCaptor.capture());

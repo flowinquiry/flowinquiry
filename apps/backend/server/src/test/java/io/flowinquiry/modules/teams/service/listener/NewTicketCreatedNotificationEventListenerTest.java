@@ -1,7 +1,10 @@
 package io.flowinquiry.modules.teams.service.listener;
 
+import static io.flowinquiry.modules.shared.domain.EventPayloadType.NEW_TICKET;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -14,6 +17,7 @@ import io.flowinquiry.modules.collab.domain.Notification;
 import io.flowinquiry.modules.collab.domain.NotificationType;
 import io.flowinquiry.modules.collab.repository.ActivityLogRepository;
 import io.flowinquiry.modules.collab.repository.NotificationRepository;
+import io.flowinquiry.modules.shared.controller.SseController;
 import io.flowinquiry.modules.teams.repository.TeamRepository;
 import io.flowinquiry.modules.teams.service.TicketService;
 import io.flowinquiry.modules.teams.service.dto.TicketDTO;
@@ -31,14 +35,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 @ExtendWith(MockitoExtension.class)
 public class NewTicketCreatedNotificationEventListenerTest {
 
     @Mock private TicketService ticketService;
-
-    @Mock private SimpMessagingTemplate messageTemplate;
 
     @Mock private NotificationRepository notificationRepository;
 
@@ -48,6 +49,8 @@ public class NewTicketCreatedNotificationEventListenerTest {
 
     @Mock private UserRepository userRepository;
 
+    @Mock private SseController sseController;
+
     private NewTicketCreatedNotificationEventListener listener;
 
     @BeforeEach
@@ -55,11 +58,11 @@ public class NewTicketCreatedNotificationEventListenerTest {
         listener =
                 new NewTicketCreatedNotificationEventListener(
                         ticketService,
-                        messageTemplate,
                         notificationRepository,
                         teamRepository,
                         activityLogRepository,
-                        userRepository);
+                        userRepository,
+                        sseController);
     }
 
     @Test
@@ -208,13 +211,12 @@ public class NewTicketCreatedNotificationEventListenerTest {
         assert capturedNotifications.size() == 2;
 
         for (Notification notification : capturedNotifications) {
-            assert notification.getType().equals(NotificationType.INFO);
-            assert notification.getIsRead().equals(false);
+            assertEquals(NotificationType.INFO, notification.getType());
+            assertFalse(notification.getIsRead());
         }
 
-        verify(messageTemplate, times(2))
-                .convertAndSendToUser(
-                        anyString(), eq("/queue/notifications"), any(Notification.class));
+        verify(sseController, times(2))
+                .sendEventToUser(anyLong(), eq(NEW_TICKET), any(Notification.class));
 
         ArgumentCaptor<ActivityLog> activityLogCaptor = ArgumentCaptor.forClass(ActivityLog.class);
         verify(activityLogRepository).save(activityLogCaptor.capture());
