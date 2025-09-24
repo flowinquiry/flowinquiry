@@ -33,7 +33,8 @@ public class ProjectIteration extends TenantScopedAuditingEntity<Long> {
     private String description;
 
     @Column(nullable = false, length = 50)
-    private String status = "ACTIVE"; // Possible values: ACTIVE, COMPLETED
+    @Enumerated(EnumType.STRING)
+    private ProjectIterationStatus status = ProjectIterationStatus.ACTIVE; // Possible values: ACTIVE, CLOSED
 
     @Column(nullable = false)
     private Instant startDate;

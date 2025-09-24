@@ -423,4 +423,12 @@ public class TicketService {
                     "Concurrent project ticket creation detected. Please retry.", e);
         }
     }
+
+    @Transactional
+    public void closeTicketsWithIteration(Long iterationId) {
+        ticketRepository.findTicketsByIterationIdAndClose(iterationId);
+
+    }
+
+
 }

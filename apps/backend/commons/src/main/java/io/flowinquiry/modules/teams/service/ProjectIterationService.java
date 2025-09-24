@@ -1,15 +1,17 @@
 package io.flowinquiry.modules.teams.service;
 
 import static java.util.stream.Collectors.toList;
-
-import io.flowinquiry.modules.teams.domain.Project;
-import io.flowinquiry.modules.teams.domain.ProjectIteration;
+import static  io.flowinquiry.modules.teams.utils.ProjectIterationNameGenerator.*;
+import io.flowinquiry.modules.teams.domain.*;
 import io.flowinquiry.modules.teams.repository.ProjectIterationRepository;
 import io.flowinquiry.modules.teams.repository.ProjectRepository;
 import io.flowinquiry.modules.teams.service.dto.ProjectIterationDTO;
 import io.flowinquiry.modules.teams.service.mapper.ProjectIterationMapper;
-import java.util.List;
-import java.util.Optional;
+
+import java.time.Instant;
+import java.time.Period;
+import java.util.*;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +25,8 @@ public class ProjectIterationService {
     private final ProjectIterationRepository projectIterationRepository;
 
     private final ProjectRepository projectRepository;
+
+    private  final  TicketService ticketService;
 
     public List<ProjectIterationDTO> findByProjectId(Long projectId) {
         return projectIterationRepository.findByProjectIdOrderByStartDateAsc(projectId).stream()
@@ -74,4 +78,34 @@ public class ProjectIterationService {
     public void deleteIteration(Long id) {
         projectIterationRepository.deleteById(id);
     }
+
+    @Transactional
+    public ProjectIterationDTO closeIteration(Long id)
+    {
+        ProjectIteration currentIteration = projectIterationRepository.findById(id)
+                .orElseThrow(
+                () -> new IllegalArgumentException("Iteration not found with id: " + id));
+        ProjectSetting projectSetting = currentIteration.getProject().getProjectSetting();
+        Integer sprintLengthInDays = projectSetting.getSprintLengthDays();
+        currentIteration.setStatus(ProjectIterationStatus.CLOSED);
+        projectIterationRepository.save(currentIteration);
+        ticketService.closeTicketsWithIteration(currentIteration.getId());
+
+        boolean createNextIteration = projectIterationRepository.existsByProjectIdAndStatusAndStartDateAfter(currentIteration.getProject().getId(),ProjectIterationStatus.ACTIVE,currentIteration.getEndDate());
+        if(!createNextIteration) {
+            ProjectIteration newIteration = new ProjectIteration();
+            newIteration.setName(getNextIteration(currentIteration.getName()));
+            newIteration.setStatus(ProjectIterationStatus.ACTIVE);
+            newIteration.setDescription(currentIteration.getDescription());
+            newIteration.setStartDate(currentIteration.getEndDate().plus(Period.ofDays(1)));
+            newIteration.setEndDate(currentIteration.getEndDate().plus(Period.ofDays(sprintLengthInDays + 1)));
+            newIteration.setProject(currentIteration.getProject());
+
+            currentIteration = projectIterationRepository.save(newIteration);
+        }
+
+        return projectIterationMapper.toDto(currentIteration);
+    }
+
+
 }

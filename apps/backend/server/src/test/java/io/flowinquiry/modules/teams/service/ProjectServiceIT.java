@@ -6,7 +6,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.flowinquiry.exceptions.ResourceNotFoundException;
 import io.flowinquiry.it.IntegrationTest;
 import io.flowinquiry.modules.teams.domain.ProjectStatus;
+import io.flowinquiry.modules.teams.domain.TicketPriority;
 import io.flowinquiry.modules.teams.service.dto.ProjectDTO;
+import io.flowinquiry.modules.teams.service.dto.ProjectSettingDTO;
 import io.flowinquiry.query.Filter;
 import io.flowinquiry.query.FilterOperator;
 import io.flowinquiry.query.QueryDTO;
@@ -25,6 +27,12 @@ public class ProjectServiceIT {
 
     @Test
     public void shouldCreateProjectSuccessfully() {
+        ProjectSettingDTO settingDTO = new ProjectSettingDTO();
+        settingDTO.setProjectId(1L);
+        settingDTO.setDefaultPriority(TicketPriority.Medium);
+        settingDTO.setSprintLengthDays(14);
+
+
         ProjectDTO projectDTO =
                 ProjectDTO.builder()
                         .name("Sample project")
@@ -33,6 +41,7 @@ public class ProjectServiceIT {
                         .status(ProjectStatus.Active)
                         .teamId(1L)
                         .createdBy(1L)
+                        .projectSetting(settingDTO)
                         .build();
         ProjectDTO savedProject = projectService.createProject(projectDTO);
         savedProject =

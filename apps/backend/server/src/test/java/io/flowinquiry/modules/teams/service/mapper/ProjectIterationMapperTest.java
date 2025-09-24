@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import io.flowinquiry.modules.teams.domain.Project;
 import io.flowinquiry.modules.teams.domain.ProjectIteration;
+import io.flowinquiry.modules.teams.domain.ProjectIterationStatus;
 import io.flowinquiry.modules.teams.service.dto.ProjectIterationDTO;
 import java.time.Instant;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,7 +32,7 @@ public class ProjectIterationMapperTest {
         iteration.setProject(project);
         iteration.setName("Test Iteration");
         iteration.setDescription("Iteration Description");
-        iteration.setStatus("ACTIVE");
+        iteration.setStatus(ProjectIterationStatus.ACTIVE);
         Instant now = Instant.now();
         iteration.setStartDate(now);
         iteration.setEndDate(now.plusSeconds(86400)); // plus one day
@@ -89,7 +90,7 @@ public class ProjectIterationMapperTest {
         existingIteration.setProject(project);
         existingIteration.setName("Original Iteration");
         existingIteration.setDescription("Original Description");
-        existingIteration.setStatus("ACTIVE");
+        existingIteration.setStatus(ProjectIterationStatus.ACTIVE);
         Instant now = Instant.now();
         existingIteration.setStartDate(now);
         existingIteration.setEndDate(now.plusSeconds(86400)); // plus one day
@@ -119,7 +120,7 @@ public class ProjectIterationMapperTest {
                 () -> assertEquals(updateDTO.getStartDate(), existingIteration.getStartDate()),
                 () -> assertEquals(updateDTO.getEndDate(), existingIteration.getEndDate()),
                 // Status should not be changed as it is not in the DTO
-                () -> assertEquals("ACTIVE", existingIteration.getStatus()));
+                () -> assertEquals(ProjectIterationStatus.ACTIVE, existingIteration.getStatus()));
     }
 
     @Test

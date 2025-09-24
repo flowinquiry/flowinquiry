@@ -168,3 +168,8 @@ apps/backend/tools/liquibase/build
 frontend.env.local
 backend.env.local
 apps/frontend/playwright/.auth
+.vscode/
+apps/backend/commons/bin
+apps/backend/server/bin
+apps/backend/tools/liquibase/bin
+

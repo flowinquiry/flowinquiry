@@ -12,6 +12,7 @@ import io.flowinquiry.modules.collab.domain.EntityType;
 import io.flowinquiry.modules.collab.domain.EntityWatcher;
 import io.flowinquiry.modules.collab.repository.EntityWatcherRepository;
 import io.flowinquiry.modules.teams.domain.TShirtSize;
+import io.flowinquiry.modules.teams.domain.Ticket;
 import io.flowinquiry.modules.teams.domain.TicketChannel;
 import io.flowinquiry.modules.teams.domain.WorkflowTransitionHistoryStatus;
 import io.flowinquiry.modules.teams.repository.TicketRepository;
@@ -369,6 +370,19 @@ public class TicketServiceIT {
         TicketWorkStateTransitionEvent capturedEvent = eventCaptor.getValue();
         assertThat(capturedEvent.getSourceStateId()).isEqualTo(currentStateId);
         assertThat(capturedEvent.getTargetStateId()).isEqualTo(newStateId);
+    }
+
+    @Test
+    void shouldCloseTicketsForGivenIterationId() {
+        ticketService.closeTicketsWithIteration(3L);
+
+        Ticket ticket =ticketRepository.findById(1L).get();
+        assertThat(ticket.getIteration().getId()).isEqualTo(3L);
+        assertThat(ticket.getIsCompleted()).isTrue();
+
+        ticket =ticketRepository.findById(2L).get();
+        assertThat(ticket.getIteration().getTotalTickets()).isEqualTo(3L);
+        assertThat(ticket.getIsCompleted()).isTrue();
     }
 
     @Test

@@ -14,6 +14,7 @@ import io.flowinquiry.it.IntegrationTest;
 import io.flowinquiry.it.WithMockFwUser;
 import io.flowinquiry.modules.teams.domain.Project;
 import io.flowinquiry.modules.teams.domain.ProjectIteration;
+import io.flowinquiry.modules.teams.domain.ProjectIterationStatus;
 import io.flowinquiry.modules.teams.repository.ProjectIterationRepository;
 import io.flowinquiry.modules.teams.repository.ProjectRepository;
 import io.flowinquiry.modules.teams.service.dto.ProjectIterationDTO;
@@ -21,6 +22,7 @@ import io.flowinquiry.modules.usermanagement.AuthoritiesConstants;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -55,6 +57,7 @@ public class ProjectIterationControllerIT {
 
     @Autowired private MockMvc restIterationMockMvc;
 
+
     @Test
     void createIteration() throws Exception {
         Project project = projectRepository.findById(1L).orElseThrow();
@@ -64,6 +67,7 @@ public class ProjectIterationControllerIT {
         iterationDTO.setDescription(DEFAULT_DESCRIPTION);
         iterationDTO.setStartDate(DEFAULT_START_DATE);
         iterationDTO.setEndDate(DEFAULT_END_DATE);
+        iterationDTO.setStatus(ProjectIterationStatus.ACTIVE);
         iterationDTO.setProjectId(project.getId());
 
         // Perform the request and validate the response
@@ -75,7 +79,34 @@ public class ProjectIterationControllerIT {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value(DEFAULT_NAME))
                 .andExpect(jsonPath("$.description").value(DEFAULT_DESCRIPTION))
-                .andExpect(jsonPath("$.projectId").value(project.getId().intValue()));
+                .andExpect(jsonPath("$.projectId").value(project.getId().intValue()))
+                .andExpect(jsonPath("$.status").value(ProjectIterationStatus.ACTIVE.toString()));
+    }
+
+    @Test
+    void createClosedIteration() throws Exception {
+        Project project = projectRepository.findById(1L).orElseThrow();
+
+        ProjectIterationDTO iterationDTO = new ProjectIterationDTO();
+        iterationDTO.setName(DEFAULT_NAME);
+        iterationDTO.setDescription(DEFAULT_DESCRIPTION);
+        iterationDTO.setStartDate(DEFAULT_START_DATE);
+        iterationDTO.setEndDate(DEFAULT_END_DATE);
+        iterationDTO.setProjectId(project.getId());
+        iterationDTO.setStatus(ProjectIterationStatus.CLOSED);
+
+
+        // Perform the request and validate the response
+        restIterationMockMvc
+                .perform(
+                        post("/api/project-iterations")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(om.writeValueAsBytes(iterationDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value(DEFAULT_NAME))
+                .andExpect(jsonPath("$.description").value(DEFAULT_DESCRIPTION))
+                .andExpect(jsonPath("$.projectId").value(project.getId().intValue()))
+                .andExpect(jsonPath("$.status").value(ProjectIterationStatus.CLOSED.toString()));
     }
 
     @Test
@@ -89,7 +120,8 @@ public class ProjectIterationControllerIT {
                 .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(jsonPath("$.name").value("Iteration 1"))
                 .andExpect(jsonPath("$.description").value("Description for Iteration 1"))
-                .andExpect(jsonPath("$.projectId").value(1L));
+                .andExpect(jsonPath("$.projectId").value(1L))
+                .andExpect(jsonPath("$.status").value(ProjectIterationStatus.ACTIVE.toString()));
     }
 
     @Test
@@ -121,6 +153,37 @@ public class ProjectIterationControllerIT {
                 .andExpect(jsonPath("$.name").value(UPDATED_NAME))
                 .andExpect(jsonPath("$.description").value(UPDATED_DESCRIPTION));
     }
+    @Test
+    void closeIterationWhenNextIterationIsPresent() throws Exception {
+
+        // Close the iteration
+        restIterationMockMvc
+                .perform(
+                        post("/api/project-iterations/{id}/close", 2L)
+                                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(2L))
+                .andExpect(jsonPath("$.name").value("Iteration 2"))
+                .andExpect(jsonPath("$.status").value(ProjectIterationStatus.CLOSED.toString()));
+
+        // Validate the database contains one less item
+    }
+
+    @Test
+    void closeIterationWhenNextIterationIsNotPresent() throws Exception {
+
+        // Close the iteration
+        restIterationMockMvc
+                .perform(
+                        post("/api/project-iterations/{id}/close", 3L)
+                                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(5L))
+                .andExpect(jsonPath("$.name").value("Iteration 4"))
+                .andExpect(jsonPath("$.status").value(ProjectIterationStatus.ACTIVE.toString()));
+
+        // Validate the database contains one less item
+    }
 
     @Test
     void deleteIteration() throws Exception {
@@ -137,4 +200,6 @@ public class ProjectIterationControllerIT {
         List<ProjectIteration> iterationList = iterationRepository.findAll();
         assertThat(iterationList).hasSize(databaseSizeBeforeDelete - 1);
     }
+
+
 }

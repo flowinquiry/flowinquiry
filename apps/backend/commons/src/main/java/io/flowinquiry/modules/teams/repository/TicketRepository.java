@@ -14,11 +14,7 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.jpa.repository.QueryHints;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -302,4 +298,9 @@ public interface TicketRepository
 
     @Query("SELECT SUM(t.estimate) FROM Ticket t WHERE t.iteration.id = :iterationId")
     Long getTotalStoryPointsByIterationId(@Param("iterationId") Long iterationId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE Ticket t SET t.isCompleted=true,t.actualCompletionDate= current_date WHERE t.iteration.id = :iterationId and t.isCompleted = false and t.isDeleted = false")
+    int findTicketsByIterationIdAndClose(@Param("iterationId") Long iterationId);
+
 }

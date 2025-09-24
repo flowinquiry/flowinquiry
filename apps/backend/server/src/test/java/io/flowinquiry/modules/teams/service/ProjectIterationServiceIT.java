@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.flowinquiry.it.IntegrationTest;
 import io.flowinquiry.modules.teams.domain.ProjectIteration;
+import io.flowinquiry.modules.teams.domain.ProjectIterationStatus;
 import io.flowinquiry.modules.teams.repository.ProjectIterationRepository;
 import io.flowinquiry.modules.teams.service.dto.ProjectIterationDTO;
 import java.time.Instant;
@@ -71,7 +72,7 @@ public class ProjectIterationServiceIT {
         iterationDTO.setDescription("New Test Description");
         iterationDTO.setStartDate(Instant.now());
         iterationDTO.setEndDate(Instant.now().plusSeconds(86400)); // One day later
-
+        iterationDTO.setStatus(ProjectIterationStatus.ACTIVE);
         // When: Saving the iteration
         ProjectIterationDTO savedIteration = projectIterationService.save(iterationDTO);
 

@@ -106,6 +106,7 @@
 			<column name="short_name" type="STRING" />
 			<column name="team_id" type="NUMERIC" />
 			<column name="status" type="STRING" />
+			<column name="project" type="NUMERIC" />
 			<column name="start_date" type="TIMESTAMP" />
 			<column name="end_date" type="TIMESTAMP" />
 			<column name="tenant_id" type="uuid" />
@@ -432,5 +433,26 @@
 		</loadData>
 		<sql>SELECT setval('fw_activity_log_id_seq', (SELECT MAX(id) FROM
 			fw_activity_log));</sql>
+	</changeSet>
+	<changeSet author="flowinquiry"
+			   id="000:24-insert-fw_project_setting" runOnChange="true">
+		<loadData
+				file="config/liquibase/tenant/data/test/fw_project_setting_test.csv"
+				separator=";" tableName="fw_project_setting">
+			<column name="id" type="numeric" />
+			<column name="project_id" type="numeric" />
+			<column name="sprint_length_days" type="numeric" />
+			<column name="default_priority" type="numeric" />
+			<column name="estimation_unit" type="string" />
+			<column name="enable_estimation" type="boolean" />
+			<column name="integration_settings" type="jsonb" />
+			<column name="created_by" type="numeric" />
+			<column name="created_at" type="timestamp" />
+			<column name="modified_by" type="numeric" />
+			<column name="modified_at" type="timestamp" />
+			<column name="tenant_id" type="uuid" />
+		</loadData>
+		<sql>SELECT setval('fw_project_setting_id_seq', (SELECT MAX(id) FROM
+			fw_project_setting));</sql>
 	</changeSet>
 </databaseChangeLog>

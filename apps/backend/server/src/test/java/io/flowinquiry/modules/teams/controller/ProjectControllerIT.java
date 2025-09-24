@@ -13,14 +13,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.flowinquiry.it.IntegrationTest;
 import io.flowinquiry.it.WithMockFwUser;
-import io.flowinquiry.modules.teams.domain.Project;
-import io.flowinquiry.modules.teams.domain.ProjectEpic;
-import io.flowinquiry.modules.teams.domain.ProjectIteration;
-import io.flowinquiry.modules.teams.domain.ProjectStatus;
+import io.flowinquiry.modules.teams.domain.*;
 import io.flowinquiry.modules.teams.repository.ProjectEpicRepository;
 import io.flowinquiry.modules.teams.repository.ProjectIterationRepository;
 import io.flowinquiry.modules.teams.repository.ProjectRepository;
 import io.flowinquiry.modules.teams.service.dto.ProjectDTO;
+import io.flowinquiry.modules.teams.service.dto.ProjectSettingDTO;
 import io.flowinquiry.modules.teams.service.mapper.ProjectMapper;
 import io.flowinquiry.modules.usermanagement.AuthoritiesConstants;
 import io.flowinquiry.query.Filter;
@@ -80,6 +78,7 @@ class ProjectControllerIT {
 
         // Create the Project DTO
         ProjectDTO projectDTO = new ProjectDTO();
+
         projectDTO.setName(DEFAULT_NAME);
         projectDTO.setDescription(DEFAULT_DESCRIPTION);
         projectDTO.setShortName(DEFAULT_SHORT_NAME);
