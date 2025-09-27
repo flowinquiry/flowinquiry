@@ -1,0 +1,46 @@
+name: Coverage PR Comment
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+# Minimal perms to comment on the PR
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+    steps:
+      # DO NOT checkout the fork's code in pull_request_target
+      # Just fetch the artifact produced by the CI workflow.
+
+      - name: Download coverage artifact from CI
+        uses: dawidd6/action-download-artifact@v11
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow: ci.yml                # <-- file name of your CI workflow (FlowInquiry CI)
+          pr: ${{ github.event.pull_request.number }}
+          name: CoverageReport            # <-- matches the upload name in CI
+          path: coveragereport
+          workflow_conclusion: success
+          if_no_artifact_found: warn
+          allow_forks: true
+
+      - name: Fail if summary missing (optional but helpful)
+        run: |
+          test -f coveragereport/TrimmedSummary.md || {
+            echo "No TrimmedSummary.md found. Did CI run and upload the artifact?";
+            exit 1;
+          }
+
+      - name: Post sticky comment (Coverage Report)
+        uses: marocchino/sticky-pull-request-comment@v2.9.2
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          header: coverage-report
+          path: coveragereport/TrimmedSummary.md
+          append: false
+          recreate: false

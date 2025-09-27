@@ -7,11 +7,9 @@ on:
     branches: ["main"]
   workflow_dispatch:
 
+# CI itself doesn't need write-perms for PRs
 permissions:
-  contents: write
-  pull-requests: write
-  pages: write
-  id-token: write
+  contents: read
 
 jobs:
   detect-changes:
@@ -37,9 +35,6 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
     steps:
       - uses: actions/checkout@v4
 
@@ -70,14 +65,6 @@ jobs:
           classfilters: '+*'
           filefilters: '+*'
 
-      - name: Upload coverage report artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: CoverageReport
-          path: coveragereport
-      - name: Show contents of coverage report folder
-        run: ls -la coveragereport
-
       - name: Trim summary (remove class/package breakdown)
         run: |
           awk '
@@ -87,17 +74,15 @@ jobs:
             inSummary { print }
           ' coveragereport/Summary.md > coveragereport/TrimmedSummary.md
 
-      - name: Add or update PR comment (Coverage Report)
-        if: github.event_name == 'pull_request'
-        uses: marocchino/sticky-pull-request-comment@v2.9.2
+      - name: Show contents of coverage report folder
+        run: ls -la coveragereport
+
+      # Upload the whole folder so the commenter workflow can fetch TrimmedSummary.md
+      - name: Upload coverage report artifact
+        uses: actions/upload-artifact@v4
         with:
-          header: coverage-report
-          path: coveragereport/TrimmedSummary.md
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PR_COMMENT_PAT }}
-      - name: Publish coverage in build summary
-        run: cat coveragereport/TrimmedSummary.md >> $GITHUB_STEP_SUMMARY
-        shell: bash
+          name: CoverageReport
+          path: coveragereport
 
   frontend:
     needs: detect-changes
@@ -128,17 +113,13 @@ jobs:
     environment:
       name: github-pages
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
-      - name: Install dependencies
-        run: pnpm install
+      - run: pnpm install
       - name: Clean .next folder
         run: rm -rf .next out
         working-directory: apps/docs
@@ -149,9 +130,8 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: apps/docs/out
+
   e2e-tests:
     needs: [ detect-changes ]
     if: needs.detect-changes.outputs.backend == 'true' || needs.detect-changes.outputs.frontend == 'true'
     uses: ./.github/workflows/playwright.yml
-
-
