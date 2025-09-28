@@ -139,21 +139,19 @@ public class ProjectIterationController {
         iterationService.deleteIteration(id);
     }
 
-    @Operation(
-            summary = "Close an iteration",
-            description = "Close a project iteration by its ID")
+    @Operation(summary = "Close an iteration", description = "Close a project iteration by its ID")
     @ApiResponses(
             value = {
-                    @ApiResponse(responseCode = "200", description = "Iteration successfully closed."),
-                    @ApiResponse(
-                            responseCode = "404",
-                            description = "Iteration not found",
-                            content = @Content)
+                @ApiResponse(responseCode = "200", description = "Iteration successfully closed."),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "Iteration not found",
+                        content = @Content)
             })
     @PostMapping("/{id}/close")
     public ProjectIterationDTO closeIteration(
             @Parameter(description = "ID of the iteration to close", required = true) @PathVariable
-            Long id) {
+                    Long id) {
         return iterationService.closeIteration(id);
     }
 }

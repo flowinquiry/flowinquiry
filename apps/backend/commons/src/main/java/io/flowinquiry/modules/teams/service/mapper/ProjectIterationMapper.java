@@ -1,7 +1,6 @@
 package io.flowinquiry.modules.teams.service.mapper;
 
 import io.flowinquiry.modules.teams.domain.ProjectIteration;
-import io.flowinquiry.modules.teams.domain.ProjectIterationStatus;
 import io.flowinquiry.modules.teams.service.dto.ProjectIterationDTO;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;

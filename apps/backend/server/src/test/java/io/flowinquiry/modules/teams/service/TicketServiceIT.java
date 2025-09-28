@@ -376,11 +376,11 @@ public class TicketServiceIT {
     void shouldCloseTicketsForGivenIterationId() {
         ticketService.closeTicketsWithIteration(3L);
 
-        Ticket ticket =ticketRepository.findById(1L).get();
+        Ticket ticket = ticketRepository.findById(1L).get();
         assertThat(ticket.getIteration().getId()).isEqualTo(3L);
         assertThat(ticket.getIsCompleted()).isTrue();
 
-        ticket =ticketRepository.findById(2L).get();
+        ticket = ticketRepository.findById(2L).get();
         assertThat(ticket.getIteration().getTotalTickets()).isEqualTo(3L);
         assertThat(ticket.getIsCompleted()).isTrue();
     }

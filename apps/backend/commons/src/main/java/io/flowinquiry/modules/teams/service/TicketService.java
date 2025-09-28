@@ -427,8 +427,5 @@ public class TicketService {
     @Transactional
     public void closeTicketsWithIteration(Long iterationId) {
         ticketRepository.findTicketsByIterationIdAndClose(iterationId);
-
     }
-
-
 }

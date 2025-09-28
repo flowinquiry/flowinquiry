@@ -435,10 +435,10 @@
 			fw_activity_log));</sql>
 	</changeSet>
 	<changeSet author="flowinquiry"
-			   id="000:24-insert-fw_project_setting" runOnChange="true">
+		id="000:24-insert-fw_project_setting" runOnChange="true">
 		<loadData
-				file="config/liquibase/tenant/data/test/fw_project_setting_test.csv"
-				separator=";" tableName="fw_project_setting">
+			file="config/liquibase/tenant/data/test/fw_project_setting_test.csv"
+			separator=";" tableName="fw_project_setting">
 			<column name="id" type="numeric" />
 			<column name="project_id" type="numeric" />
 			<column name="sprint_length_days" type="numeric" />

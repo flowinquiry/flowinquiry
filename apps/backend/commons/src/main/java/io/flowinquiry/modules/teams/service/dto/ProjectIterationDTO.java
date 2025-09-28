@@ -1,8 +1,7 @@
 package io.flowinquiry.modules.teams.service.dto;
 
-import java.time.Instant;
-
 import io.flowinquiry.modules.teams.domain.ProjectIterationStatus;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,7 +16,7 @@ public class ProjectIterationDTO {
     private Long projectId;
     private String name;
     private String description;
-    private ProjectIterationStatus status ;
+    private ProjectIterationStatus status;
     private Instant startDate;
     private Instant endDate;
     private Long totalTickets;

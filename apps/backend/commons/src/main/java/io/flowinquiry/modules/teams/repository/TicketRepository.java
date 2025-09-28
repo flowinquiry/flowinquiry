@@ -300,7 +300,7 @@ public interface TicketRepository
     Long getTotalStoryPointsByIterationId(@Param("iterationId") Long iterationId);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("UPDATE Ticket t SET t.isCompleted=true,t.actualCompletionDate= current_date WHERE t.iteration.id = :iterationId and t.isCompleted = false and t.isDeleted = false")
+    @Query(
+            "UPDATE Ticket t SET t.isCompleted=true,t.actualCompletionDate= current_date WHERE t.iteration.id = :iterationId and t.isCompleted = false and t.isDeleted = false")
     int findTicketsByIterationIdAndClose(@Param("iterationId") Long iterationId);
-
 }

@@ -18,7 +18,6 @@ import io.flowinquiry.modules.teams.repository.ProjectEpicRepository;
 import io.flowinquiry.modules.teams.repository.ProjectIterationRepository;
 import io.flowinquiry.modules.teams.repository.ProjectRepository;
 import io.flowinquiry.modules.teams.service.dto.ProjectDTO;
-import io.flowinquiry.modules.teams.service.dto.ProjectSettingDTO;
 import io.flowinquiry.modules.teams.service.mapper.ProjectMapper;
 import io.flowinquiry.modules.usermanagement.AuthoritiesConstants;
 import io.flowinquiry.query.Filter;

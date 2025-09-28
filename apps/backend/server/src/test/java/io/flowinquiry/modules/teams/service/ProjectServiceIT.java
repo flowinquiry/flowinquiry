@@ -32,7 +32,6 @@ public class ProjectServiceIT {
         settingDTO.setDefaultPriority(TicketPriority.Medium);
         settingDTO.setSprintLengthDays(14);
 
-
         ProjectDTO projectDTO =
                 ProjectDTO.builder()
                         .name("Sample project")

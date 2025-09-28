@@ -1,24 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <databaseChangeLog
-        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
-    <changeSet id="004:01-create-ticket-iteration-completed-index" author="flowinquiry">
-        <createIndex indexName="idx_ticket_iteration_completed"
-                     tableName="fw_ticket">
-            <column name="iteration_id"/>
-            <column name="is_completed"/>
-        </createIndex>
-    </changeSet>
+	<changeSet
+		id="004:01-create-ticket-iteration-completed-index"
+		author="flowinquiry">
+		<createIndex indexName="idx_ticket_iteration_completed"
+			tableName="fw_ticket">
+			<column name="iteration_id" />
+			<column name="is_completed" />
+		</createIndex>
+	</changeSet>
 
-    <changeSet id="004:02-create-iteration-proj-start-idx-active" author="flowinquiry">
-        <createIndex indexName="idx_iteration_project_start_date_status"
-                     tableName="fw_project_iteration">
-            <column name="project_id"/>
-            <column name="start_date"/>
-            <column name="status"/>
-        </createIndex>
-    </changeSet>
+	<changeSet id="004:02-create-iteration-proj-start-idx-active"
+		author="flowinquiry">
+		<createIndex
+			indexName="idx_iteration_project_start_date_status"
+			tableName="fw_project_iteration">
+			<column name="project_id" />
+			<column name="start_date" />
+			<column name="status" />
+		</createIndex>
+	</changeSet>
 </databaseChangeLog>

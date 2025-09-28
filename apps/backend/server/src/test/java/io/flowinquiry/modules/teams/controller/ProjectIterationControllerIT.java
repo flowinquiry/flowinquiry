@@ -22,7 +22,6 @@ import io.flowinquiry.modules.usermanagement.AuthoritiesConstants;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -56,7 +55,6 @@ public class ProjectIterationControllerIT {
     @Autowired private ProjectIterationRepository iterationRepository;
 
     @Autowired private MockMvc restIterationMockMvc;
-
 
     @Test
     void createIteration() throws Exception {
@@ -94,7 +92,6 @@ public class ProjectIterationControllerIT {
         iterationDTO.setEndDate(DEFAULT_END_DATE);
         iterationDTO.setProjectId(project.getId());
         iterationDTO.setStatus(ProjectIterationStatus.CLOSED);
-
 
         // Perform the request and validate the response
         restIterationMockMvc
@@ -153,6 +150,7 @@ public class ProjectIterationControllerIT {
                 .andExpect(jsonPath("$.name").value(UPDATED_NAME))
                 .andExpect(jsonPath("$.description").value(UPDATED_DESCRIPTION));
     }
+
     @Test
     void closeIterationWhenNextIterationIsPresent() throws Exception {
 
@@ -200,6 +198,4 @@ public class ProjectIterationControllerIT {
         List<ProjectIteration> iterationList = iterationRepository.findAll();
         assertThat(iterationList).hasSize(databaseSizeBeforeDelete - 1);
     }
-
-
 }
