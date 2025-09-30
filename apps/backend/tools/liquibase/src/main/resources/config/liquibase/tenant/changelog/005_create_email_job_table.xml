@@ -1,0 +1,48 @@
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+       http://www.liquibase.org/xml/ns/dbchangelog
+       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd">
+
+	<changeSet id="005:01-create-email-job-table"
+		author="flowinquiry">
+		<createTable tableName="fw_email_job">
+			<column name="id" type="BIGINT" autoIncrement="true">
+				<constraints primaryKey="true" nullable="false" />
+			</column>
+
+			<column name="recipients" type="TEXT">
+				<constraints nullable="false" />
+			</column>
+			<column name="cc_recipients" type="TEXT" />
+			<column name="bcc_recipients" type="TEXT" />
+
+			<column name="recipient_locale" type="VARCHAR(10)" />
+
+			<column name="template_key" type="VARCHAR(100)">
+				<constraints nullable="false" />
+			</column>
+
+			<column name="template_context" type="JSONB">
+				<constraints nullable="false" />
+			</column>
+
+			<column name="subject_override" type="TEXT" />
+
+			<column name="attachments" type="JSONB" />
+
+			<column name="status" type="VARCHAR(20)"
+				defaultValue="PENDING">
+				<constraints nullable="false" />
+			</column>
+
+			<column name="retries" type="INT" defaultValueNumeric="0" />
+
+			<column name="created_at" type="TIMESTAMP"
+				defaultValueComputed="CURRENT_TIMESTAMP" />
+			<column name="updated_at" type="TIMESTAMP" />
+		</createTable>
+	</changeSet>
+
+</databaseChangeLog>
