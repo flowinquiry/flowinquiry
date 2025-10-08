@@ -7,10 +7,12 @@ import io.flowinquiry.modules.teams.domain.*;
 import io.flowinquiry.modules.teams.repository.ProjectIterationRepository;
 import io.flowinquiry.modules.teams.repository.ProjectRepository;
 import io.flowinquiry.modules.teams.service.dto.ProjectIterationDTO;
+import io.flowinquiry.modules.teams.service.event.ProjectIterationStatusChangeEvent;
 import io.flowinquiry.modules.teams.service.mapper.ProjectIterationMapper;
 import java.time.Period;
 import java.util.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +27,8 @@ public class ProjectIterationService {
     private final ProjectRepository projectRepository;
 
     private final TicketService ticketService;
+
+    private final ApplicationEventPublisher eventPublisher;
 
     public List<ProjectIterationDTO> findByProjectId(Long projectId) {
         return projectIterationRepository.findByProjectIdOrderByStartDateAsc(projectId).stream()
@@ -109,6 +113,7 @@ public class ProjectIterationService {
 
             currentIteration = projectIterationRepository.save(newIteration);
         }
+        eventPublisher.publishEvent(new ProjectIterationStatusChangeEvent(this, currentIteration));
 
         return projectIterationMapper.toDto(currentIteration);
     }
