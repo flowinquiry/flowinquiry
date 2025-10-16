@@ -20,6 +20,10 @@
 		file="config/liquibase/tenant/changelog/002_00_rename_team_request_to_ticket_table.xml" />
 	<include
 		file="config/liquibase/tenant/changelog/003_create_tenant_table.xml" />
+	<include
+		file="/config/liquibase/tenant/changelog/004_add_indexes_to_tables.xml" />
+	<include
+		file="/config/liquibase/tenant/changelog/005_create_email_job_table.xml" />
 
 	<include
 		file="config/liquibase/tenant/changelog/shared-data-changelog.xml" />
