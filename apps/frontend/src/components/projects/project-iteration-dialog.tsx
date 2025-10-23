@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useAppClientTranslations } from "@/hooks/use-translations";
 import {
+  closeProjectIteration,
   createProjectIteration,
   updateProjectIteration,
 } from "@/lib/actions/project-iteration.action";
@@ -70,6 +71,7 @@ export function ProjectIterationDialog({
       id: iteration?.id,
       projectId: project?.id,
       name: iteration?.name || "",
+      status: iteration?.status,
       description: iteration?.description || "",
       startDate: iteration?.startDate,
       endDate: iteration?.endDate,
@@ -84,6 +86,7 @@ export function ProjectIterationDialog({
         id: iteration?.id,
         projectId: project.id,
         name: iteration?.name || "",
+        status: iteration?.status,
         description: iteration?.description || "",
         startDate: iteration?.startDate,
         endDate: iteration?.endDate,
@@ -201,6 +204,19 @@ export function ProjectIterationDialog({
     }
   };
 
+  const handleClose = async () => {
+    setIsSubmitting(true);
+    try {
+      let result: ProjectIterationDTO;
+      result = await closeProjectIteration(iteration?.id!);
+      onOpenChange(false);
+      
+      onSave?.(result);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-240" data-testid="iteration-dialog">
@@ -221,8 +237,7 @@ export function ProjectIterationDialog({
           <form
             onSubmit={form.handleSubmit(handleSubmit)}
             className="space-y-6"
-            data-testid="iteration-form"
-          >
+            data-testid="iteration-form">
             <FormField
               control={form.control}
               name="name"
@@ -234,7 +249,7 @@ export function ProjectIterationDialog({
                   <FormControl>
                     <Input
                       placeholder={t.teams.projects.iteration(
-                        "form.name_place_holder",
+                        "form.name_place_holder"
                       )}
                       {...field}
                       data-testid="iteration-name-input"
@@ -274,7 +289,7 @@ export function ProjectIterationDialog({
                   <FormControl>
                     <Textarea
                       placeholder={t.teams.projects.iteration(
-                        "form.description_place_holder",
+                        "form.description_place_holder"
                       )}
                       {...field}
                       rows={3}
@@ -292,15 +307,21 @@ export function ProjectIterationDialog({
                 variant="outline"
                 onClick={onCancel}
                 disabled={isSubmitting}
-                data-testid="iteration-cancel-button"
-              >
+                data-testid="iteration-cancel-button">
                 {t.common.buttons("cancel")}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={handleClose}
+                disabled={ iteration?.status !== "ACTIVE" ||isSubmitting}
+                data-testid="iteration-close-button">
+                {t.common.buttons("close")}
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                data-testid="iteration-submit-button"
-              >
+                data-testid="iteration-submit-button">
                 {isSubmitting
                   ? isEditMode
                     ? t.common.buttons("saving")
