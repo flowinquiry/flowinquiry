@@ -199,22 +199,6 @@ public interface TicketRepository
 
     @Query(
             """
-    SELECT DISTINCT r
-    FROM Ticket r
-    JOIN WorkflowTransitionHistory h ON h.ticket.id = r.id
-    WHERE r.isDeleted = false
-      AND r.isCompleted = false
-      AND (
-        (r.estimatedCompletionDate IS NOT NULL AND r.estimatedCompletionDate < CURRENT_TIMESTAMP)
-        OR (h.slaDueDate IS NOT NULL AND h.slaDueDate < CURRENT_TIMESTAMP AND h.status <> :completedStatus)
-      )
-""")
-    Page<Ticket> findAllOverdueTickets(
-            @Param("completedStatus") WorkflowTransitionHistoryStatus completedStatus,
-            Pageable pageable);
-
-    @Query(
-            """
             SELECT COUNT(r.id)
             FROM Ticket r
             JOIN WorkflowTransitionHistory h ON h.ticket.id = r.id
@@ -303,4 +287,27 @@ public interface TicketRepository
     @Query(
             "UPDATE Ticket t SET t.isCompleted=true,t.actualCompletionDate= current_date WHERE t.iteration.id = :iterationId and t.isCompleted = false and t.isDeleted = false")
     int findTicketsByIterationIdAndClose(@Param("iterationId") Long iterationId);
+
+    @Query("""
+          SELECT t
+          FROM Ticket t
+          WHERE t.isDeleted = false
+          AND t.isCompleted = false
+          AND (:id IS NULL OR t.id > :id)
+          AND (
+              (t.estimatedCompletionDate IS NOT NULL AND t.estimatedCompletionDate < CURRENT_TIMESTAMP)
+              OR EXISTS (
+                  SELECT 1
+                  FROM WorkflowTransitionHistory h
+                  WHERE h.ticket.id = t.id
+                  AND h.status <> 'COMPLETED'
+                  AND h.slaDueDate IS NOT NULL
+                  AND h.slaDueDate < CURRENT_TIMESTAMP
+              )
+          )
+          ORDER BY t.id ASC
+          LIMIT :size
+          """
+    )
+    List<Ticket> findOverdueTicketsAfterId(@Param("id") Long id, @Param("size") int size);
 }
