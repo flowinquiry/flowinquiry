@@ -2,6 +2,7 @@ package io.flowinquiry.modules.teams.service;
 
 import static io.flowinquiry.modules.teams.domain.WorkflowTransitionHistoryStatus.COMPLETED;
 import static io.flowinquiry.query.QueryUtils.createSpecification;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 import io.flowinquiry.exceptions.ResourceNotFoundException;
 import io.flowinquiry.modules.audit.service.event.AuditLogUpdateEvent;
@@ -95,6 +96,18 @@ public class TicketService {
     public Page<TicketDTO> findTickets(QueryDTO queryDTO, Pageable pageable) {
         Specification<Ticket> spec = createSpecification(queryDTO);
         return ticketRepository.findAll(spec, pageable).map(ticketMapper::toDto);
+    }
+
+    @Transactional(readOnly = true)
+    public List<TicketDTO> getAllOverdueTicketsAfterId(Long lastSeenId, int size){
+        List<Ticket> overdueTickets = ticketRepository.findOverdueTicketsAfterId(lastSeenId, size);
+        if (isEmpty(overdueTickets)){
+            return List.of();
+        }
+
+        return overdueTickets.stream()
+              .map(ticketMapper::toDto)
+              .toList();
     }
 
     @Transactional(readOnly = true)
@@ -344,10 +357,6 @@ public class TicketService {
         return ticketRepository
                 .findOverdueTicketsByUserId(userId, COMPLETED, pageable)
                 .map(ticketMapper::toDto);
-    }
-
-    public Page<TicketDTO> getAllOverdueTickets(Pageable pageable) {
-        return ticketRepository.findAllOverdueTickets(COMPLETED, pageable).map(ticketMapper::toDto);
     }
 
     public Long countOverdueTickets(

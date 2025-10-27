@@ -297,6 +297,12 @@ public class TicketServiceIT {
     }
 
     @Test
+    void shouldGetOverdueTicketSuccessfully(){
+        List<TicketDTO> overdueTickets = ticketService.getAllOverdueTicketsAfterId(0L, 500);
+        assertThat(overdueTickets).isNotNull();
+    }
+
+    @Test
     void shouldGetOverdueTicketsByUserSuccessfully() {
         // Assuming user ID 1 exists in test data
         Page<TicketDTO> overdueTickets =

@@ -2,7 +2,9 @@ package io.flowinquiry.modules.teams.service.job;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -84,8 +86,7 @@ public class SendEmailForTicketOverdueTest {
                         .estimatedCompletionDate(LocalDate.now().minusDays(1))
                         .teamId(1L)
                         .build();
-        Pageable pageable = Pageable.ofSize(1);
-        Page<TicketDTO> ticketPage = new PageImpl<>(Collections.singletonList(ticket), pageable, 1);
+
 
         EntityWatcherDTO entityWatcherDTO = new EntityWatcherDTO();
         entityWatcherDTO.setEntityId(ticket.getId());
@@ -101,7 +102,7 @@ public class SendEmailForTicketOverdueTest {
         user.setLangKey("en");
         Optional<UserDTO> userinfo = Optional.of(user);
 
-        when(ticketService.getAllOverdueTickets(PageRequest.of(0, 500))).thenReturn(ticketPage);
+        when(ticketService.getAllOverdueTicketsAfterId(0L, 500)).thenReturn(List.of(ticket));
         when(entityWatcherService.getWatchersForEntity(any(), anyLong()))
                 .thenReturn(entityWatcherDTOs);
         when(userService.getUserById(anyLong())).thenReturn(userinfo);
