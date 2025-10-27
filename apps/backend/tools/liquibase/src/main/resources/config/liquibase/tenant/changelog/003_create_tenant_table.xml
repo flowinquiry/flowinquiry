@@ -826,4 +826,11 @@
 			</column>
 		</addColumn>
 	</changeSet>
+    <changeSet id="003:29-alter-tenant_relationship-to-project-table" author="flowinquiry">
+        <addColumn tableName="fw_project">
+            <column name="public_access" type="boolean" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

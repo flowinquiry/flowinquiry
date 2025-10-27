@@ -19,6 +19,9 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,8 +66,21 @@ public class ProjectService {
         return savedProjectDTO;
     }
 
-    public Optional<ProjectDTO> getProjectById(Long id) {
-        return projectRepository.findById(id).map(projectMapper::toDto);
+    public ProjectDTO getProjectById(Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAnonymous = authentication == null
+              || !authentication.isAuthenticated()
+              || authentication instanceof AnonymousAuthenticationToken;
+
+        Project project = projectRepository
+              .findById(id)
+              .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
+
+        if (!project.isPublicAccess() && isAnonymous) {
+            throw new ResourceNotFoundException("Project not found");
+        }
+
+        return projectMapper.toDto(project);
     }
 
     @Transactional(readOnly = true)

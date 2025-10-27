@@ -1,6 +1,5 @@
 package io.flowinquiry.modules.teams.controller;
 
-import io.flowinquiry.exceptions.ResourceNotFoundException;
 import io.flowinquiry.modules.teams.service.ProjectEpicService;
 import io.flowinquiry.modules.teams.service.ProjectIterationService;
 import io.flowinquiry.modules.teams.service.ProjectService;
@@ -87,12 +86,7 @@ public class ProjectController {
     public ProjectDTO getProjectById(
             @Parameter(description = "ID of the project to retrieve", required = true) @PathVariable
                     Long id) {
-        return projectService
-                .getProjectById(id)
-                .orElseThrow(
-                        () ->
-                                new ResourceNotFoundException(
-                                        "Project  with id " + id + " not found"));
+        return projectService.getProjectById(id);
     }
 
     @Operation(

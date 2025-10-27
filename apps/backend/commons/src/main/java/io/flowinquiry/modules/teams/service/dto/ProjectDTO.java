@@ -27,4 +27,5 @@ public class ProjectDTO {
     private Long modifiedBy;
     private Instant modifiedAt;
     private ProjectSettingDTO projectSetting;
+    private boolean publicAccess;
 }
