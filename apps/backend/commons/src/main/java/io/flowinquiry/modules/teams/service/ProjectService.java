@@ -3,8 +3,10 @@ package io.flowinquiry.modules.teams.service;
 import static io.flowinquiry.query.QueryUtils.createSpecification;
 
 import io.flowinquiry.exceptions.ResourceNotFoundException;
+import io.flowinquiry.modules.teams.domain.AccessibleType;
 import io.flowinquiry.modules.teams.domain.EstimationUnit;
 import io.flowinquiry.modules.teams.domain.Project;
+import io.flowinquiry.modules.teams.domain.ProjectSetting;
 import io.flowinquiry.modules.teams.domain.Team;
 import io.flowinquiry.modules.teams.domain.TicketPriority;
 import io.flowinquiry.modules.teams.repository.ProjectRepository;
@@ -76,7 +78,11 @@ public class ProjectService {
               .findById(id)
               .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
 
-        if (!project.isPublicAccess() && isAnonymous) {
+        AccessibleType accessibleType = Optional.ofNullable(project.getProjectSetting())
+              .map(ProjectSetting::getAccessibleType)
+              .orElse(AccessibleType.PRIVATE);
+
+        if (accessibleType == AccessibleType.PRIVATE && isAnonymous) {
             throw new ResourceNotFoundException("Project not found");
         }
 

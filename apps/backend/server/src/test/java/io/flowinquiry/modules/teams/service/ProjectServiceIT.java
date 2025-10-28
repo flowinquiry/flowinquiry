@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.flowinquiry.exceptions.ResourceNotFoundException;
 import io.flowinquiry.it.IntegrationTest;
 import io.flowinquiry.it.WithMockFwUser;
+import io.flowinquiry.modules.teams.domain.AccessibleType;
 import io.flowinquiry.modules.teams.domain.Project;
 import io.flowinquiry.modules.teams.domain.ProjectStatus;
 import io.flowinquiry.modules.teams.domain.TicketPriority;
@@ -37,6 +38,7 @@ public class ProjectServiceIT {
         settingDTO.setProjectId(1L);
         settingDTO.setDefaultPriority(TicketPriority.Medium);
         settingDTO.setSprintLengthDays(14);
+        settingDTO.setAccessibleType(AccessibleType.PUBLIC);
 
         ProjectDTO projectDTO = createProjectDTO();
         projectDTO.setProjectSetting(settingDTO);
@@ -176,27 +178,32 @@ public class ProjectServiceIT {
     @Test
     void shouldThrowExceptionWhenUserNotLoginAndProjectIsNotPublic(){
         assertThatExceptionOfType(ResourceNotFoundException.class)
-              .isThrownBy(() -> projectService.getProjectById(1L));
+              .isThrownBy(() -> projectService.getProjectById(3L));
     }
 
     @Test
     @WithMockFwUser
     void shouldGetPrivateProjectSuccessfulWhenUserIsAuthenticated(){
-        ProjectDTO projectById = projectService.getProjectById(1L);
-        assertThat(projectById)
-              .extracting(ProjectDTO::getTeamId, ProjectDTO::isPublicAccess)
-              .containsExactly(1L, false);
+        ProjectDTO actualProject = projectService.getProjectById(3L);
+        assertThat(actualProject.getId()).isEqualTo(3L);
+        assertThat(actualProject.getProjectSetting().getAccessibleType())
+              .isEqualTo(AccessibleType.PRIVATE);
     }
 
     @Test
-    void shouldGetPublicProjectSuccessfulWhenUserIsNotAuthenticated(){
+    void shouldGetPublicProjectSuccessfulWhenUserIsNotAuthenticated() {
+        ProjectSettingDTO settingDTO = new ProjectSettingDTO();
+        settingDTO.setDefaultPriority(TicketPriority.Medium);
+        settingDTO.setSprintLengthDays(14);
+        settingDTO.setAccessibleType(AccessibleType.PUBLIC);
+
         ProjectDTO projectDTO = createProjectDTO();
-        projectDTO.setPublicAccess(true);
+        projectDTO.setProjectSetting(settingDTO);
         ProjectDTO savedProject = projectService.createProject(projectDTO);
 
         ProjectDTO actualProject = projectService.getProjectById(savedProject.getId());
-        assertThat(actualProject)
-              .extracting(ProjectDTO::getId, ProjectDTO::isPublicAccess)
-              .containsExactly(savedProject.getId(), true);
+        assertThat(actualProject.getId()).isEqualTo(savedProject.getId());
+        assertThat(actualProject.getProjectSetting().getAccessibleType())
+              .isEqualTo(AccessibleType.PUBLIC);
     }
 }

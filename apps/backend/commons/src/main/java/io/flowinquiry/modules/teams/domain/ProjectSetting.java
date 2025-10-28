@@ -48,6 +48,10 @@ public class ProjectSetting extends TenantScopedAuditingEntity<Long> {
     @Column(name = "enable_estimation", nullable = false)
     private boolean enableEstimation = true;
 
+    @Column(name = "accessible_type")
+    @Enumerated(EnumType.STRING)
+    private AccessibleType accessibleType = AccessibleType.PRIVATE;
+
     @Column(name = "integration_settings", columnDefinition = "jsonb")
     @Type(JsonBinaryType.class)
     @JdbcTypeCode(SqlTypes.JSON)

@@ -48,9 +48,6 @@ public class Project extends TenantScopedAuditingEntity<Long> {
     @Column(name = "end_date")
     private Instant endDate;
 
-    @Column(name = "public_access")
-    private boolean publicAccess;
-
     @OneToOne(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private ProjectSetting projectSetting;
 }
