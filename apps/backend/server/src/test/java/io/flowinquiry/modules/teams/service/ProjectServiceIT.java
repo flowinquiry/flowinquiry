@@ -1,12 +1,17 @@
 package io.flowinquiry.modules.teams.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.flowinquiry.exceptions.ResourceNotFoundException;
 import io.flowinquiry.it.IntegrationTest;
+import io.flowinquiry.it.WithMockFwUser;
+import io.flowinquiry.modules.teams.domain.AccessibleType;
+import io.flowinquiry.modules.teams.domain.Project;
 import io.flowinquiry.modules.teams.domain.ProjectStatus;
 import io.flowinquiry.modules.teams.domain.TicketPriority;
+import io.flowinquiry.modules.teams.repository.ProjectRepository;
 import io.flowinquiry.modules.teams.service.dto.ProjectDTO;
 import io.flowinquiry.modules.teams.service.dto.ProjectSettingDTO;
 import io.flowinquiry.query.Filter;
@@ -25,29 +30,19 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProjectServiceIT {
     private @Autowired ProjectService projectService;
 
+    private @Autowired ProjectRepository projectRepository;
+
     @Test
     public void shouldCreateProjectSuccessfully() {
         ProjectSettingDTO settingDTO = new ProjectSettingDTO();
         settingDTO.setProjectId(1L);
         settingDTO.setDefaultPriority(TicketPriority.Medium);
         settingDTO.setSprintLengthDays(14);
+        settingDTO.setAccessibleType(AccessibleType.PUBLIC);
 
-        ProjectDTO projectDTO =
-                ProjectDTO.builder()
-                        .name("Sample project")
-                        .description("Project description")
-                        .shortName("SP")
-                        .status(ProjectStatus.Active)
-                        .teamId(1L)
-                        .createdBy(1L)
-                        .projectSetting(settingDTO)
-                        .build();
+        ProjectDTO projectDTO = createProjectDTO();
+        projectDTO.setProjectSetting(settingDTO);
         ProjectDTO savedProject = projectService.createProject(projectDTO);
-        savedProject =
-                projectService
-                        .getProjectById(savedProject.getId())
-                        .orElseThrow(
-                                () -> new ResourceNotFoundException("Issue of saving project"));
         assertThat(savedProject)
                 .extracting(ProjectDTO::getName, ProjectDTO::getDescription, ProjectDTO::getTeamId)
                 .containsExactly("Sample project", "Project description", 1L);
@@ -55,54 +50,33 @@ public class ProjectServiceIT {
 
     @Test
     public void shouldCreateProjectFailedBecauseTeamIsNotExisted() {
-        ProjectDTO projectDTO =
-                ProjectDTO.builder()
-                        .name("Sample project")
-                        .description("Project description")
-                        .status(ProjectStatus.Active)
-                        .teamId(100L)
-                        .build();
+        ProjectDTO projectDTO = createProjectDTO();
+        projectDTO.setTeamId(100L);
         assertThatThrownBy(() -> projectService.createProject(projectDTO))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 
     @Test
     public void shouldDeleteProjectSuccessfully() {
-        ProjectDTO projectDTO =
-                ProjectDTO.builder()
-                        .name("Sample project")
-                        .description("Project description")
-                        .shortName("SP")
-                        .status(ProjectStatus.Active)
-                        .createdBy(1L)
-                        .teamId(1L)
-                        .build();
+        ProjectDTO projectDTO = createProjectDTO();
         ProjectDTO savedProject = projectService.createProject(projectDTO);
         projectService.deleteProject(savedProject.getId());
 
-        Optional<ProjectDTO> notFoundProject = projectService.getProjectById(savedProject.getId());
-        assertThat(notFoundProject.isEmpty()).isTrue();
+        Optional<Project> expectedProject = projectRepository.findById(savedProject.getId());
+        assertThat(expectedProject).isEmpty();
     }
 
     @Test
     public void shouldUpdateProjectSuccessfully() {
-        ProjectDTO projectDTO =
-                ProjectDTO.builder()
-                        .name("Sample project")
-                        .shortName("SP")
-                        .description("Project description")
-                        .status(ProjectStatus.Active)
-                        .createdBy(1L)
-                        .teamId(1L)
-                        .build();
+        ProjectDTO projectDTO = createProjectDTO();
         ProjectDTO savedProject = projectService.createProject(projectDTO);
         savedProject.setName("New Project");
         savedProject.setStatus(ProjectStatus.Closed);
         projectService.updateProject(savedProject.getId(), savedProject);
 
-        savedProject = projectService.getProjectById(savedProject.getId()).orElseThrow();
-        assertThat(savedProject)
-                .extracting(ProjectDTO::getName, ProjectDTO::getStatus)
+        Project actualProject = projectRepository.findById(savedProject.getId()).orElseThrow();
+        assertThat(actualProject)
+                .extracting(Project::getName, Project::getStatus)
                 .containsExactly("New Project", ProjectStatus.Closed);
     }
 
@@ -188,5 +162,48 @@ public class ProjectServiceIT {
         // 10
         assertThat(projectsPage.getContent()).anyMatch(project -> project.getTeamId().equals(1L));
         assertThat(projectsPage.getContent()).anyMatch(project -> project.getTeamId().equals(2L));
+    }
+
+    private ProjectDTO createProjectDTO() {
+        return ProjectDTO.builder()
+              .name("Sample project")
+              .description("Project description")
+              .shortName("SP")
+              .status(ProjectStatus.Active)
+              .teamId(1L)
+              .createdBy(1L)
+              .build();
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUserNotLoginAndProjectIsNotPublic(){
+        assertThatExceptionOfType(ResourceNotFoundException.class)
+              .isThrownBy(() -> projectService.getProjectById(3L));
+    }
+
+    @Test
+    @WithMockFwUser
+    void shouldGetPrivateProjectSuccessfulWhenUserIsAuthenticated(){
+        ProjectDTO actualProject = projectService.getProjectById(3L);
+        assertThat(actualProject.getId()).isEqualTo(3L);
+        assertThat(actualProject.getProjectSetting().getAccessibleType())
+              .isEqualTo(AccessibleType.PRIVATE);
+    }
+
+    @Test
+    void shouldGetPublicProjectSuccessfulWhenUserIsNotAuthenticated() {
+        ProjectSettingDTO settingDTO = new ProjectSettingDTO();
+        settingDTO.setDefaultPriority(TicketPriority.Medium);
+        settingDTO.setSprintLengthDays(14);
+        settingDTO.setAccessibleType(AccessibleType.PUBLIC);
+
+        ProjectDTO projectDTO = createProjectDTO();
+        projectDTO.setProjectSetting(settingDTO);
+        ProjectDTO savedProject = projectService.createProject(projectDTO);
+
+        ProjectDTO actualProject = projectService.getProjectById(savedProject.getId());
+        assertThat(actualProject.getId()).isEqualTo(savedProject.getId());
+        assertThat(actualProject.getProjectSetting().getAccessibleType())
+              .isEqualTo(AccessibleType.PUBLIC);
     }
 }

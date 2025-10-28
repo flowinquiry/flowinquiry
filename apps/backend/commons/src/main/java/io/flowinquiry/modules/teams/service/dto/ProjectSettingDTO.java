@@ -1,5 +1,6 @@
 package io.flowinquiry.modules.teams.service.dto;
 
+import io.flowinquiry.modules.teams.domain.AccessibleType;
 import io.flowinquiry.modules.teams.domain.EstimationUnit;
 import io.flowinquiry.modules.teams.domain.TicketPriority;
 import java.time.Instant;
@@ -36,4 +37,6 @@ public class ProjectSettingDTO {
     private Long modifiedBy;
 
     private Instant modifiedAt;
+
+    private AccessibleType accessibleType;
 }

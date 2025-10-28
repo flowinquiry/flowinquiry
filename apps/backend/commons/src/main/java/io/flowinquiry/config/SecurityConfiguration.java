@@ -62,6 +62,8 @@ public class SecurityConfiguration {
                                         .permitAll()
                                         .requestMatchers("/swagger-ui.html")
                                         .permitAll()
+                                        .requestMatchers(HttpMethod.GET, "/api/projects/{id}")
+                                        .permitAll()
                                         .requestMatchers("/api/admin/**")
                                         .hasAuthority(AuthoritiesConstants.ADMIN)
                                         .requestMatchers("/api/**")
