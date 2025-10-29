@@ -67,4 +67,8 @@ public class UserDTO implements Serializable {
     private Instant resetDate;
 
     private String activationKey;
+
+    public String getFullName() {
+        return firstName + " " + lastName;
+    }
 }
