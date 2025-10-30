@@ -120,9 +120,6 @@ management:
     web:
       exposure:
         include: health, info
-  info:
-    git:
-      mode: full
 
 features:
   kafka:
