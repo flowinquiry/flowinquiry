@@ -194,6 +194,7 @@ public class ProjectServiceIT {
     void shouldGetPublicProjectSuccessfulWhenUserIsNotAuthenticated() {
         ProjectSettingDTO settingDTO = new ProjectSettingDTO();
         settingDTO.setDefaultPriority(TicketPriority.Medium);
+        settingDTO.setProjectId(1L);
         settingDTO.setSprintLengthDays(14);
         settingDTO.setAccessibleType(AccessibleType.PUBLIC);
 
