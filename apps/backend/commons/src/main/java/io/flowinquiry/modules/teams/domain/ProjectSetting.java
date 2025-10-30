@@ -50,7 +50,7 @@ public class ProjectSetting extends TenantScopedAuditingEntity<Long> {
 
     @Column(name = "accessible_type")
     @Enumerated(EnumType.STRING)
-    private AccessibleType accessibleType = AccessibleType.PRIVATE;
+    private AccessibleType accessibleType;
 
     @Column(name = "integration_settings", columnDefinition = "jsonb")
     @Type(JsonBinaryType.class)
