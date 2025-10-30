@@ -115,6 +115,18 @@ server:
       cookie:
         http-only: true
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+  info:
+    git:
+      mode: full
+
+features:
+  kafka:
+    enabled: true # dummy config to test feature flags
 
 # ===================================================================
 # Application specific properties

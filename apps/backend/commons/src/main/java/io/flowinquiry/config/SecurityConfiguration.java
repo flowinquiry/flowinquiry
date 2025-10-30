@@ -56,6 +56,8 @@ public class SecurityConfiguration {
                                         .permitAll()
                                         .requestMatchers("/actuator/health")
                                         .permitAll()
+                                        .requestMatchers("/actuator/info")
+                                        .permitAll()
                                         .requestMatchers("/v3/api-docs.yaml")
                                         .permitAll()
                                         .requestMatchers("/swagger-ui/**")
