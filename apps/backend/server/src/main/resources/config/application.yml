@@ -115,12 +115,6 @@ server:
       cookie:
         http-only: true
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health, info
-
 features:
   kafka:
     enabled: true # dummy config to test feature flags
