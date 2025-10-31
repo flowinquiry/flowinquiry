@@ -25,4 +25,27 @@
 			<column name="status" />
 		</createIndex>
 	</changeSet>
+
+    <changeSet id="004:03-create-ticket-overdue-index"
+               author="flowinquiry">
+        <createIndex
+                indexName="idx_ticket_overdue"
+                tableName="fw_ticket">
+            <column name="is_deleted"/>
+            <column name="is_completed"/>
+            <column name="estimated_completion_date"/>
+            <column name="id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="004:04-create-workflow-history-overdue-index"
+               author="flowinquiry">
+        <createIndex
+                indexName="idx_workflow_history_overdue"
+                tableName="fw_workflow_transition_history">
+            <column name="ticket_id"/>
+            <column name="sla_due_date"/>
+            <column name="status"/>
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>

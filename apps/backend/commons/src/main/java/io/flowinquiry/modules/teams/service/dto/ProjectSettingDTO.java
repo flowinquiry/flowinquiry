@@ -38,5 +38,5 @@ public class ProjectSettingDTO {
 
     private Instant modifiedAt;
 
-    private AccessibleType accessibleType;
+    private AccessibleType accessibleType = AccessibleType.PRIVATE;
 }
