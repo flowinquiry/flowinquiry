@@ -166,28 +166,28 @@ public class ProjectServiceIT {
 
     private ProjectDTO createProjectDTO() {
         return ProjectDTO.builder()
-              .name("Sample project")
-              .description("Project description")
-              .shortName("SP")
-              .status(ProjectStatus.Active)
-              .teamId(1L)
-              .createdBy(1L)
-              .build();
+                .name("Sample project")
+                .description("Project description")
+                .shortName("SP")
+                .status(ProjectStatus.Active)
+                .teamId(1L)
+                .createdBy(1L)
+                .build();
     }
 
     @Test
-    void shouldThrowExceptionWhenUserNotLoginAndProjectIsNotPublic(){
+    void shouldThrowExceptionWhenUserNotLoginAndProjectIsNotPublic() {
         assertThatExceptionOfType(ResourceNotFoundException.class)
-              .isThrownBy(() -> projectService.getProjectById(3L));
+                .isThrownBy(() -> projectService.getProjectById(3L));
     }
 
     @Test
     @WithMockFwUser
-    void shouldGetPrivateProjectSuccessfulWhenUserIsAuthenticated(){
+    void shouldGetPrivateProjectSuccessfulWhenUserIsAuthenticated() {
         ProjectDTO actualProject = projectService.getProjectById(3L);
         assertThat(actualProject.getId()).isEqualTo(3L);
         assertThat(actualProject.getProjectSetting().getAccessibleType())
-              .isEqualTo(AccessibleType.PRIVATE);
+                .isEqualTo(AccessibleType.PRIVATE);
     }
 
     @Test
@@ -205,6 +205,6 @@ public class ProjectServiceIT {
         ProjectDTO actualProject = projectService.getProjectById(savedProject.getId());
         assertThat(actualProject.getId()).isEqualTo(savedProject.getId());
         assertThat(actualProject.getProjectSetting().getAccessibleType())
-              .isEqualTo(AccessibleType.PUBLIC);
+                .isEqualTo(AccessibleType.PUBLIC);
     }
 }

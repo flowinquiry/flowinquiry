@@ -70,17 +70,20 @@ public class ProjectService {
 
     public ProjectDTO getProjectById(Long id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        boolean isAnonymous = authentication == null
-              || !authentication.isAuthenticated()
-              || authentication instanceof AnonymousAuthenticationToken;
+        boolean isAnonymous =
+                authentication == null
+                        || !authentication.isAuthenticated()
+                        || authentication instanceof AnonymousAuthenticationToken;
 
-        Project project = projectRepository
-              .findById(id)
-              .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
+        Project project =
+                projectRepository
+                        .findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
 
-        AccessibleType accessibleType = Optional.ofNullable(project.getProjectSetting())
-              .map(ProjectSetting::getAccessibleType)
-              .orElse(AccessibleType.PRIVATE);
+        AccessibleType accessibleType =
+                Optional.ofNullable(project.getProjectSetting())
+                        .map(ProjectSetting::getAccessibleType)
+                        .orElse(AccessibleType.PRIVATE);
 
         if (accessibleType == AccessibleType.PRIVATE && isAnonymous) {
             throw new ResourceNotFoundException("Project not found");

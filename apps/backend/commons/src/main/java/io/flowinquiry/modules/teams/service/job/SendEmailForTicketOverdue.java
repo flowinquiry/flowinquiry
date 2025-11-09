@@ -60,7 +60,9 @@ public class SendEmailForTicketOverdue {
             }
 
             for (TicketDTO ticket : tickets) {
-                List<EntityWatcherDTO> watchers = entityWatcherService.getWatchersForEntity(EntityType.Ticket, ticket.getId());
+                List<EntityWatcherDTO> watchers =
+                        entityWatcherService.getWatchersForEntity(
+                                EntityType.Ticket, ticket.getId());
                 watchers.forEach(watcher -> sendEmailToWatcher(watcher.getWatchUserId(), ticket));
             }
             lastSeenId = lastElement(tickets).getId();

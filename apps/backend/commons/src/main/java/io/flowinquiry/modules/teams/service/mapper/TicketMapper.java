@@ -45,7 +45,7 @@ public interface TicketMapper extends BaseMapper {
             expression =
                     "java(ticket.getChildTickets() == null ? null : ticket.getChildTickets().stream().map(Ticket::getId).toList())")
     TicketDTO toDto(Ticket ticket);
-    
+
     @Mapping(target = "team", source = "teamId", qualifiedByName = "toTeam")
     @Mapping(
             target = "workflow",

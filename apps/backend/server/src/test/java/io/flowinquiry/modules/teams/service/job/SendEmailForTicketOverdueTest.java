@@ -2,9 +2,7 @@ package io.flowinquiry.modules.teams.service.job;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -21,7 +19,6 @@ import io.flowinquiry.modules.teams.service.dto.TicketDTO;
 import io.flowinquiry.modules.usermanagement.service.UserService;
 import io.flowinquiry.modules.usermanagement.service.dto.UserDTO;
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
@@ -33,10 +30,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.MessageSource;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 @ExtendWith(MockitoExtension.class)
 public class SendEmailForTicketOverdueTest {
@@ -86,7 +79,6 @@ public class SendEmailForTicketOverdueTest {
                         .estimatedCompletionDate(LocalDate.now().minusDays(1))
                         .teamId(1L)
                         .build();
-
 
         EntityWatcherDTO entityWatcherDTO = new EntityWatcherDTO();
         entityWatcherDTO.setEntityId(ticket.getId());

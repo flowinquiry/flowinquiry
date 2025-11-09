@@ -1,10 +1,10 @@
-name: Coverage PR Comment
+name: PR Comments (Coverage & Playwright)
 
 on:
-  pull_request_target:
-    types: [opened, synchronize, reopened]
+  workflow_run:
+    workflows: ["FlowInquiry CI"]   # must match the CI workflow 'name:'
+    types: [completed]
 
-# Minimal perms to comment on the PR
 permissions:
   contents: read
   pull-requests: write
@@ -12,35 +12,50 @@ permissions:
 
 jobs:
   comment:
+    # Only run on successful CI that was triggered by a pull_request
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      (github.event.workflow_run.pull_requests && github.event.workflow_run.pull_requests[0])
     runs-on: ubuntu-latest
-    steps:
-      # DO NOT checkout the fork's code in pull_request_target
-      # Just fetch the artifact produced by the CI workflow.
 
-      - name: Download coverage artifact from CI
+    steps:
+      - name: Download Coverage artifact
         uses: dawidd6/action-download-artifact@v11
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          workflow: ci.yml                # <-- file name of your CI workflow (FlowInquiry CI)
-          pr: ${{ github.event.pull_request.number }}
-          name: CoverageReport            # <-- matches the upload name in CI
-          path: coveragereport
-          workflow_conclusion: success
+          run_id: ${{ github.event.workflow_run.id }}
+          name: CoverageReport
+          path: cov
           if_no_artifact_found: warn
-          allow_forks: true
 
-      - name: Fail if summary missing (optional but helpful)
-        run: |
-          test -f coveragereport/TrimmedSummary.md || {
-            echo "No TrimmedSummary.md found. Did CI run and upload the artifact?";
-            exit 1;
-          }
+      - name: Download Playwright summary artifact
+        uses: dawidd6/action-download-artifact@v11
+        with:
+          run_id: ${{ github.event.workflow_run.id }}
+          name: PlaywrightSummary
+          path: pw
+          if_no_artifact_found: warn
 
-      - name: Post sticky comment (Coverage Report)
+      # Post Coverage comment (sticky)
+      - name: Post Coverage comment
+        if: ${{ hashFiles('cov/TrimmedSummary.md') != '' }}
         uses: marocchino/sticky-pull-request-comment@v2.9.2
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          number: ${{ github.event.workflow_run.pull_requests[0].number }}
           header: coverage-report
-          path: coveragereport/TrimmedSummary.md
+          path: cov/TrimmedSummary.md
+          append: false
+          recreate: false
+
+      # Post Playwright comment (sticky)
+      - name: Post Playwright comment
+        if: ${{ hashFiles('pw/playwright-summary.md') != '' }}
+        uses: marocchino/sticky-pull-request-comment@v2.9.2
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          number: ${{ github.event.workflow_run.pull_requests[0].number }}
+          header: playwright
+          path: pw/playwright-summary.md
           append: false
           recreate: false
