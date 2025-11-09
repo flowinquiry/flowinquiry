@@ -99,15 +99,13 @@ public class TicketService {
     }
 
     @Transactional(readOnly = true)
-    public List<TicketDTO> getAllOverdueTicketsAfterId(Long lastSeenId, int size){
+    public List<TicketDTO> getAllOverdueTicketsAfterId(Long lastSeenId, int size) {
         List<Ticket> overdueTickets = ticketRepository.findOverdueTicketsAfterId(lastSeenId, size);
-        if (isEmpty(overdueTickets)){
+        if (isEmpty(overdueTickets)) {
             return List.of();
         }
 
-        return overdueTickets.stream()
-              .map(ticketMapper::toDto)
-              .toList();
+        return overdueTickets.stream().map(ticketMapper::toDto).toList();
     }
 
     @Transactional(readOnly = true)

@@ -68,9 +68,6 @@ public class QueryUtils {
         return switch (groupFilter.getLogicalOperator()) {
             case AND -> cb.and(predicates.toArray(new Predicate[0]));
             case OR -> cb.or(predicates.toArray(new Predicate[0]));
-            default ->
-                    throw new IllegalArgumentException(
-                            "Invalid logical operator: " + groupFilter.getLogicalOperator());
         };
     }
 

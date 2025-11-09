@@ -288,7 +288,8 @@ public interface TicketRepository
             "UPDATE Ticket t SET t.isCompleted=true,t.actualCompletionDate= current_date WHERE t.iteration.id = :iterationId and t.isCompleted = false and t.isDeleted = false")
     int findTicketsByIterationIdAndClose(@Param("iterationId") Long iterationId);
 
-    @Query("""
+    @Query(
+            """
           SELECT t
           FROM Ticket t
           WHERE t.isDeleted = false
@@ -307,7 +308,6 @@ public interface TicketRepository
           )
           ORDER BY t.id ASC
           LIMIT :size
-          """
-    )
+          """)
     List<Ticket> findOverdueTicketsAfterId(@Param("id") Long id, @Param("size") int size);
 }

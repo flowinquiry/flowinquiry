@@ -297,7 +297,7 @@ public class TicketServiceIT {
     }
 
     @Test
-    void shouldGetOverdueTicketSuccessfully(){
+    void shouldGetOverdueTicketSuccessfully() {
         List<TicketDTO> overdueTickets = ticketService.getAllOverdueTicketsAfterId(0L, 500);
         assertThat(overdueTickets).isNotNull();
     }
