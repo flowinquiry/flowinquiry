@@ -47,8 +47,9 @@ const FacetedFilterEmpty = CommandEmpty;
 
 const FacetedFilterGroup = CommandGroup;
 
-interface FacetedFilterItemProps
-  extends React.ComponentPropsWithoutRef<typeof CommandItem> {
+interface FacetedFilterItemProps extends React.ComponentPropsWithoutRef<
+  typeof CommandItem
+> {
   selected: boolean;
 }
 
