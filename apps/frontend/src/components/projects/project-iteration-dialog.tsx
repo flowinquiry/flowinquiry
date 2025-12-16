@@ -210,7 +210,7 @@ export function ProjectIterationDialog({
       let result: ProjectIterationDTO;
       result = await closeProjectIteration(iteration?.id!);
       onOpenChange(false);
-      
+
       onSave?.(result);
     } finally {
       setIsSubmitting(false);
@@ -237,7 +237,8 @@ export function ProjectIterationDialog({
           <form
             onSubmit={form.handleSubmit(handleSubmit)}
             className="space-y-6"
-            data-testid="iteration-form">
+            data-testid="iteration-form"
+          >
             <FormField
               control={form.control}
               name="name"
@@ -249,7 +250,7 @@ export function ProjectIterationDialog({
                   <FormControl>
                     <Input
                       placeholder={t.teams.projects.iteration(
-                        "form.name_place_holder"
+                        "form.name_place_holder",
                       )}
                       {...field}
                       data-testid="iteration-name-input"
@@ -289,7 +290,7 @@ export function ProjectIterationDialog({
                   <FormControl>
                     <Textarea
                       placeholder={t.teams.projects.iteration(
-                        "form.description_place_holder"
+                        "form.description_place_holder",
                       )}
                       {...field}
                       rows={3}
@@ -307,21 +308,24 @@ export function ProjectIterationDialog({
                 variant="outline"
                 onClick={onCancel}
                 disabled={isSubmitting}
-                data-testid="iteration-cancel-button">
+                data-testid="iteration-cancel-button"
+              >
                 {t.common.buttons("cancel")}
               </Button>
               <Button
                 type="button"
                 variant="secondary"
                 onClick={handleClose}
-                disabled={ iteration?.status !== "ACTIVE" ||isSubmitting}
-                data-testid="iteration-close-button">
+                disabled={iteration?.status !== "ACTIVE" || isSubmitting}
+                data-testid="iteration-close-button"
+              >
                 {t.common.buttons("close")}
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                data-testid="iteration-submit-button">
+                data-testid="iteration-submit-button"
+              >
                 {isSubmitting
                   ? isEditMode
                     ? t.common.buttons("saving")

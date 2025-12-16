@@ -146,8 +146,10 @@ const TicketDetailSheet: React.FC<TicketDetailsProps> = ({
     }
   };
 
-  interface TicketDTOWithStringDates
-    extends Omit<TicketDTO, "estimatedCompletionDate"> {
+  interface TicketDTOWithStringDates extends Omit<
+    TicketDTO,
+    "estimatedCompletionDate"
+  > {
     estimatedCompletionDate?: string | null;
   }
 
