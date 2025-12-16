@@ -26,6 +26,4 @@ public class TicketQueryParams {
 
     private String groupBy = "assignee";
     private boolean includeClosed = false;
-    private int limit = 50;
-    private int offSet = 0;
 }

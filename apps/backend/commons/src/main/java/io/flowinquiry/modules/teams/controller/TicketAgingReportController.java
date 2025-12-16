@@ -1,14 +1,13 @@
 package io.flowinquiry.modules.teams.controller;
 
-import io.flowinquiry.modules.teams.service.ReportsService;
-import io.flowinquiry.modules.teams.service.dto.TicketAgeingBucketDTO;
+import io.flowinquiry.modules.teams.service.TicketAgingReportService;
+import io.flowinquiry.modules.teams.service.dto.TicketAgingReportDTO;
 import io.flowinquiry.modules.teams.service.dto.TicketQueryParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,9 +17,9 @@ import org.springframework.web.bind.annotation.*;
 @Tag(
         name = "Project Reports Management",
         description = "API endpoints for fetching project reports")
-public class ReportsController {
+public class TicketAgingReportController {
 
-    private final ReportsService service;
+    private final TicketAgingReportService ticketAgingReportService;
 
     @Operation(
             summary = "Get ticket ageing reports by project ID",
@@ -33,8 +32,7 @@ public class ReportsController {
                         content = @Content(mediaType = "application/json")),
             })
     @GetMapping("/tickets/ageing")
-    public List<TicketAgeingBucketDTO> getAgeingTickets(
-            @ModelAttribute TicketQueryParams queryParams) {
-        return service.getAgeingTicketsReport(queryParams);
+    public TicketAgingReportDTO getAgeingTickets(@ModelAttribute TicketQueryParams queryParams) {
+        return ticketAgingReportService.getTicketAgingReport(queryParams);
     }
 }

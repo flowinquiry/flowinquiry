@@ -23,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
         authorities = {AuthoritiesConstants.ADMIN})
 @IntegrationTest
 @Transactional
-public class ReportsControllerIT {
+public class TicketAgingReportControllerIT {
 
     @Autowired private ObjectMapper om;
 
