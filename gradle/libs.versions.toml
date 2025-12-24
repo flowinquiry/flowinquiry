@@ -25,6 +25,7 @@ testcontainersVersion="0.9.2"
 postgres="42.7.7"
 springdocVersion="2.8.9"
 hypersistenceUtilsVersion="3.10.1"
+apache-poi = "5.2.3"
 
 [libraries]
 caffeine = {module="com.github.ben-manes.caffeine:caffeine", version.ref="caffeineVersion"}
@@ -61,6 +62,7 @@ postgres = { module = "org.postgresql:postgresql", version.ref = "postgres" }
 springdoc-openapi-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdocVersion" }
 springdoc-openapi-security = { module = "org.springdoc:springdoc-openapi-starter-common", version.ref = "springdocVersion" }
 hypersistence = {module = "io.hypersistence:hypersistence-utils-hibernate-63", version.ref="hypersistenceUtilsVersion"}
+apache-poi-ooxml = { module = "org.apache.poi:poi-ooxml", version.ref = "apache-poi" }
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "springbootVersion" }
