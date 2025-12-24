@@ -6,7 +6,9 @@ import com.fasterxml.jackson.annotation.JsonValue;
 /** Enum representing the available filter operators for query operations. */
 public enum FilterOperator {
     GT("gt"), // Greater Than
+    GTE("gte"), // Greater Than equals
     LT("lt"), // Less Than
+    LTE("lte"), // Less Than equals
     EQ("eq"), // Equals
     NE("ne"), // Not Equals
     LK("lk"), // Like
