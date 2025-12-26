@@ -111,6 +111,10 @@ public class QueryUtils {
                     return cb.greaterThan(join.get(targetField), (Comparable) value);
                 case LT:
                     return cb.lessThan(join.get(targetField), (Comparable) value);
+                case GTE:
+                    return cb.greaterThanOrEqualTo(join.get(targetField), (Comparable) value);
+                case LTE:
+                    return cb.lessThanOrEqualTo(join.get(targetField), (Comparable) value);
                 case EQ:
                     if (value == null) {
                         return cb.isNull(join.get(targetField));
@@ -170,6 +174,10 @@ public class QueryUtils {
                     return cb.greaterThan(root.get(field), (Comparable) typedValue);
                 case LT:
                     return cb.lessThan(root.get(field), (Comparable) typedValue);
+                case GTE:
+                    return cb.greaterThanOrEqualTo(root.get(field), (Comparable) typedValue);
+                case LTE:
+                    return cb.lessThanOrEqualTo(root.get(field), (Comparable) typedValue);
                 case EQ:
                     // Handle null values and type conversions for direct fields
                     if (value == null) {
@@ -265,7 +273,7 @@ public class QueryUtils {
             }
             // fallback
             return stringValue;
-        }
+        } else if (value instanceof List<?> list) return list;
 
         throw new IllegalArgumentException(
                 "Unsupported conversion from " + value.getClass() + " to " + targetType);
