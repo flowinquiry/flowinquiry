@@ -1,6 +1,8 @@
 package io.flowinquiry.modules.teams.controller;
 
+import io.flowinquiry.modules.shared.HttpHeaderConstants;
 import io.flowinquiry.modules.teams.service.ProjectEpicService;
+import io.flowinquiry.modules.teams.service.ProjectExportService;
 import io.flowinquiry.modules.teams.service.ProjectIterationService;
 import io.flowinquiry.modules.teams.service.ProjectService;
 import io.flowinquiry.modules.teams.service.dto.ProjectDTO;
@@ -15,17 +17,24 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.CacheControl;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -38,6 +47,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProjectController {
 
     private final ProjectService projectService;
+
+    private final ProjectExportService projectExportService;
 
     private final ProjectIterationService projectIterationService;
 
@@ -109,6 +120,71 @@ public class ProjectController {
                     Optional<QueryDTO> queryDTO,
             @Parameter(description = "Pagination information") Pageable pageable) {
         return projectService.findProjects(queryDTO, pageable);
+    }
+
+    @Operation(
+            summary = "Export projects",
+            description = "Exports projects to CSV or Excel based on Accept header")
+    @ApiResponses({
+        @ApiResponse(
+                responseCode = "200",
+                description = "Export projects as CSV or Excel",
+                content = {
+                    @Content(
+                            mediaType = "text/csv",
+                            schema = @Schema(type = "string", format = "binary")),
+                    @Content(
+                            mediaType =
+                                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            schema = @Schema(type = "string", format = "binary"))
+                }),
+        @ApiResponse(responseCode = "406", description = "Not acceptable unsupported Accept header")
+    })
+    @PostMapping(
+            value = "/export",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = {
+                "text/csv",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            })
+    public ResponseEntity<byte[]> exportProjects(
+            @RequestBody(required = false) Optional<QueryDTO> queryDTO,
+            Pageable pageable,
+            @RequestHeader(HttpHeaders.ACCEPT) String accept)
+            throws IOException {
+
+        Page<ProjectDTO> page = projectService.findProjects(queryDTO, pageable);
+
+        if (accept.contains(HttpHeaderConstants.CSV_MIME_TYPE)) {
+
+            byte[] csv = projectExportService.exportToCsv(page.getContent());
+
+            return buildFileResponseEntity(csv, "projects.csv", accept);
+        }
+
+        if (accept.contains(HttpHeaderConstants.EXCEL_MIME_TYPE)) {
+
+            byte[] xlsx = projectExportService.exportToXlsx(page.getContent());
+
+            return buildFileResponseEntity(xlsx, "projects.xlsx", accept);
+        }
+
+        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).build();
+    }
+
+    private ResponseEntity<byte[]> buildFileResponseEntity(
+            byte[] file, String filename, String mediaType) {
+
+        return ResponseEntity.ok()
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        String.format(HttpHeaderConstants.CONTENT_DISPOSITION_FILENAME, filename))
+                .cacheControl(CacheControl.noStore().noCache().mustRevalidate())
+                .header(HttpHeaders.PRAGMA, HttpHeaderConstants.PRAGMA_NO_CACHE)
+                .header(HttpHeaders.EXPIRES, HttpHeaderConstants.EXPIRES_IMMEDIATELY)
+                .contentType(MediaType.parseMediaType(mediaType))
+                .contentLength(file.length)
+                .body(file);
     }
 
     @Operation(
