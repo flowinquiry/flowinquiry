@@ -1,5 +1,6 @@
 package io.flowinquiry.modules.teams.controller;
 
+import io.flowinquiry.modules.shared.HttpHeaderConstants;
 import io.flowinquiry.modules.teams.service.ProjectEpicService;
 import io.flowinquiry.modules.teams.service.ProjectExportService;
 import io.flowinquiry.modules.teams.service.ProjectIterationService;
@@ -22,6 +23,7 @@ import java.util.Optional;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -150,44 +152,39 @@ public class ProjectController {
             Pageable pageable,
             @RequestHeader(HttpHeaders.ACCEPT) String accept)
             throws IOException {
+
         Page<ProjectDTO> page = projectService.findProjects(queryDTO, pageable);
 
-        if (accept.contains("text/csv")) {
-            System.out.println("Accept Header: in csv");
-            byte[] file = projectExportService.exportToCsv(page.getContent());
+        if (accept.contains(HttpHeaderConstants.CSV_MIME_TYPE)) {
 
-            return ResponseEntity.ok()
-                    .header(
-                            HttpHeaders.CONTENT_DISPOSITION,
-                            "attachment; filename=\"projects.csv\"")
-                    .header(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate")
-                    .header(HttpHeaders.PRAGMA, "no-cache")
-                    .header(HttpHeaders.EXPIRES, "0")
-                    .contentType(MediaType.parseMediaType("text/csv"))
-                    .contentLength(file.length)
-                    .body(file);
+            byte[] csv = projectExportService.exportToCsv(page.getContent());
+
+            return buildFileResponseEntity(csv, "projects.csv", accept);
         }
 
-        if (accept.contains("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
-            System.out.println("Accept Header: in excel");
+        if (accept.contains(HttpHeaderConstants.EXCEL_MIME_TYPE)) {
 
-            byte[] file = projectExportService.exportToXlsx(page.getContent());
+            byte[] xlsx = projectExportService.exportToXlsx(page.getContent());
 
-            return ResponseEntity.ok()
-                    .header(
-                            HttpHeaders.CONTENT_DISPOSITION,
-                            "attachment; filename=\"projects.xlsx\"")
-                    .header(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate")
-                    .header(HttpHeaders.PRAGMA, "no-cache")
-                    .header(HttpHeaders.EXPIRES, "0")
-                    .contentType(
-                            MediaType.parseMediaType(
-                                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
-                    .contentLength(file.length)
-                    .body(file);
+            return buildFileResponseEntity(xlsx, "projects.xlsx", accept);
         }
 
         return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).build();
+    }
+
+    private ResponseEntity<byte[]> buildFileResponseEntity(
+            byte[] file, String filename, String mediaType) {
+
+        return ResponseEntity.ok()
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        String.format(HttpHeaderConstants.CONTENT_DISPOSITION_FILENAME, filename))
+                .cacheControl(CacheControl.noStore().noCache().mustRevalidate())
+                .header(HttpHeaders.PRAGMA, HttpHeaderConstants.PRAGMA_NO_CACHE)
+                .header(HttpHeaders.EXPIRES, HttpHeaderConstants.EXPIRES_IMMEDIATELY)
+                .contentType(MediaType.parseMediaType(mediaType))
+                .contentLength(file.length)
+                .body(file);
     }
 
     @Operation(

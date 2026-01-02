@@ -32,7 +32,8 @@ dependencies {
     api(libs.postgres)
     api(libs.jhipster.framework)
     api(libs.apache.poi.ooxml)
-    
+    api(libs.opencsv)
+
     api project(":apps:backend:tools:liquibase")
 
 
