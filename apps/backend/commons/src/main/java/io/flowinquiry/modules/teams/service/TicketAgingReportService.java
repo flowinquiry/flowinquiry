@@ -184,11 +184,7 @@ public class TicketAgingReportService {
               .of(position -> ticketRepository.findAllWindowed(specification, sort, params.getLimit(), position))
               .startingAt(ScrollPosition.offset());
         tickets.forEachRemaining(ticket ->
-              incrementThroughputForPeriod(
-                    periods,
-                    throughputPerPeriod,
-                    ticket.getActualCompletionDate()
-              )
+              incrementThroughputForPeriod(ticket, periods, throughputPerPeriod)
         );
 
         return ThroughputReportDTO.builder()
@@ -198,6 +194,14 @@ public class TicketAgingReportService {
               .granularity(ThroughputReportDTO.Granularity.valueOf(params.getGranularity()))
               .data(throughputPerPeriod)
               .build();
+    }
+
+    private void incrementThroughputForPeriod(
+          Ticket ticket, List<Period> periods, Map<Period, ThroughputDTO> throughputPerPeriod) {
+        Optional<Period> matchingPeriod = findPeriodForTicket(periods, ticket.getActualCompletionDate());
+        matchingPeriod.ifPresent(period -> throughputPerPeriod
+              .get(period)
+              .incrementPeriodThroughput());
     }
 
     private void incrementThroughputForPeriod(
