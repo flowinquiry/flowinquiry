@@ -7,6 +7,7 @@ import io.flowinquiry.modules.teams.service.dto.TeamTicketPriorityDistributionDT
 import io.flowinquiry.modules.teams.service.dto.TicketActionCountByDateDTO;
 import io.flowinquiry.modules.teams.service.dto.TicketDistributionDTO;
 import io.flowinquiry.modules.usermanagement.service.dto.TicketStatisticsDTO;
+import io.flowinquiry.query.SliceSpecificationExecutor;
 import jakarta.persistence.QueryHint;
 import java.time.Instant;
 import java.util.List;
@@ -20,7 +21,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TicketRepository
-        extends JpaRepository<Ticket, Long>, JpaSpecificationExecutor<Ticket> {
+        extends JpaRepository<Ticket, Long>, SliceSpecificationExecutor<Ticket> {
 
     @EntityGraph(attributePaths = {"team", "requestUser", "assignUser", "workflow", "currentState"})
     Page<Ticket> findAll(Specification<Ticket> spec, Pageable pageable);
