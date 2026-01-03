@@ -7,6 +7,7 @@ import static io.flowinquiry.query.QueryUtils.createSpecification;
 import static java.util.Objects.nonNull;
 
 import io.flowinquiry.modules.teams.domain.Ticket;
+import io.flowinquiry.modules.teams.domain.Ticket_;
 import io.flowinquiry.modules.teams.repository.TicketRepository;
 import io.flowinquiry.modules.teams.service.dto.TicketAgingDTO;
 import io.flowinquiry.modules.teams.service.dto.TicketAgingReportDTO;
@@ -28,8 +29,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Window;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.support.WindowIterator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -174,24 +175,15 @@ public class TicketAgingReportService {
 
     @Transactional(readOnly = true)
     public ThroughputReportDTO getThroughputReport(TicketThroughputQueryParams params) {
+        List<Period> periods = generatePeriods(params.getFrom(), params.getTo(), params.getGranularity());
+        Map<Period, ThroughputDTO> throughputPerPeriod = initializeThroughputPerPeriod(periods);
+
         Specification<Ticket> specification = buildThroughputReportSpecification(params);
-        Window<Ticket> window = fetchFirstOrNextWindow(specification, ScrollPosition.offset(), params.getLimit());
-
-        List<Period> periods =
-              generatePeriods(params.getFrom(), params.getTo(), params.getGranularity());
-        Map<Period, ThroughputDTO> throughputPerPeriod = initialThroughputPerPeriod(periods);
-
-        do {
-            for (Ticket ticket : window) {
-                recordCompletedTicketToPeriod(periods, throughputPerPeriod, ticket);
-            }
-
-            if (isLastWindow(window)) {
-                break;
-            }
-
-            window = fetchFirstOrNextWindow(specification, window.positionAt(window.size() - 1), params.getLimit());
-        } while (!isLastWindow(window));
+        Sort sort = Sort.by(Sort.Direction.ASC, Ticket_.ID);
+        WindowIterator<Ticket> tickets = WindowIterator
+              .of(position -> ticketRepository.findAllWindowed(specification, sort, params.getLimit(), position))
+              .startingAt(ScrollPosition.offset());
+        tickets.forEachRemaining(ticket -> incrementThroughputForPeriod(periods, throughputPerPeriod, ticket));
 
         return ThroughputReportDTO.builder()
               .fromDate(params.getFrom())
@@ -202,28 +194,18 @@ public class TicketAgingReportService {
               .build();
     }
 
-    private void recordCompletedTicketToPeriod(
+    private void incrementThroughputForPeriod(
           List<Period> periods, Map<Period, ThroughputDTO> throughputPerPeriod, Ticket ticket) {
         findPeriodForTicket(periods, ticket.getActualCompletionDate())
-              .ifPresent(period -> throughputPerPeriod.get(period).incrementCompletedTickets());
+              .ifPresent(period -> throughputPerPeriod.get(period).incrementPeriodThroughput());
     }
 
-    private boolean isLastWindow(Window<Ticket> window) {
-        return window.isLast() || window.isEmpty();
-    }
-
-    private Window<Ticket> fetchFirstOrNextWindow(
-          Specification<Ticket> specification, ScrollPosition position, int limit) {
-        Sort sort = Sort.by(Sort.Direction.ASC, "id");
-        return ticketRepository.findAllWindowed(specification, sort, limit, position);
-    }
-
-    private Map<Period, ThroughputDTO> initialThroughputPerPeriod(
+    private Map<Period, ThroughputDTO> initializeThroughputPerPeriod(
           List<Period> periods) {
         Map<Period, ThroughputDTO> result = new LinkedHashMap<>();
         for (Period period : periods) {
             ThroughputDTO throughput = ThroughputDTO.builder()
-                  .totalCompletedTickets(0)
+                  .throughput(0)
                   .groupedTickets(new HashMap<>())
                   .build();
             result.put(period, throughput);

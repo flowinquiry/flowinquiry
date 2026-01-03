@@ -14,9 +14,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ThroughputDTO {
     private Map<String, List<Ticket>> groupedTickets;
-    private int totalCompletedTickets;
+    private int throughput;
 
-    public void incrementCompletedTickets() {
-        this.totalCompletedTickets++;
+    public void incrementPeriodThroughput() {
+        this.throughput++;
     }
 }
