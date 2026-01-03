@@ -183,8 +183,13 @@ public class TicketAgingReportService {
         WindowIterator<Ticket> tickets = WindowIterator
               .of(position -> ticketRepository.findAllWindowed(specification, sort, params.getLimit(), position))
               .startingAt(ScrollPosition.offset());
-        tickets.forEachRemaining(ticket -> incrementThroughputForPeriod(periods,
-              throughputPerPeriod, ticket.getActualCompletionDate()));
+        tickets.forEachRemaining(ticket ->
+              incrementThroughputForPeriod(
+                    periods,
+                    throughputPerPeriod,
+                    ticket.getActualCompletionDate()
+              )
+        );
 
         return ThroughputReportDTO.builder()
               .fromDate(params.getFrom())
