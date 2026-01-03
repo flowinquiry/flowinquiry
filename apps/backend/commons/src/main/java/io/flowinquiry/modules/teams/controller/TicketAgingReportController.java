@@ -42,7 +42,7 @@ public class TicketAgingReportController {
 
     @Operation(
           summary = "Get ticket throughput reports by project ID",
-          description = "Retrieves report of ageing tickets for a specific project")
+          description = "Retrieves report of throughput tickets for a specific project")
     @ApiResponses(
           value = {
                 @ApiResponse(
