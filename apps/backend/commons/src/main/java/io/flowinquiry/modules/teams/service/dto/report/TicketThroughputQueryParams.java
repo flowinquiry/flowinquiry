@@ -21,9 +21,9 @@ public class TicketThroughputQueryParams {
   @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
   private LocalDate to;
 
-  private String granularity = "week";
+  private String granularity;
 
-  private String groupBy = "none";
+  private String groupBy;
 
   private List<String> statuses;
 
