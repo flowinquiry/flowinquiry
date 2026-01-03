@@ -201,13 +201,13 @@ public class TicketAgingReportService {
         Optional<Period> matchingPeriod = findPeriodForTicket(periods, ticket.getActualCompletionDate());
         matchingPeriod.ifPresent(period -> throughputPerPeriod
               .get(period)
-              .incrementPeriodThroughput());
+              .incrementThroughput());
     }
 
     private void incrementThroughputForPeriod(
           List<Period> periods, Map<Period, ThroughputDTO> throughputPerPeriod, LocalDate ticketCompletionDate) {
         findPeriodForTicket(periods, ticketCompletionDate)
-              .ifPresent(period -> throughputPerPeriod.get(period).incrementPeriodThroughput());
+              .ifPresent(period -> throughputPerPeriod.get(period).incrementThroughput());
     }
 
     private Map<Period, ThroughputDTO> initializeThroughputPerPeriod(

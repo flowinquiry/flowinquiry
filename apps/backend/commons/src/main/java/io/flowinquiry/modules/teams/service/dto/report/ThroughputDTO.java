@@ -16,7 +16,7 @@ public class ThroughputDTO {
     private Map<String, List<Ticket>> groupedTickets;
     private int throughput;
 
-    public void incrementPeriodThroughput() {
+    public void incrementThroughput() {
         this.throughput++;
     }
 }
