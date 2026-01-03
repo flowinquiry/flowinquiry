@@ -204,12 +204,6 @@ public class TicketAgingReportService {
               .incrementThroughput());
     }
 
-    private void incrementPeriodThroughput(
-          List<Period> periods, Map<Period, ThroughputDTO> throughputPerPeriod, LocalDate ticketCompletionDate) {
-        findPeriodForTicket(periods, ticketCompletionDate)
-              .ifPresent(period -> throughputPerPeriod.get(period).incrementThroughput());
-    }
-
     private Map<Period, ThroughputDTO> initializeThroughputPerPeriod(
           List<Period> periods) {
         Map<Period, ThroughputDTO> result = new LinkedHashMap<>();
