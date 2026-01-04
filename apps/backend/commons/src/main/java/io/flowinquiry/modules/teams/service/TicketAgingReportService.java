@@ -196,20 +196,22 @@ public class TicketAgingReportService {
           List<Period> periods,
           Map<Period, ThroughputDTO> throughputPerPeriod
     ) {
-        Specification<Ticket> specification = buildThroughputSpecification(params);
-        Sort sort = Sort.by(Sort.Direction.ASC, Ticket_.ID);
-        WindowIterator<Ticket> tickets = WindowIterator
-              .of(position ->
-                ticketRepository.findAllWindowed(specification, sort, params.getLimit(), position)
-              )
-              .startingAt(ScrollPosition.offset());
+        WindowIterator<Ticket> tickets = fetchCompletedTickets(params);
+        tickets.forEachRemaining(ticket ->
+              findPeriodForTicket(periods, ticket.getActualCompletionDate())
+                    .ifPresent(period ->
+                          throughputPerPeriod.get(period).incrementThroughput()
+                    )
+        );
+    }
 
-        tickets.forEachRemaining(ticket -> {
-            Optional<Period> matchingPeriod =
-                  findPeriodForTicket(periods, ticket.getActualCompletionDate());
-            matchingPeriod.ifPresent(
-                  period -> throughputPerPeriod.get(period).incrementThroughput());
-        });
+    private WindowIterator<Ticket> fetchCompletedTickets(TicketThroughputQueryParams params) {
+        Specification<Ticket> spec = buildThroughputSpecification(params);
+        Sort sort = Sort.by(Sort.Direction.ASC, Ticket_.ID);
+
+        return WindowIterator
+              .of(pos -> ticketRepository.findAllWindowed(spec, sort, params.getLimit(), pos))
+              .startingAt(ScrollPosition.offset());
     }
 
     private Map<Period, ThroughputDTO> initializeThroughputPerPeriod(
