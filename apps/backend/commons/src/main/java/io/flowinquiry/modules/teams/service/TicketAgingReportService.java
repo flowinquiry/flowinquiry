@@ -180,14 +180,14 @@ public class TicketAgingReportService {
 
         Specification<Ticket> specification = buildThroughputReportSpecification(params);
         Sort sort = Sort.by(Sort.Direction.ASC, Ticket_.ID);
-        WindowIterator<Ticket> completedTickets = WindowIterator
+        WindowIterator<Ticket> tickets = WindowIterator
               .of(position -> ticketRepository.findAllWindowed(specification, sort, params.getLimit(), position))
               .startingAt(ScrollPosition.offset());
 
-        completedTickets.forEachRemaining(completedTicket -> {
-            Optional<Period> completedTicketPeriod = findPeriodForTicket(periods,
-                  completedTicket.getActualCompletionDate());
-            completedTicketPeriod.ifPresent(period -> throughputPerPeriod
+        tickets.forEachRemaining(ticket -> {
+            Optional<Period> matchingPeriod = findPeriodForTicket(periods,
+                  ticket.getActualCompletionDate());
+            matchingPeriod.ifPresent(period -> throughputPerPeriod
                   .get(period)
                   .incrementThroughput());
         });
