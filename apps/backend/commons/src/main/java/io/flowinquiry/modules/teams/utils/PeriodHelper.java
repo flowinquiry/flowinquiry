@@ -36,7 +36,7 @@ public class PeriodHelper {
         return Optional.empty();
     }
 
-    public static List<Period> generatePeriods(
+    public static List<Period> generatePeriodsBaseOnGranularity(
           LocalDate fromDate, LocalDate toDate, Granularity granularity) {
         List<Period> periods = new ArrayList<>();
 

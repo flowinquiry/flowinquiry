@@ -2,7 +2,7 @@ package io.flowinquiry.modules.teams.service;
 
 import static io.flowinquiry.modules.teams.repository.specifications.TicketSpecification.buildThroughputReportSpecification;
 import static io.flowinquiry.modules.teams.utils.PeriodHelper.findPeriodForTicket;
-import static io.flowinquiry.modules.teams.utils.PeriodHelper.generatePeriods;
+import static io.flowinquiry.modules.teams.utils.PeriodHelper.generatePeriodsBaseOnGranularity;
 import static io.flowinquiry.query.QueryUtils.createSpecification;
 import static java.util.Objects.nonNull;
 
@@ -12,8 +12,6 @@ import io.flowinquiry.modules.teams.repository.TicketRepository;
 import io.flowinquiry.modules.teams.service.dto.TicketAgingDTO;
 import io.flowinquiry.modules.teams.service.dto.TicketAgingReportDTO;
 import io.flowinquiry.modules.teams.service.dto.TicketQueryParams;
-import io.flowinquiry.modules.teams.service.dto.report.Granularity;
-import io.flowinquiry.modules.teams.service.dto.report.GroupBy;
 import io.flowinquiry.modules.teams.service.dto.report.Period;
 import io.flowinquiry.modules.teams.service.dto.report.ThroughputDTO;
 import io.flowinquiry.modules.teams.service.dto.report.ThroughputReportDTO;
@@ -177,7 +175,7 @@ public class TicketAgingReportService {
 
     @Transactional(readOnly = true)
     public ThroughputReportDTO getThroughputReport(TicketThroughputQueryParams params) {
-        List<Period> periods = generatePeriods(params.getFrom(), params.getTo(), params.getGranularity());
+        List<Period> periods = generatePeriodsBaseOnGranularity(params.getFrom(), params.getTo(), params.getGranularity());
         Map<Period, ThroughputDTO> throughputPerPeriod = initializeThroughputPerPeriod(periods);
 
         Specification<Ticket> specification = buildThroughputReportSpecification(params);

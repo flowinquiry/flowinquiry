@@ -96,11 +96,11 @@ class PeriodHelperTest {
     }
 
     @Test
-    void givenDateRangeWithinSingleMonth_whenGeneratePeriodsWithMonthGranularity_thenReturnOnePeriodWithExactBounds() {
+    void givenDateRangeWithinSingleMonth_whenGeneratePeriodsBaseOnGranularityWithMonthGranularity_thenReturnOnePeriodWithExactBounds() {
         LocalDate from = LocalDate.of(2024, 3, 5);
         LocalDate to = LocalDate.of(2024, 3, 20);
 
-        List<Period> periods = PeriodHelper.generatePeriods(from, to, Granularity.MONTH);
+        List<Period> periods = PeriodHelper.generatePeriodsBaseOnGranularity(from, to, Granularity.MONTH);
 
         assertEquals(1, periods.size());
 
@@ -111,11 +111,11 @@ class PeriodHelperTest {
     }
 
     @Test
-    void givenDateRangeAcrossMultipleMonths_whenGeneratePeriodsWithMonthGranularity_thenSplitIntoMonthlyPeriodsWithTrimmedEdges() {
+    void givenDateRangeAcrossMultipleMonths_whenGeneratePeriodsWithMonthGranularity_thenSplitIntoMonthlyPeriodsBaseOnGranularityWithTrimmedEdges() {
         LocalDate from = LocalDate.of(2024, 1, 15);
         LocalDate to = LocalDate.of(2024, 3, 10);
 
-        List<Period> periods = PeriodHelper.generatePeriods(from, to, Granularity.MONTH);
+        List<Period> periods = PeriodHelper.generatePeriodsBaseOnGranularity(from, to, Granularity.MONTH);
 
         assertEquals(3, periods.size());
 
@@ -130,11 +130,11 @@ class PeriodHelperTest {
     }
 
     @Test
-    void givenDateRangeAcrossMultipleYears_whenGeneratePeriodsWithYearGranularity_thenSplitIntoYearlyPeriodsWithTrimmedEdges() {
+    void givenDateRangeAcrossMultipleYears_whenGeneratePeriodsWithYearGranularity_thenSplitIntoYearlyPeriodsBaseOnGranularityWithTrimmedEdges() {
         LocalDate from = LocalDate.of(2022, 6, 1);
         LocalDate to = LocalDate.of(2024, 3, 15);
 
-        List<Period> periods = PeriodHelper.generatePeriods(from, to, Granularity.YEAR);
+        List<Period> periods = PeriodHelper.generatePeriodsBaseOnGranularity(from, to, Granularity.YEAR);
 
         assertEquals(3, periods.size());
 
@@ -149,13 +149,13 @@ class PeriodHelperTest {
     }
 
     @Test
-    void givenDateRangeWithinMonth_whenGeneratePeriodsWithWeekGranularity_thenReturnCorrectWeeklyPeriodsWithTrimmedBounds() {
+    void givenDateRangeWithinMonth_whenGeneratePeriodsWithWeekGranularity_thenReturnCorrectWeeklyPeriodsBaseOnGranularityWithTrimmedBounds() {
         // given
         LocalDate from = LocalDate.of(2024, 1, 3); // Wednesday
         LocalDate to = LocalDate.of(2024, 1, 21); // Sunday
 
         // when
-        List<Period> periods = PeriodHelper.generatePeriods(from, to, Granularity.WEEK);
+        List<Period> periods = PeriodHelper.generatePeriodsBaseOnGranularity(from, to, Granularity.WEEK);
 
         // then
         assertEquals(3, periods.size());
