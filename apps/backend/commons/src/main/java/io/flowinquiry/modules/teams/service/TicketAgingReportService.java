@@ -177,21 +177,11 @@ public class TicketAgingReportService {
     public ThroughputReportDTO getThroughputReport(TicketThroughputQueryParams params) {
         List<Period> periods = generatePeriods(params.getFrom(), params.getTo(), params.getGranularity());
         Map<Period, ThroughputDTO> throughputPerPeriod = initializeThroughputPerPeriod(periods);
+        countCompletedTicketsPerPeriod(params, periods, throughputPerPeriod);
+        return buildThroughputReport(params, throughputPerPeriod);
+    }
 
-        Specification<Ticket> specification = buildThroughputSpecification(params);
-        Sort sort = Sort.by(Sort.Direction.ASC, Ticket_.ID);
-        WindowIterator<Ticket> tickets = WindowIterator
-              .of(position -> ticketRepository.findAllWindowed(specification, sort, params.getLimit(), position))
-              .startingAt(ScrollPosition.offset());
-
-        tickets.forEachRemaining(ticket -> {
-            Optional<Period> matchingPeriod = findPeriodForTicket(periods,
-                  ticket.getActualCompletionDate());
-            matchingPeriod.ifPresent(period -> throughputPerPeriod
-                  .get(period)
-                  .incrementThroughput());
-        });
-
+    private ThroughputReportDTO buildThroughputReport(TicketThroughputQueryParams params, Map<Period, ThroughputDTO> throughputPerPeriod) {
         return ThroughputReportDTO.builder()
               .fromDate(params.getFrom())
               .toDate(params.getTo())
@@ -199,6 +189,27 @@ public class TicketAgingReportService {
               .granularity(params.getGranularity())
               .data(throughputPerPeriod)
               .build();
+    }
+
+    private void countCompletedTicketsPerPeriod(
+          TicketThroughputQueryParams params,
+          List<Period> periods,
+          Map<Period, ThroughputDTO> throughputPerPeriod
+    ) {
+        Specification<Ticket> specification = buildThroughputSpecification(params);
+        Sort sort = Sort.by(Sort.Direction.ASC, Ticket_.ID);
+        WindowIterator<Ticket> tickets = WindowIterator
+              .of(position ->
+                ticketRepository.findAllWindowed(specification, sort, params.getLimit(), position)
+              )
+              .startingAt(ScrollPosition.offset());
+
+        tickets.forEachRemaining(ticket -> {
+            Optional<Period> matchingPeriod =
+                  findPeriodForTicket(periods, ticket.getActualCompletionDate());
+            matchingPeriod.ifPresent(
+                  period -> throughputPerPeriod.get(period).incrementThroughput());
+        });
     }
 
     private Map<Period, ThroughputDTO> initializeThroughputPerPeriod(
