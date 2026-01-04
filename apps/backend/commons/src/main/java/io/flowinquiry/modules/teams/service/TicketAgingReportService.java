@@ -4,6 +4,7 @@ import static io.flowinquiry.modules.teams.repository.specifications.TicketSpeci
 import static io.flowinquiry.modules.teams.utils.PeriodHelper.findPeriodForTicket;
 import static io.flowinquiry.modules.teams.utils.PeriodHelper.generatePeriods;
 import static io.flowinquiry.query.QueryUtils.createSpecification;
+
 import static java.util.Objects.nonNull;
 
 import io.flowinquiry.modules.teams.domain.Ticket;
@@ -18,6 +19,17 @@ import io.flowinquiry.modules.teams.service.dto.report.ThroughputReportDTO;
 import io.flowinquiry.modules.teams.service.dto.report.TicketThroughputQueryParams;
 import io.flowinquiry.modules.teams.service.mapper.TicketMapper;
 import io.flowinquiry.query.*;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.data.domain.ScrollPosition;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.support.WindowIterator;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -25,14 +37,6 @@ import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.ScrollPosition;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.support.WindowIterator;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -177,11 +181,19 @@ public class TicketAgingReportService {
     public ThroughputReportDTO getThroughputReport(TicketThroughputQueryParams params) {
         List<Period> periods = generatePeriods(params.getFrom(), params.getTo(), params.getGranularity());
         Map<Period, ThroughputDTO> throughputPerPeriod = initializeThroughputPerPeriod(periods);
-        countCompletedTicketsPerPeriod(params, periods, throughputPerPeriod);
-        return buildThroughputReport(params, throughputPerPeriod);
-    }
 
-    private ThroughputReportDTO buildThroughputReport(TicketThroughputQueryParams params, Map<Period, ThroughputDTO> throughputPerPeriod) {
+        Specification<Ticket> spec = buildThroughputSpecification(params);
+        Sort sort = Sort.by(Sort.Direction.DESC, Ticket_.ID);
+
+        WindowIterator<Ticket> tickets = WindowIterator
+              .of(pos -> ticketRepository.findAllWindowed(spec, sort, params.getLimit(), pos))
+              .startingAt(ScrollPosition.offset());
+
+        tickets.forEachRemaining(ticket ->
+              findPeriodForTicket(periods, ticket.getActualCompletionDate())
+                    .ifPresent(period -> throughputPerPeriod.get(period).incrementThroughput())
+        );
+
         return ThroughputReportDTO.builder()
               .fromDate(params.getFrom())
               .toDate(params.getTo())
@@ -189,29 +201,6 @@ public class TicketAgingReportService {
               .granularity(params.getGranularity())
               .data(throughputPerPeriod)
               .build();
-    }
-
-    private void countCompletedTicketsPerPeriod(
-          TicketThroughputQueryParams params,
-          List<Period> periods,
-          Map<Period, ThroughputDTO> throughputPerPeriod
-    ) {
-        WindowIterator<Ticket> tickets = fetchCompletedTickets(params);
-        tickets.forEachRemaining(ticket ->
-              findPeriodForTicket(periods, ticket.getActualCompletionDate())
-                    .ifPresent(period ->
-                          throughputPerPeriod.get(period).incrementThroughput()
-                    )
-        );
-    }
-
-    private WindowIterator<Ticket> fetchCompletedTickets(TicketThroughputQueryParams params) {
-        Specification<Ticket> spec = buildThroughputSpecification(params);
-        Sort sort = Sort.by(Sort.Direction.ASC, Ticket_.ID);
-
-        return WindowIterator
-              .of(pos -> ticketRepository.findAllWindowed(spec, sort, params.getLimit(), pos))
-              .startingAt(ScrollPosition.offset());
     }
 
     private Map<Period, ThroughputDTO> initializeThroughputPerPeriod(
