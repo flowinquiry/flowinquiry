@@ -1,6 +1,6 @@
 package io.flowinquiry.modules.teams.service;
 
-import static io.flowinquiry.modules.teams.repository.specifications.TicketSpecification.buildThroughputReportSpecification;
+import static io.flowinquiry.modules.teams.repository.specifications.TicketSpecification.buildThroughputSpecification;
 import static io.flowinquiry.modules.teams.utils.PeriodHelper.findPeriodForTicket;
 import static io.flowinquiry.modules.teams.utils.PeriodHelper.generatePeriods;
 import static io.flowinquiry.query.QueryUtils.createSpecification;
@@ -178,7 +178,7 @@ public class TicketAgingReportService {
         List<Period> periods = generatePeriods(params.getFrom(), params.getTo(), params.getGranularity());
         Map<Period, ThroughputDTO> throughputPerPeriod = initializeThroughputPerPeriod(periods);
 
-        Specification<Ticket> specification = buildThroughputReportSpecification(params);
+        Specification<Ticket> specification = buildThroughputSpecification(params);
         Sort sort = Sort.by(Sort.Direction.ASC, Ticket_.ID);
         WindowIterator<Ticket> tickets = WindowIterator
               .of(position -> ticketRepository.findAllWindowed(specification, sort, params.getLimit(), position))

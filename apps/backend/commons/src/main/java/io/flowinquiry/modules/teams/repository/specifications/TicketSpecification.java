@@ -22,7 +22,7 @@ import org.springframework.data.jpa.domain.Specification;
 @UtilityClass
 public class TicketSpecification {
 
-    public static Specification<Ticket> buildThroughputReportSpecification(
+    public static Specification<Ticket> buildThroughputSpecification(
           TicketThroughputQueryParams queryParams) {
         List<Filter> filters = new ArrayList<>();
         filters.add(new Filter("project.id", FilterOperator.EQ, queryParams.getProjectId()));
