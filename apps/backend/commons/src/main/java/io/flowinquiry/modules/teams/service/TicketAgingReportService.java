@@ -23,6 +23,7 @@ import io.flowinquiry.query.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -182,13 +183,7 @@ public class TicketAgingReportService {
         List<Period> periods = generatePeriods(params.getFrom(), params.getTo(), params.getGranularity());
         Map<Period, ThroughputDTO> throughputPerPeriod = initializeThroughputPerPeriod(periods);
 
-        Specification<Ticket> spec = buildThroughputSpecification(params);
-        Sort sort = Sort.by(Sort.Direction.DESC, Ticket_.ID);
-
-        WindowIterator<Ticket> tickets = WindowIterator
-              .of(pos -> ticketRepository.findAllWindowed(spec, sort, params.getLimit(), pos))
-              .startingAt(ScrollPosition.offset());
-
+        WindowIterator<Ticket> tickets = retrieveCompletedTickets(params);
         tickets.forEachRemaining(ticket ->
               findPeriodForTicket(periods, ticket.getActualCompletionDate())
                     .ifPresent(period -> throughputPerPeriod.get(period).incrementThroughput())
@@ -201,6 +196,14 @@ public class TicketAgingReportService {
               .granularity(params.getGranularity())
               .data(throughputPerPeriod)
               .build();
+    }
+
+    private WindowIterator<Ticket> retrieveCompletedTickets(TicketThroughputQueryParams params) {
+        Specification<Ticket> spec = buildThroughputSpecification(params);
+        Sort sort = Sort.by(Sort.Direction.DESC, Ticket_.ID);
+        return WindowIterator
+              .of(pos -> ticketRepository.findAllWindowed(spec, sort, params.getLimit(), pos))
+              .startingAt(ScrollPosition.offset());
     }
 
     private Map<Period, ThroughputDTO> initializeThroughputPerPeriod(
