@@ -7,16 +7,12 @@ import java.io.OutputStreamWriter;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import org.springframework.stereotype.Component;
 
+@Component
 public class CsvExporter<T> {
 
-    private final Class<T> type;
-
-    public CsvExporter(Class<T> type) {
-        this.type = type;
-    }
-
-    public byte[] export(List<T> data) {
+    public byte[] export(List<T> data, Class<T> type) {
         if (data == null || data.isEmpty()) {
             return new byte[0];
         }

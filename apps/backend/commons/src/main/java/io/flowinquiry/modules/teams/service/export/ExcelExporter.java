@@ -6,16 +6,12 @@ import java.lang.reflect.Field;
 import java.util.List;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ExcelExporter<T> {
 
-    private final Class<T> type;
-
-    public ExcelExporter(Class<T> type) {
-        this.type = type;
-    }
-
-    public byte[] export(List<T> data, String sheetName) {
+    public byte[] export(List<T> data, String sheetName, Class<T> type) {
         if (data == null || data.isEmpty()) {
             return new byte[0];
         }
