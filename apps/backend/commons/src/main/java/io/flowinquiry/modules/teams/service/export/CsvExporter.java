@@ -10,9 +10,9 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CsvExporter<T> {
+public class CsvExporter {
 
-    public byte[] export(List<T> data, Class<T> type) {
+    public <T> byte[] export(List<T> data, Class<T> type) {
         if (data == null || data.isEmpty()) {
             return new byte[0];
         }

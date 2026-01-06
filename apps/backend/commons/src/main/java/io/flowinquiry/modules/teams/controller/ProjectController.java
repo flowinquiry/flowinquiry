@@ -2,13 +2,13 @@ package io.flowinquiry.modules.teams.controller;
 
 import io.flowinquiry.modules.shared.HttpHeaderConstants;
 import io.flowinquiry.modules.teams.service.ProjectEpicService;
+import io.flowinquiry.modules.teams.service.ProjectExportService;
 import io.flowinquiry.modules.teams.service.ProjectIterationService;
 import io.flowinquiry.modules.teams.service.ProjectService;
+import io.flowinquiry.modules.teams.service.dto.ExportDataDTO;
 import io.flowinquiry.modules.teams.service.dto.ProjectDTO;
 import io.flowinquiry.modules.teams.service.dto.ProjectEpicDTO;
 import io.flowinquiry.modules.teams.service.dto.ProjectIterationDTO;
-import io.flowinquiry.modules.teams.service.dto.ExportDataDTO;
-import io.flowinquiry.modules.teams.service.ProjectExportService;
 import io.flowinquiry.query.QueryDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -155,13 +155,12 @@ public class ProjectController {
             throws IOException {
 
         ExportDataDTO exportData = projectExportService.export(queryDTO, pageable, accept);
-        
-        if(exportData!=null){
-                return buildFileResponseEntity(exportData.getData(), exportData.getFileName(), accept);
+
+        if (exportData != null) {
+            return buildFileResponseEntity(exportData.getData(), exportData.getFileName(), accept);
         }
 
         return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).build();
-
     }
 
     private ResponseEntity<byte[]> buildFileResponseEntity(

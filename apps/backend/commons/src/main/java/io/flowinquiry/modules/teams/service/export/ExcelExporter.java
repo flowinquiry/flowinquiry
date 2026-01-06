@@ -9,9 +9,9 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ExcelExporter<T> {
+public class ExcelExporter {
 
-    public byte[] export(List<T> data, String sheetName, Class<T> type) {
+    public <T> byte[] export(List<T> data, String sheetName, Class<T> type) {
         if (data == null || data.isEmpty()) {
             return new byte[0];
         }
