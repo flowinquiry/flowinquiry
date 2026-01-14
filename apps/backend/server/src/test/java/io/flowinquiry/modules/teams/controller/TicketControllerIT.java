@@ -15,12 +15,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.flowinquiry.it.IntegrationTest;
 import io.flowinquiry.it.WithMockFwUser;
 import io.flowinquiry.modules.teams.domain.Project;
+import io.flowinquiry.modules.teams.domain.ProjectIteration;
 import io.flowinquiry.modules.teams.domain.TShirtSize;
 import io.flowinquiry.modules.teams.domain.Team;
 import io.flowinquiry.modules.teams.domain.Ticket;
 import io.flowinquiry.modules.teams.domain.TicketChannel;
 import io.flowinquiry.modules.teams.domain.TicketPriority;
 import io.flowinquiry.modules.teams.domain.WorkflowState;
+import io.flowinquiry.modules.teams.repository.ProjectIterationRepository;
 import io.flowinquiry.modules.teams.repository.ProjectRepository;
 import io.flowinquiry.modules.teams.repository.TeamRepository;
 import io.flowinquiry.modules.teams.repository.TicketRepository;
@@ -35,6 +37,7 @@ import io.flowinquiry.query.Filter;
 import io.flowinquiry.query.FilterOperator;
 import io.flowinquiry.query.QueryDTO;
 import jakarta.persistence.EntityManager;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -87,6 +90,7 @@ public class TicketControllerIT {
     @Autowired private MockMvc restTicketMockMvc;
 
     @Autowired private ObjectMapper om;
+    @Autowired private ProjectIterationRepository projectIterationRepository;
 
     private Ticket ticket;
     private Team team;
@@ -128,6 +132,47 @@ public class TicketControllerIT {
         ticket.setWorkflow(workflowState.getWorkflow());
 
         return ticket;
+    }
+
+    @Test
+    @Transactional
+    void totalStoryPointsShouldUpdate() {
+        ProjectIteration projectIteration = new ProjectIteration();
+        projectIteration.setProject(project);
+        projectIteration.setName("Test iteration");
+        projectIteration.setDescription("testing");
+        projectIteration.setStartDate(Instant.now());
+        projectIteration.setEndDate(Instant.now());
+
+        projectIteration = projectIterationRepository.saveAndFlush(projectIteration);
+
+        Ticket ticket1 = createEntity(em);
+        ticket1.setIteration(projectIteration);
+        ticket1.setEstimate(3);
+        ticketRepository.saveAndFlush(ticket1);
+
+        Ticket ticket2 = createEntity(em);
+        ticket2.setIteration(projectIteration);
+        ticket2.setEstimate(5);
+        ticketRepository.saveAndFlush(ticket2);
+
+        em.refresh(projectIteration);
+        // adding new tickets should update the total story points
+        assertThat(projectIteration.getTotalStoryPoints()).isEqualTo(8L);
+
+        // updating the ticket estimate should update the total story points
+        ticket1.setEstimate(10);
+        ticketRepository.saveAndFlush(ticket1);
+
+        em.refresh(projectIteration);
+        assertThat(projectIteration.getTotalStoryPoints()).isEqualTo(15L);
+
+        // updating the ticket estimate should update the total story points
+        ticket1.setDeleted(true);
+        ticketRepository.saveAndFlush(ticket1);
+
+        em.refresh(projectIteration);
+        assertThat(projectIteration.getTotalStoryPoints()).isEqualTo(5L);
     }
 
     @Test
