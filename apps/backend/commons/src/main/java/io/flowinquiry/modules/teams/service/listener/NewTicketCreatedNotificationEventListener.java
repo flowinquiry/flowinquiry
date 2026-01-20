@@ -1,6 +1,6 @@
 package io.flowinquiry.modules.teams.service.listener;
 
-import static io.flowinquiry.modules.shared.domain.EventPayloadType.NEW_TICKET;
+import static io.flowinquiry.modules.shared.domain.EventPayloadType.NOTIFICATION;
 import static io.flowinquiry.modules.teams.utils.PathUtils.buildTicketPath;
 import static j2html.TagCreator.a;
 import static j2html.TagCreator.p;
@@ -84,7 +84,8 @@ public class NewTicketCreatedNotificationEventListener {
 
         List<Notification> savedNotifications = notificationRepository.saveAll(notifications);
         for (Notification notification : savedNotifications) {
-            sseController.sendEventToUser(notification.getUser().getId(), NEW_TICKET, notification);
+            sseController.sendEventToUser(
+                    notification.getUser().getId(), NOTIFICATION, notification);
         }
 
         ActivityLog activityLog =

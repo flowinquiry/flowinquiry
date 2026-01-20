@@ -1,4 +1,5 @@
 import { fixupPluginRules } from "@eslint/compat";
+import typescriptEslint from "@typescript-eslint/eslint-plugin";
 import typescriptParser from "@typescript-eslint/parser";
 import reactHooksPlugin from "eslint-plugin-react-hooks";
 // import pluginReact from "eslint-plugin-react";
@@ -11,8 +12,9 @@ import globals from "globals";
 export default [
   {
     files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"],
-    ignores: [".next", ".next/**"],
+    ignores: [".next", ".next/**", "node_modules", "node_modules/**"],
     plugins: {
+      "@typescript-eslint": typescriptEslint,
       "unused-imports": unusedImports,
       "simple-import-sort": simpleImportSort,
       "react-hooks": fixupPluginRules(reactHooksPlugin),

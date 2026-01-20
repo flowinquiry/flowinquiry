@@ -139,4 +139,19 @@ public final class SecurityUtils {
     private static Stream<String> getAuthorities(Authentication authentication) {
         return authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority);
     }
+
+    /**
+     * Get the user ID from the authentication object.
+     *
+     * @param authentication the authentication object
+     * @return the user ID if present
+     */
+    public static Optional<Long> getUserId(Authentication authentication) {
+        if (authentication == null) {
+            return Optional.empty();
+        }
+
+        UserKey userKey = extractPrincipal(authentication);
+        return Optional.ofNullable(userKey).map(UserKey::getId);
+    }
 }

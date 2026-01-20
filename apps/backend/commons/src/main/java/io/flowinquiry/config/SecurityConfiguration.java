@@ -64,6 +64,8 @@ public class SecurityConfiguration {
                                         .permitAll()
                                         .requestMatchers(HttpMethod.GET, "/api/projects/{id}")
                                         .permitAll()
+                                        .requestMatchers(HttpMethod.GET, "/sse/**")
+                                        .permitAll()
                                         .requestMatchers("/api/admin/**")
                                         .hasAuthority(AuthoritiesConstants.ADMIN)
                                         .requestMatchers("/api/**")

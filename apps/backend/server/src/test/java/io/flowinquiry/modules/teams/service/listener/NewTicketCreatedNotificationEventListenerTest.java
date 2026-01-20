@@ -1,6 +1,6 @@
 package io.flowinquiry.modules.teams.service.listener;
 
-import static io.flowinquiry.modules.shared.domain.EventPayloadType.NEW_TICKET;
+import static io.flowinquiry.modules.shared.domain.EventPayloadType.NOTIFICATION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
@@ -216,7 +216,7 @@ public class NewTicketCreatedNotificationEventListenerTest {
         }
 
         verify(sseController, times(2))
-                .sendEventToUser(anyLong(), eq(NEW_TICKET), any(Notification.class));
+                .sendEventToUser(anyLong(), eq(NOTIFICATION), any(Notification.class));
 
         ArgumentCaptor<ActivityLog> activityLogCaptor = ArgumentCaptor.forClass(ActivityLog.class);
         verify(activityLogRepository).save(activityLogCaptor.capture());
