@@ -28,8 +28,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import useSSE from "@/hooks/use-sse";
 import { useAppClientTranslations } from "@/hooks/use-translations";
-import useWebSocket from "@/hooks/use-websocket";
 import {
   getUnReadNotificationsByUserId,
   markNotificationsAsRead,
@@ -52,7 +52,7 @@ const NotificationsDropdown = () => {
     return [];
   });
 
-  const { notifications: notificationsSocket } = useWebSocket();
+  const { notifications: notificationsSSE } = useSSE();
 
   useEffect(() => {
     async function fetchNotifications() {
@@ -79,23 +79,23 @@ const NotificationsDropdown = () => {
   }, [session, setError]);
 
   useEffect(() => {
-    if (notificationsSocket.length > 0) {
-      notificationsSocket.forEach((notification) => {
+    if (notificationsSSE.length > 0) {
+      notificationsSSE.forEach((notification) => {
         toast.info(notification.content);
       });
 
       setNotifications((prev) => {
         const updated = [
-          ...notificationsSocket,
+          ...notificationsSSE,
           ...prev.filter(
-            (n) => !notificationsSocket.some((socketN) => socketN.id === n.id),
+            (n) => !notificationsSSE.some((sseN) => sseN.id === n.id),
           ),
         ];
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
         return updated;
       });
     }
-  }, [notificationsSocket, toast]);
+  }, [notificationsSSE]);
 
   useEffect(() => {
     const handleVisibilityChange = () => {
