@@ -11,7 +11,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import TruncatedHtmlLabel from "@/components/shared/truncate-html-label";
@@ -54,6 +54,9 @@ const NotificationsDropdown = () => {
 
   const { notifications: notificationsSSE } = useSSE();
 
+  // Track which SSE notifications we've already processed to avoid duplicates
+  const processedSSEIds = useRef(new Set<number>());
+
   useEffect(() => {
     async function fetchNotifications() {
       if (!session?.user?.id) return;
@@ -78,23 +81,35 @@ const NotificationsDropdown = () => {
     fetchNotifications();
   }, [session, setError]);
 
+  // Handle new SSE notifications - show toast and update state
   useEffect(() => {
-    if (notificationsSSE.length > 0) {
-      notificationsSSE.forEach((notification) => {
-        toast.info(notification.content);
-      });
+    if (notificationsSSE.length === 0) return;
 
-      setNotifications((prev) => {
-        const updated = [
-          ...notificationsSSE,
-          ...prev.filter(
-            (n) => !notificationsSSE.some((sseN) => sseN.id === n.id),
-          ),
-        ];
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
-        return updated;
-      });
-    }
+    // Filter out notifications we've already processed
+    const newNotifications = notificationsSSE.filter(
+      (n) => n.id && !processedSSEIds.current.has(n.id),
+    );
+
+    if (newNotifications.length === 0) return;
+
+    // Mark these notifications as processed
+    newNotifications.forEach((n) => {
+      if (n.id) processedSSEIds.current.add(n.id);
+      // Show toast for new notifications only
+      toast.info(n.content);
+    });
+
+    // Update state with new notifications
+    setNotifications((prev) => {
+      const updated = [
+        ...newNotifications,
+        ...prev.filter(
+          (n) => !newNotifications.some((newN) => newN.id === n.id),
+        ),
+      ];
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+      return updated;
+    });
   }, [notificationsSSE]);
 
   useEffect(() => {

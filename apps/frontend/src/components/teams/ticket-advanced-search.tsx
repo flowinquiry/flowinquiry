@@ -14,7 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -85,9 +85,6 @@ const TicketAdvancedSearch: React.FC<TicketAdvancedSearchProps> = ({
     from: undefined,
     to: undefined,
   });
-  const [activeFilterCount, setActiveFilterCount] = useState<number>(
-    statuses?.length || 0,
-  );
 
   // Add internal search state for immediate input update
   const [internalSearchText, setInternalSearchText] =
@@ -152,54 +149,8 @@ const TicketAdvancedSearch: React.FC<TicketAdvancedSearchProps> = ({
     };
   }, []);
 
-  useEffect(() => {
-    // Build and send the initial query when component mounts
-    buildQueryDTO();
-  }, []); // Empty dependency array ensures this runs only once on mount
-
-  // Update count of active filters and build query
-  useEffect(() => {
-    let count = 0;
-    if (statuses?.length > 0) count += 1;
-    if (priority !== "") count += 1;
-    if (assignee !== "") count += 1;
-    if (dateRange.from || dateRange.to) count += 1;
-
-    setActiveFilterCount(count);
-
-    buildQueryDTO();
-  }, [statuses, priority, assignee, dateRange, searchText]);
-
-  // Status toggle handler
-  const toggleStatus = (status: string): void => {
-    if (!statuses) {
-      setStatuses([status]);
-      return;
-    }
-
-    if (statuses.includes(status)) {
-      if (statuses.length === 1) return;
-      setStatuses(statuses.filter((s) => s !== status));
-    } else {
-      setStatuses([...statuses, status]);
-    }
-  };
-
-  // Clear all filters
-  const clearFilters = (): void => {
-    setStatuses(["New", "Assigned"]);
-    setPriority("");
-    setAssignee("");
-    setDateRange({ from: undefined, to: undefined });
-    setInternalSearchText("");
-    setSearchText("");
-    if (searchDebounceTimer.current) {
-      clearTimeout(searchDebounceTimer.current);
-    }
-  };
-
   // Build QueryDTO from all filters
-  const buildQueryDTO = (): QueryDTO => {
+  const buildQueryDTO = useCallback((): QueryDTO => {
     const groups: GroupFilter[] = [];
 
     // Status filters - retain original logic but make it clearer
@@ -341,6 +292,57 @@ const TicketAdvancedSearch: React.FC<TicketAdvancedSearchProps> = ({
 
     onFilterChange(queryDTO);
     return queryDTO;
+  }, [
+    statuses,
+    priority,
+    assignee,
+    dateRange,
+    searchText,
+    session?.user?.id,
+    onFilterChange,
+  ]);
+
+  useEffect(() => {
+    // Build and send the initial query when component mounts
+    buildQueryDTO();
+  }, [buildQueryDTO]); // Include buildQueryDTO in dependencies
+
+  // Compute active filter count from current state
+  const activeFilterCount = (() => {
+    let count = 0;
+    if (statuses?.length > 0) count += 1;
+    if (priority !== "") count += 1;
+    if (assignee !== "") count += 1;
+    if (dateRange.from || dateRange.to) count += 1;
+    return count;
+  })();
+
+  // Status toggle handler
+  const toggleStatus = (status: string): void => {
+    if (!statuses) {
+      setStatuses([status]);
+      return;
+    }
+
+    if (statuses.includes(status)) {
+      if (statuses.length === 1) return;
+      setStatuses(statuses.filter((s) => s !== status));
+    } else {
+      setStatuses([...statuses, status]);
+    }
+  };
+
+  // Clear all filters
+  const clearFilters = (): void => {
+    setStatuses(["New", "Assigned"]);
+    setPriority("");
+    setAssignee("");
+    setDateRange({ from: undefined, to: undefined });
+    setInternalSearchText("");
+    setSearchText("");
+    if (searchDebounceTimer.current) {
+      clearTimeout(searchDebounceTimer.current);
+    }
   };
 
   return (
@@ -473,7 +475,6 @@ const TicketAdvancedSearch: React.FC<TicketAdvancedSearchProps> = ({
                             to: range?.to,
                           });
                         }}
-                        initialFocus
                       />
                       <div className="flex items-center gap-2 p-3 border-t">
                         <Button

@@ -121,9 +121,13 @@ export const { handlers, auth } = NextAuth({
           console.error(
             `Error to get the jwt token from backend ${JSON.stringify(error)}`,
           );
+          const errorDetails =
+            error && typeof error === "object" && "details" in error
+              ? (error as { details?: string }).details
+              : undefined;
           session.error =
-            "Social login token exchange failed: " + (error as any)?.details ||
-            "Unknown error";
+            "Social login token exchange failed: " +
+            (errorDetails || "Unknown error");
         }
       }
 

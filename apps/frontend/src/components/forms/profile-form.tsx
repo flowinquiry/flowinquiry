@@ -74,7 +74,6 @@ export const ProfileForm = () => {
     session?.user?.imageUrl,
   );
 
-  const [user, setUser] = useState<UserTypeWithFile | undefined>(undefined);
   const { setError } = useError();
   const [isConfirmationOpen, setConfirmationOpen] = useState(false);
   const [isPasswordDialogOpen, setPasswordDialogOpen] = useState(false);
@@ -82,14 +81,6 @@ export const ProfileForm = () => {
     currentPassword: false,
     newPassword: false,
   });
-
-  // For session synchronization
-  useEffect(() => {
-    // Initialize avatarUrl from session when component mounts or session changes
-    if (session?.user?.imageUrl) {
-      setAvatarUrl(session.user.imageUrl);
-    }
-  }, []); // Only run on mount
 
   const onSubmit = async (data: UserTypeWithFile) => {
     const formData = new FormData();
@@ -112,8 +103,9 @@ export const ProfileForm = () => {
         // Get the base URL without any query parameters
         const baseImageUrl = updatedUser.imageUrl.split("?")[0];
 
-        // Create a cache-busting URL
-        const cacheBustedUrl = `${baseImageUrl}?v=${Date.now()}`;
+        // Create a cache-busting URL with timestamp
+        const timestamp = new Date().getTime();
+        const cacheBustedUrl = `${baseImageUrl}?v=${timestamp}`;
 
         // Update our local state immediately for the UI
         setAvatarUrl(cacheBustedUrl);
@@ -127,15 +119,8 @@ export const ProfileForm = () => {
             imageUrl: cacheBustedUrl,
           },
         });
-
-        // This is a backup approach if the update isn't working
-        // Force a page refresh after a short delay to ensure session gets the new imageUrl
-        // Uncomment this if you're still having issues
-        // setTimeout(() => {
-        //   router.refresh();
-        // }, 500);
-      } catch (error) {
-        console.error("Error updating avatar:", error);
+      } catch {
+        console.error("Error updating avatar");
       }
     } else {
       // If no new avatar, just update the session normally
@@ -153,22 +138,10 @@ export const ProfileForm = () => {
       await changePassword(data.currentPassword, data.newPassword, setError);
       setPasswordDialogOpen(false);
       setConfirmationOpen(true);
-    } catch (error) {
+    } catch {
       toast.error("Can not change the password");
     }
   };
-
-  useEffect(() => {
-    async function loadUserInfo() {
-      const userData = await findUserById(Number(session?.user?.id), setError);
-      setUser({ ...userData, file: undefined });
-
-      if (userData) {
-        form.reset(userData);
-      }
-    }
-    loadUserInfo();
-  }, []);
 
   const form = useForm<UserTypeWithFile>({
     resolver: zodResolver(userSchemaWithFile),
@@ -177,6 +150,17 @@ export const ProfileForm = () => {
   const passwordForm = useForm<z.infer<typeof passwordSchema>>({
     resolver: zodResolver(passwordSchema),
   });
+
+  useEffect(() => {
+    async function loadUserInfo() {
+      const userData = await findUserById(Number(session?.user?.id), setError);
+
+      if (userData) {
+        form.reset(userData);
+      }
+    }
+    loadUserInfo();
+  }, [session?.user?.id, setError, form]);
 
   return (
     <div

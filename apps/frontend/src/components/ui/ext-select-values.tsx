@@ -1,4 +1,5 @@
 import React from "react";
+import { FieldValues, Path, UseFormReturn } from "react-hook-form";
 
 import {
   FormControl,
@@ -16,26 +17,26 @@ import {
 } from "@/components/ui/select";
 import { UiAttributes } from "@/types/ui-components";
 
-interface ValuesSelectProps {
-  form: any;
+interface ValuesSelectProps<T extends FieldValues = FieldValues> {
+  form: UseFormReturn<T>;
   fieldName: string;
   values: Array<string>;
   label: string;
   placeholder: string;
 }
 
-const ValuesSelect = ({
+const ValuesSelect = <T extends FieldValues = FieldValues>({
   form,
   fieldName,
   label,
-  placeholder,
+  placeholder: _placeholder,
   values,
   required,
-}: ValuesSelectProps & UiAttributes) => {
+}: ValuesSelectProps<T> & UiAttributes) => {
   return (
     <FormField
       control={form.control}
-      name={fieldName}
+      name={fieldName as Path<T>}
       render={({ field }) => (
         <FormItem>
           <FormLabel>

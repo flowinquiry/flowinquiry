@@ -43,8 +43,13 @@ function ActivationContent() {
   const searchParams = useSearchParams();
   const keyParam = searchParams.get("key");
 
-  const [status, setStatus] = useState("loading"); // 'loading', 'success', 'error'
-  const [errorMessage, setErrorMessage] = useState("");
+  const [status, setStatus] = useState(() => {
+    // Initialize status based on keyParam availability
+    return keyParam ? "loading" : "error";
+  });
+  const [errorMessage, setErrorMessage] = useState(() => {
+    return keyParam ? "" : "Activation key is missing.";
+  });
   const { setError } = useError();
 
   const form = useForm<FormData>({
@@ -79,13 +84,14 @@ function ActivationContent() {
     router.push("/login");
   };
 
+  // Handle password reset when form is submitted
   useEffect(() => {
     if (status === "submitted" && keyParam) {
       const activateUser = async (key: string) => {
         try {
           await passwordReset(key, form.getValues("password"), setError);
           setStatus("success");
-        } catch (error) {
+        } catch {
           setErrorMessage(
             "An unexpected error occurred. Please retry again later.",
           );
@@ -93,13 +99,10 @@ function ActivationContent() {
         }
       };
       activateUser(keyParam);
-    } else if (!keyParam) {
-      setErrorMessage("Activation key is missing.");
-      setStatus("error");
     }
-  }, [status, keyParam, form]);
+  }, [status, keyParam, form, setError]);
 
-  const handleSubmit = (data: FormData) => {
+  const handleSubmit = () => {
     setStatus("submitted");
   };
 

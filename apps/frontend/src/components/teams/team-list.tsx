@@ -73,11 +73,11 @@ export const TeamList = () => {
     if (teamSearchTerm) {
       filters.push({ field: "name", operator: "lk", value: teamSearchTerm });
     }
-    if (filterUserTeamsOnly) {
+    if (filterUserTeamsOnly && session?.user?.id) {
       filters.push({
         field: "users.id",
         operator: "eq",
-        value: Number(session?.user?.id!),
+        value: Number(session.user.id),
       });
     }
 
@@ -94,7 +94,7 @@ export const TeamList = () => {
   };
 
   // **Use SWR to Fetch Data**
-  const { data, error, isLoading, mutate } = useSWR(
+  const { data, isLoading, mutate } = useSWR(
     [
       `/api/teams`,
       teamSearchTerm,
@@ -302,10 +302,10 @@ export const TeamList = () => {
           </div>
         </>
       )}
-      {isDialogOpen && selectedTeam && (
+      {isDialogOpen && selectedTeam && selectedTeam.id && (
         <div data-testid="team-list-delete-dialog">
           <EntitiesDeleteDialog
-            entities={[selectedTeam]}
+            entities={[selectedTeam as TeamDTO & { id: number }]}
             entityName="Team"
             deleteEntitiesFn={deleteTeam}
             isOpen={isDialogOpen}

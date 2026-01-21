@@ -2,7 +2,7 @@
 
 import { ChevronDown, ChevronRight } from "lucide-react";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import useSWR from "swr";
 
 import PaginationExt from "@/components/shared/pagination-ext";
@@ -31,11 +31,6 @@ const UnassignedTickets = ({ teamId }: { teamId: number }) => {
   const { setError } = useError();
   const t = useAppClientTranslations();
 
-  // Reset to page 1 when sort direction changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [sortDirection]);
-
   // **SWR Fetcher Function**
   const fetchTickets = async () => {
     return getUnassignedTickets(
@@ -50,7 +45,7 @@ const UnassignedTickets = ({ teamId }: { teamId: number }) => {
   };
 
   // **Use SWR for Fetching with proper key**
-  const { data, error, isLoading, mutate } = useSWR(
+  const { data, error, isLoading } = useSWR(
     [
       `/api/team/${teamId}/unassigned-tickets`,
       currentPage,
@@ -76,9 +71,11 @@ const UnassignedTickets = ({ teamId }: { teamId: number }) => {
     setCurrentPage(page);
   };
 
-  // **Toggle Sorting**
-  const toggleSortDirection = () =>
+  // **Toggle Sorting - Reset to page 1 when sorting changes**
+  const toggleSortDirection = () => {
     setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+    setCurrentPage(1); // Reset to page 1 when sort changes
+  };
 
   return (
     <Card>
