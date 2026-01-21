@@ -1,4 +1,6 @@
+import tailwindcssTypography from "@tailwindcss/typography";
 import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
 
 const config: Config = {
   darkMode: "class",
@@ -94,7 +96,7 @@ const config: Config = {
         "collapsible-down": "collapsible-down 0.2s ease-out",
         "collapsible-up": "collapsible-up 0.2s ease-out",
       },
-      typography: ({ theme }) => ({
+      typography: ({ theme }: { theme: (path: string) => string }) => ({
         DEFAULT: {
           css: {
             color: theme("colors.foreground"),
@@ -157,7 +159,7 @@ const config: Config = {
       }),
     },
   },
-  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
+  plugins: [tailwindcssAnimate, tailwindcssTypography],
 };
 
 export default config;

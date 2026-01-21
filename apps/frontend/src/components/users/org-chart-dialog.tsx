@@ -6,9 +6,12 @@ import dagre from "@dagrejs/dagre";
 import {
   addEdge,
   Background,
+  Connection,
   Edge,
+  EdgeChange,
   MarkerType,
   Node,
+  NodeChange,
   Position,
   ReactFlow,
   ReactFlowProvider,
@@ -16,7 +19,7 @@ import {
   useNodesState,
   useReactFlow,
 } from "@xyflow/react";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -89,14 +92,12 @@ const OrgChartContent = ({
   onNodesChange,
   onEdgesChange,
   onConnect,
-  setRootUserId,
 }: {
   nodes: Node<Record<string, unknown>>[];
   edges: Edge<Record<string, unknown>>[];
-  onNodesChange: any;
-  onEdgesChange: any;
-  onConnect: any;
-  setRootUserId: (id: number | undefined) => void;
+  onNodesChange: (changes: NodeChange<Node<Record<string, unknown>>>[]) => void;
+  onEdgesChange: (changes: EdgeChange<Edge<Record<string, unknown>>>[]) => void;
+  onConnect: (connection: Connection) => void;
 }) => {
   const { zoomIn, zoomOut } = useReactFlow();
   const t = useAppClientTranslations();
@@ -163,19 +164,80 @@ const OrgChartDialog = ({
   const DUMMY_MANAGER_ID = -1;
   const t = useAppClientTranslations();
 
-  const generateChart = (data: UserHierarchyDTO) => {
-    const nodes: Node<Record<string, unknown>>[] = [];
-    const edges: Edge<Record<string, unknown>>[] = [];
+  const generateChart = useCallback(
+    (data: UserHierarchyDTO) => {
+      const nodes: Node<Record<string, unknown>>[] = [];
+      const edges: Edge<Record<string, unknown>>[] = [];
 
-    if (data.id === DUMMY_MANAGER_ID) {
+      if (data.id === DUMMY_MANAGER_ID) {
+        nodes.push({
+          id: DUMMY_MANAGER_ID.toString(),
+          type: "custom",
+          data: {
+            label: "Top-Level Manager",
+            avatarUrl: "",
+            userPageLink: "#",
+            onClick: () => setRootUserId(DUMMY_MANAGER_ID),
+          },
+          position: { x: 0, y: 0 },
+        });
+
+        data.subordinates.forEach((sub) => {
+          nodes.push({
+            id: sub.id.toString(),
+            type: "custom",
+            data: {
+              label: sub.name,
+              avatarUrl: sub.imageUrl,
+              userPageLink: `/portal/users/${obfuscate(sub.id)}`,
+              onClick: () => setRootUserId(sub.id),
+            },
+            position: { x: 0, y: 0 },
+          });
+
+          edges.push({
+            id: `e${DUMMY_MANAGER_ID}-${sub.id}`,
+            source: DUMMY_MANAGER_ID.toString(),
+            target: sub.id.toString(),
+            animated: true,
+            markerEnd: { type: MarkerType.Arrow },
+          });
+        });
+
+        return { nodes, edges };
+      }
+
+      // ...existing code...
+      if (data.managerId) {
+        nodes.push({
+          id: data.managerId.toString(),
+          type: "custom",
+          data: {
+            label: data.managerName,
+            avatarUrl: data.managerImageUrl,
+            userPageLink: `/portal/users/${obfuscate(data.managerId)}`,
+            onClick: () => setRootUserId(data.managerId ?? undefined),
+          },
+          position: { x: 0, y: 0 },
+        });
+
+        edges.push({
+          id: `e${data.managerId}-${data.id}`,
+          source: data.managerId.toString(),
+          target: data.id.toString(),
+          animated: true,
+          markerEnd: { type: MarkerType.Arrow },
+        });
+      }
+
       nodes.push({
-        id: DUMMY_MANAGER_ID.toString(),
+        id: data.id.toString(),
         type: "custom",
         data: {
-          label: "Top-Level Manager",
-          avatarUrl: "",
-          userPageLink: "#",
-          onClick: () => setRootUserId(DUMMY_MANAGER_ID),
+          label: data.name,
+          avatarUrl: data.imageUrl,
+          userPageLink: `/portal/users/${obfuscate(data.id)}`,
+          onClick: () => setRootUserId(data.id),
         },
         position: { x: 0, y: 0 },
       });
@@ -194,8 +256,8 @@ const OrgChartDialog = ({
         });
 
         edges.push({
-          id: `e${DUMMY_MANAGER_ID}-${sub.id}`,
-          source: DUMMY_MANAGER_ID.toString(),
+          id: `e${data.id}-${sub.id}`,
+          source: data.id.toString(),
           target: sub.id.toString(),
           animated: true,
           markerEnd: { type: MarkerType.Arrow },
@@ -203,66 +265,9 @@ const OrgChartDialog = ({
       });
 
       return { nodes, edges };
-    }
-
-    if (data.managerId) {
-      nodes.push({
-        id: data.managerId.toString(),
-        type: "custom",
-        data: {
-          label: data.managerName,
-          avatarUrl: data.managerImageUrl,
-          userPageLink: `/portal/users/${obfuscate(data.managerId)}`,
-          onClick: () => setRootUserId(data.managerId ?? undefined),
-        },
-        position: { x: 0, y: 0 },
-      });
-
-      edges.push({
-        id: `e${data.managerId}-${data.id}`,
-        source: data.managerId.toString(),
-        target: data.id.toString(),
-        animated: true,
-        markerEnd: { type: MarkerType.Arrow },
-      });
-    }
-
-    nodes.push({
-      id: data.id.toString(),
-      type: "custom",
-      data: {
-        label: data.name,
-        avatarUrl: data.imageUrl,
-        userPageLink: `/portal/users/${obfuscate(data.id)}`,
-        onClick: () => setRootUserId(data.id),
-      },
-      position: { x: 0, y: 0 },
-    });
-
-    data.subordinates.forEach((sub) => {
-      nodes.push({
-        id: sub.id.toString(),
-        type: "custom",
-        data: {
-          label: sub.name,
-          avatarUrl: sub.imageUrl,
-          userPageLink: `/portal/users/${obfuscate(sub.id)}`,
-          onClick: () => setRootUserId(sub.id),
-        },
-        position: { x: 0, y: 0 },
-      });
-
-      edges.push({
-        id: `e${data.id}-${sub.id}`,
-        source: data.id.toString(),
-        target: sub.id.toString(),
-        animated: true,
-        markerEnd: { type: MarkerType.Arrow },
-      });
-    });
-
-    return { nodes, edges };
-  };
+    },
+    [DUMMY_MANAGER_ID, setRootUserId],
+  );
 
   useEffect(() => {
     if (!isOpen) return;
@@ -278,7 +283,7 @@ const OrgChartDialog = ({
     };
 
     loadOrgChart();
-  }, [rootUserId, isOpen]);
+  }, [rootUserId, isOpen, DUMMY_MANAGER_ID, setError]);
 
   useEffect(() => {
     if (!rootUser) return;
@@ -289,7 +294,12 @@ const OrgChartDialog = ({
     );
     setNodes(layoutedNodes);
     setEdges(layoutedEdges);
-  }, [rootUser]);
+  }, [rootUser, generateChart, setNodes, setEdges]);
+
+  const onConnect = useCallback(
+    (connection: Connection) => setEdges((eds) => addEdge(connection, eds)),
+    [setEdges],
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -305,8 +315,7 @@ const OrgChartDialog = ({
                 edges={edges}
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
-                onConnect={(connection: any) => addEdge(connection, edges)}
-                setRootUserId={setRootUserId}
+                onConnect={onConnect}
               />
             </ReactFlowProvider>
           )}

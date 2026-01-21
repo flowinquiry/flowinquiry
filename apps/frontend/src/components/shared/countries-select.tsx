@@ -2,6 +2,7 @@
 
 import { Check, ChevronsUpDown } from "lucide-react";
 import React from "react";
+import { FieldValues, Path } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -222,16 +223,16 @@ export const countries = [
   { label: "Zimbabwe", value: "ZW" },
 ];
 
-export const CountrySelectField = ({
+export const CountrySelectField = <T extends FieldValues = FieldValues>({
   form,
   fieldName,
   label,
   required = false,
-}: ExtInputProps & UiAttributes) => {
+}: ExtInputProps<T> & UiAttributes) => {
   return (
     <FormField
       control={form.control}
-      name={fieldName}
+      name={fieldName as Path<T>}
       render={({ field }) => (
         <FormItem className="flex flex-col py-2 w-[20rem]">
           <FormLabel>
@@ -267,7 +268,10 @@ export const CountrySelectField = ({
                         value={country.label}
                         key={country.value}
                         onSelect={() => {
-                          form.setValue("country", country.value);
+                          form.setValue(
+                            "country" as Path<T>,
+                            country.value as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+                          );
                         }}
                       >
                         {country.label}

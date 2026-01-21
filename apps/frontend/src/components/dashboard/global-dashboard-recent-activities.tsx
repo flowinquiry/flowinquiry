@@ -33,7 +33,7 @@ const RecentUserTeamActivities = () => {
   const miscT = useTranslations("common.misc");
 
   const { data: session } = useSession();
-  const userId = Number(session?.user?.id!);
+  const userId = Number(session?.user?.id ?? 0);
 
   useEffect(() => {
     async function fetchActivityLogs() {
@@ -46,7 +46,7 @@ const RecentUserTeamActivities = () => {
         .finally(() => setLoading(false));
     }
     fetchActivityLogs();
-  }, [userId, currentPage]);
+  }, [userId, currentPage, setError]);
 
   return (
     <Card>

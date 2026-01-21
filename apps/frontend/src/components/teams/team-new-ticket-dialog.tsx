@@ -90,7 +90,6 @@ const NewTicketToTeamDialog: React.FC<NewTicketToTeamDialogProps> = ({
         estimatedCompletionDate: null,
         actualCompletionDate: null,
       });
-      setFiles([]); // Reset file state
     }
   }, [open, workflow, form, teamEntity.id, session]);
 
@@ -99,12 +98,20 @@ const NewTicketToTeamDialog: React.FC<NewTicketToTeamDialogProps> = ({
     if (savedTicket?.id && files.length > 0) {
       uploadAttachmentsForEntity("Ticket", savedTicket.id, files);
     }
+    setFiles([]); // Reset files after submission
     setOpen(false);
     onSaveSuccess();
   };
 
+  const handleDialogClose = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+      setFiles([]);
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleDialogClose}>
       <DialogContent
         className="sm:max-w-4xl max-h-[90vh] p-4 sm:p-6 flex flex-col overflow-y-auto"
         data-testid="new-ticket-dialog"
@@ -223,7 +230,7 @@ const NewTicketToTeamDialog: React.FC<NewTicketToTeamDialogProps> = ({
                   name="currentStateId"
                   label={t.teams.tickets.form.base("state")}
                   required
-                  workflowId={workflow?.id!}
+                  workflowId={workflow?.id ?? 0}
                   includeSelf
                   data-testid="ticket-state-select"
                 />

@@ -49,31 +49,35 @@ export const ErrorProvider: React.FC<{ children: React.ReactNode }> = ({
   // State to store the current error
   const [error, setError] = useState<ErrorType>(null);
 
+  const router = useRouter();
+
   // Function to dismiss the error banner
   const handleClose = () => setError(null);
 
-  const router = useRouter();
+  // Compute whether current error is an auth error
+  const isAuthError = (() => {
+    if (!error) return false;
+    const errorMessage =
+      typeof error === "string" ? error : error?.message || null;
+    return (
+      (error &&
+        typeof error === "object" &&
+        "status" in error &&
+        error.status === 401) ||
+      errorMessage?.includes("Token expired or invalid")
+    );
+  })();
 
   /**
    * Effect to handle authentication errors
    * Redirects to login page when a 401 error occurs or token is invalid
    */
   useEffect(() => {
-    const errorMessage =
-      typeof error === "string" ? error : error?.message || null;
-
-    if (
-      (error &&
-        typeof error === "object" &&
-        "status" in error &&
-        error.status === 401) ||
-      errorMessage?.includes("Token expired or invalid")
-    ) {
+    if (isAuthError) {
       // Redirect to login on HTTP 401 status or token expiration
       router.push("/login");
-      setError("Unauthorized. Please log in and try again.");
     }
-  }, [error, router]);
+  }, [isAuthError, router]);
 
   /**
    * Effect to automatically dismiss error messages after 10 seconds
@@ -95,7 +99,11 @@ export const ErrorProvider: React.FC<{ children: React.ReactNode }> = ({
           style={{ minHeight: "50px" }}
         >
           <span className="text-center">
-            {typeof error === "string" ? error : error?.message}
+            {isAuthError
+              ? "Unauthorized. Redirecting to login..."
+              : typeof error === "string"
+                ? error
+                : error?.message || ""}
           </span>
           <button
             onClick={handleClose}

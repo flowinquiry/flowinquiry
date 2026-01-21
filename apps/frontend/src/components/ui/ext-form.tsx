@@ -3,6 +3,7 @@
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import React from "react";
+import { FieldValues, Path, UseFormReturn } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -25,13 +26,12 @@ import { useAppClientTranslations } from "@/hooks/use-translations";
 import { cn } from "@/lib/utils";
 import { UiAttributes } from "@/types/ui-components";
 
-export interface ExtInputProps {
-  form: any;
+export interface ExtInputProps<T extends FieldValues = FieldValues> {
+  form: UseFormReturn<T>;
   fieldName: string;
   label: string;
   placeholder?: string;
   type?: string;
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export interface FormProps<Entity> {
@@ -42,21 +42,20 @@ export interface ViewProps<DValue> {
   entity: DValue;
 }
 
-export const ExtInputField = ({
+export const ExtInputField = <T extends FieldValues = FieldValues>({
   form,
   fieldName,
   label,
   placeholder,
   required = false,
   type = undefined,
-  onChange,
   className = "",
   ...props
-}: ExtInputProps & UiAttributes) => {
+}: ExtInputProps<T> & UiAttributes) => {
   return (
     <FormField
       control={form.control}
-      name={fieldName}
+      name={fieldName as Path<T>}
       render={({ field }) => (
         <FormItem>
           <FormLabel>
@@ -81,7 +80,7 @@ export const ExtInputField = ({
   );
 };
 
-export const ExtTextAreaField = ({
+export const ExtTextAreaField = <T extends FieldValues = FieldValues>({
   form,
   fieldName,
   label,
@@ -89,12 +88,12 @@ export const ExtTextAreaField = ({
   required,
   className = "",
   ...props
-}: ExtInputProps & UiAttributes) => {
+}: ExtInputProps<T> & UiAttributes) => {
   return (
     <div className="md:col-span-2">
       <FormField
         control={form.control}
-        name={fieldName}
+        name={fieldName as Path<T>}
         render={({ field }) => (
           <FormItem>
             <FormLabel>
@@ -125,7 +124,7 @@ interface SubmitButtonProps {
 
 export const SubmitButton = ({
   label,
-  labelWhileLoading,
+  labelWhileLoading: _labelWhileLoading,
   testId,
 }: SubmitButtonProps) => {
   return (
@@ -135,8 +134,8 @@ export const SubmitButton = ({
   );
 };
 
-type DatePickerFieldProps = {
-  form: any;
+type DatePickerFieldProps<T extends FieldValues = FieldValues> = {
+  form: UseFormReturn<T>;
   fieldName: string;
   label: string;
   description?: string;
@@ -147,9 +146,7 @@ type DatePickerFieldProps = {
 
 type DateSelectionMode = "past" | "future" | "any";
 
-export const DatePickerField: React.FC<
-  DatePickerFieldProps & { required?: boolean }
-> = ({
+export const DatePickerField = <T extends FieldValues = FieldValues>({
   form,
   fieldName,
   label,
@@ -158,12 +155,12 @@ export const DatePickerField: React.FC<
   dateSelectionMode = "any",
   required = false,
   testId,
-}) => {
+}: DatePickerFieldProps<T> & { required?: boolean }) => {
   const clearText = useAppClientTranslations().common.buttons("clear");
   return (
     <FormField
       control={form.control}
-      name={fieldName}
+      name={fieldName as Path<T>}
       render={({ field }) => (
         <FormItem className="flex flex-col">
           <FormLabel>
@@ -183,7 +180,7 @@ export const DatePickerField: React.FC<
                     testId={testId}
                   >
                     {field.value ? (
-                      format(field.value, "PPP")
+                      format(field.value as Date, "PPP")
                     ) : (
                       <span>{placeholder}</span>
                     )}
@@ -194,16 +191,17 @@ export const DatePickerField: React.FC<
               <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                   mode="single"
-                  selected={field.value || undefined}
+                  selected={(field.value as Date) || undefined}
                   onSelect={(date) => {
                     if (date) {
                       field.onChange(date.toISOString()); // convert Date -> string
                     } else {
                       field.onChange(undefined);
                     }
+
                     form.setValue(
-                      fieldName,
-                      date ? date.toISOString() : undefined,
+                      fieldName as Path<T>,
+                      (date ? date.toISOString() : undefined) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
                       {
                         shouldValidate: true,
                       },
@@ -239,7 +237,8 @@ export const DatePickerField: React.FC<
                   field.onChange(undefined);
 
                   // Force re-render if needed by triggering form state update
-                  form.setValue(fieldName, undefined, {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  form.setValue(fieldName as Path<T>, undefined as any, {
                     shouldValidate: true,
                     shouldDirty: true,
                     shouldTouch: true,

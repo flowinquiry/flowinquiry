@@ -47,13 +47,13 @@ const CommentsView: React.FC<CommentsViewProps> = ({
         })
         .finally(() => setLoading(false));
     }
-  }, [entityType, entityId]);
+  }, [entityType, entityId, setError]);
 
   const handleAddComment = async () => {
     if (!newComment.trim()) return;
     const newCommentObj: CommentDTO = {
       content: newComment,
-      createdById: Number(session?.user?.id!),
+      createdById: Number(session?.user?.id ?? 0),
       entityType: entityType,
       entityId: entityId,
     };

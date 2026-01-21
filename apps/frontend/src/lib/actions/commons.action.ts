@@ -15,7 +15,7 @@ import {
 
 export const getSecureBlobResource = async (
   url: string,
-  setError?: (error: HttpError | string | null) => void,
+  _setError?: (error: HttpError | string | null) => void,
 ) => {
   const token = getAccessToken();
 
@@ -30,7 +30,7 @@ export const getSecureBlobResource = async (
     } else {
       throw new Error("Error retrieving file");
     }
-  } catch (error: any) {
+  } catch {
     console.error(`Error to get resource ${url}`);
   }
 };
@@ -97,10 +97,13 @@ export const fetchData = async <TData, TResponse>(
 
       throw error; // Re-throw to propagate the error
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.log(`Error ${error}`);
     // Only handle network-related errors here
-    if (!error.handled && setError) {
+    const isHandledError =
+      error instanceof HttpError &&
+      (error as HttpError & { handled?: boolean }).handled;
+    if (!isHandledError && setError) {
       setError(`There was a network issue ${error}. Please try again.`);
     }
     throw error; // Always re-throw for further handling

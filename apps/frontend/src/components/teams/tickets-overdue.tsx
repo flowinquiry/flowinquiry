@@ -2,7 +2,7 @@
 
 import { ChevronDown, ChevronRight } from "lucide-react";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import useSWR from "swr";
 
 import { UserAvatar } from "@/components/shared/avatar-display";
@@ -32,11 +32,6 @@ const TeamOverdueTickets = ({ teamId }: { teamId: number }) => {
   const { setError } = useError();
   const t = useAppClientTranslations();
 
-  // Reset to page 1 when sort direction changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [sortDirection]);
-
   // **SWR Fetcher Function**
   const fetchTickets = async () => {
     return getOverdueTicketsByTeam(
@@ -51,7 +46,7 @@ const TeamOverdueTickets = ({ teamId }: { teamId: number }) => {
   };
 
   // **Use SWR for Fetching**
-  const { data, error, isLoading, mutate } = useSWR(
+  const { data, error, isLoading } = useSWR(
     [
       `/api/team/${teamId}/overdue-tickets`,
       currentPage,
@@ -77,9 +72,11 @@ const TeamOverdueTickets = ({ teamId }: { teamId: number }) => {
     setCurrentPage(page);
   };
 
-  // **Toggle Sorting**
-  const toggleSortDirection = () =>
+  // **Toggle Sorting - Reset to page 1 when sorting changes**
+  const toggleSortDirection = () => {
     setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+    setCurrentPage(1); // Reset to page 1 when sort changes
+  };
 
   return (
     <Card>

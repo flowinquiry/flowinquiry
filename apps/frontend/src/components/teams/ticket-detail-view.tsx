@@ -75,7 +75,7 @@ const TicketDetailView = ({ ticketId }: { ticketId: number }) => {
   const [loading, setLoading] = useState(true);
   const { setError } = useError();
   const [workflowStates, setWorkflowStates] = useState<WorkflowStateDTO[]>([]);
-  const [currentRequestState, setCurrentRequestState] = useState<String>("");
+  const [currentRequestState, setCurrentRequestState] = useState<string>("");
   const [isWorkflowDialogOpen, setWorkflowDialogOpen] = useState(false);
   const t = useAppClientTranslations();
 

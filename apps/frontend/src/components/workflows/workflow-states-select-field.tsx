@@ -1,5 +1,7 @@
 "use client";
 
+import { FieldValues, Path, UseFormReturn } from "react-hook-form";
+
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,9 +11,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { FormField, FormItem } from "@/components/ui/form";
 
-interface WorkflowStatesSelectProps {
+interface WorkflowStatesSelectProps<T extends FieldValues = FieldValues> {
   fieldName: string;
-  form: any;
+  form: UseFormReturn<T>;
   label: string;
   options: { label: string; value: string | number }[];
   placeholder?: string;
@@ -19,19 +21,19 @@ interface WorkflowStatesSelectProps {
   testId?: string;
 }
 
-const WorkflowStatesSelectField = ({
+const WorkflowStatesSelectField = <T extends FieldValues = FieldValues>({
   fieldName,
   form,
   label,
   options,
   placeholder = "Select a state",
-  required = false,
+  required: _required = false,
   testId,
-}: WorkflowStatesSelectProps) => {
+}: WorkflowStatesSelectProps<T>) => {
   return (
     <FormField
       control={form.control}
-      name={fieldName}
+      name={fieldName as Path<T>}
       render={({ field }) => {
         const selectedOption = options.find(
           (option) => option.value === field.value,
@@ -66,9 +68,9 @@ const WorkflowStatesSelectField = ({
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-            {form.formState.errors[fieldName]?.message && (
+            {form.formState.errors[fieldName as Path<T>]?.message && (
               <p className="text-sm text-red-500">
-                {form.formState.errors[fieldName].message}
+                {String(form.formState.errors[fieldName as Path<T>]?.message)}
               </p>
             )}
           </FormItem>

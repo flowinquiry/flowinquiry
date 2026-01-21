@@ -2,13 +2,14 @@
 
 import Link from "@tiptap/extension-link";
 import Mention from "@tiptap/extension-mention";
-import Table from "@tiptap/extension-table";
-import TableCell from "@tiptap/extension-table-cell";
-import TableHeader from "@tiptap/extension-table-header";
-import TableRow from "@tiptap/extension-table-row";
+import { Table } from "@tiptap/extension-table";
+import { TableCell } from "@tiptap/extension-table-cell";
+import { TableHeader } from "@tiptap/extension-table-header";
+import { TableRow } from "@tiptap/extension-table-row";
 import type { EditorView } from "@tiptap/pm/view";
 import { Editor, EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import type { SuggestionProps } from "@tiptap/suggestion";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { getSecureBlobResource } from "@/lib/actions/commons.action";
@@ -68,8 +69,6 @@ const RichTextEditor = ({
 
       // Get editor container's position
       const editorRect = editorContainerRef.current.getBoundingClientRect();
-      const scrollTop = window.scrollY || document.documentElement.scrollTop;
-      const scrollLeft = window.scrollX || document.documentElement.scrollLeft;
 
       // Calculate position relative to the editor container
       // rather than relative to the viewport
@@ -150,10 +149,13 @@ const RichTextEditor = ({
           char: "@",
           // Inline rendering approach
           render: () => {
+            let commandRef: ((user: UserDTO) => void) | null = null;
+
             return {
-              onStart: (props: any) => {
+              onStart: (props: SuggestionProps<UserDTO>) => {
                 isSelectingMention.current = true;
                 setSelectedIndex(0);
+                commandRef = props.command;
 
                 // Create popup if it doesn't exist
                 if (!popupRef.current) {
@@ -175,16 +177,18 @@ const RichTextEditor = ({
                   // Position is handled separately to account for dialog context
                   if (props.clientRect && editorContainerRef.current) {
                     const rect = props.clientRect();
-                    const { top, left } = calculatePopupPosition(rect, popup);
-                    popup.style.top = `${top}px`;
-                    popup.style.left = `${left}px`;
+                    if (rect) {
+                      const { top, left } = calculatePopupPosition(rect, popup);
+                      popup.style.top = `${top}px`;
+                      popup.style.left = `${left}px`;
 
-                    // Add a tiny delay to ensure proper position calculation
-                    setTimeout(() => {
-                      const updatedPos = calculatePopupPosition(rect, popup);
-                      popup.style.top = `${updatedPos.top}px`;
-                      popup.style.left = `${updatedPos.left}px`;
-                    }, 10);
+                      // Add a tiny delay to ensure proper position calculation
+                      setTimeout(() => {
+                        const updatedPos = calculatePopupPosition(rect, popup);
+                        popup.style.top = `${updatedPos.top}px`;
+                        popup.style.left = `${updatedPos.left}px`;
+                      }, 10);
+                    }
                   }
 
                   // Add to editor container - this is key for dialog context
@@ -206,18 +210,21 @@ const RichTextEditor = ({
                 );
               },
 
-              onUpdate: (props: any) => {
+              onUpdate: (props: SuggestionProps<UserDTO>) => {
                 if (!popupRef.current) return;
+                commandRef = props.command;
 
                 // Update position
                 if (props.clientRect && editorContainerRef.current) {
                   const rect = props.clientRect();
-                  const { top, left } = calculatePopupPosition(
-                    rect,
-                    popupRef.current,
-                  );
-                  popupRef.current.style.top = `${top}px`;
-                  popupRef.current.style.left = `${left}px`;
+                  if (rect) {
+                    const { top, left } = calculatePopupPosition(
+                      rect,
+                      popupRef.current,
+                    );
+                    popupRef.current.style.top = `${top}px`;
+                    popupRef.current.style.left = `${left}px`;
+                  }
                 }
 
                 // Update suggestions
@@ -225,7 +232,7 @@ const RichTextEditor = ({
                 renderSuggestions(popupRef.current, props.items, props.command);
               },
 
-              onKeyDown: (props: any) => {
+              onKeyDown: (props: { event: KeyboardEvent }) => {
                 if (!popupRef.current) return false;
 
                 if (props.event.key === "ArrowDown") {
@@ -243,8 +250,12 @@ const RichTextEditor = ({
                 }
 
                 if (props.event.key === "Enter") {
-                  if (mentionSuggestions.length > 0 && selectedIndex >= 0) {
-                    props.command(mentionSuggestions[selectedIndex]);
+                  if (
+                    mentionSuggestions.length > 0 &&
+                    selectedIndex >= 0 &&
+                    commandRef
+                  ) {
+                    commandRef(mentionSuggestions[selectedIndex]);
                     return true;
                   }
                 }
@@ -489,7 +500,9 @@ const RichTextEditor = ({
       },
     },
     onUpdate: ({ editor }) => {
-      onChange && onChange(editor.getHTML());
+      if (onChange) {
+        onChange(editor.getHTML());
+      }
     },
   });
 
@@ -517,10 +530,10 @@ const RichTextEditor = ({
   useEffect(() => {
     if (!editor) return;
 
-    const handleBlur = (event: FocusEvent) => {
+    const handleBlur = () => {
       // Only trigger onBlur if not selecting a mention
       if (!isSelectingMention.current) {
-        onBlur && onBlur();
+        void (onBlur && onBlur());
       }
     };
 
@@ -566,7 +579,7 @@ const RichTextEditor = ({
     if (url === null) return;
 
     if (url === "") {
-      editor.chain().focus().extendMarkRange("link").unsetLink().run();
+      void editor.chain().focus().extendMarkRange("link").unsetLink().run();
       return;
     }
 
@@ -575,7 +588,7 @@ const RichTextEditor = ({
         ? url
         : `http://${url}`;
 
-    editor
+    void editor
       .chain()
       .focus()
       .extendMarkRange("link")

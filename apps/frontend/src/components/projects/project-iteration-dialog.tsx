@@ -208,7 +208,7 @@ export function ProjectIterationDialog({
     setIsSubmitting(true);
     try {
       let result: ProjectIterationDTO;
-      result = await closeProjectIteration(iteration?.id!);
+      result = await closeProjectIteration(iteration?.id ?? 0);
       onOpenChange(false);
 
       onSave?.(result);

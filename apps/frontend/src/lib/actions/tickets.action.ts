@@ -197,7 +197,7 @@ export const updateTicketState = (
   newStateId: number,
   setError?: (error: HttpError | string | null) => void,
 ) => {
-  return patch<any, TicketDTO>(
+  return patch<{ newStateId: number }, TicketDTO>(
     `/api/tickets/${ticketId}/state`,
     { newStateId: newStateId },
     setError,

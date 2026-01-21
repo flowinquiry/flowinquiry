@@ -1,3 +1,20 @@
 {
-  "extends": "next/core-web-vitals"
+  "extends": "next/core-web-vitals",
+  "ignorePatterns": [
+    "**/.next/**",
+    "**/.next",
+    "**/node_modules/**",
+    "**/out/**",
+    "**/build/**",
+    "**/dist/**",
+    "**/.turbo/**",
+    "**/coverage/**",
+    "**/playwright-report/**",
+    "**/test-results/**",
+    ".next/**",
+    "node_modules/**",
+    "out/**",
+    "build/**",
+    "dist/**"
+  ]
 }

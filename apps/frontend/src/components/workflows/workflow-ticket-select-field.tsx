@@ -47,7 +47,7 @@ const WorkflowForTicketSelectField = ({
       setWorkflows(workflowData);
     }
     fetchWorkflows();
-  }, [teamId]);
+  }, [teamId, setError]);
 
   return (
     <FormField

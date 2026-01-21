@@ -2,7 +2,7 @@
 
 import { MoonIcon, SunIcon } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -25,10 +25,10 @@ const themes = [
 ];
 
 export function ThemeSwitcher() {
-  const [mounted, setMounted] = useState(false);
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { setTheme } = useTheme();
   const [currentThemeVariant, setCurrentThemeVariant] =
     useState<string>("default");
+  const [mounted, setMounted] = useState(false);
 
   // Apply theme variant as a class to the html element
   useEffect(() => {
@@ -60,13 +60,27 @@ export function ThemeSwitcher() {
     }
   }, [currentThemeVariant]);
 
-  // After mounting, we have access to the theme
-  useEffect(() => {
+  // Set mounted flag after first render to handle SSR
+  // Using useLayoutEffect to avoid hydration mismatch warnings
+  // This is the standard Next.js pattern for handling SSR/CSR differences
+  useLayoutEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
+  // Prevent flash of unstyled content during SSR
   if (!mounted) {
-    return null;
+    return (
+      <div className="flex items-center gap-2">
+        <Button variant="outline" size="icon" disabled>
+          <SunIcon className="h-[1.2rem] w-[1.2rem]" />
+          <span className="sr-only">Toggle theme</span>
+        </Button>
+        <Button variant="outline" disabled>
+          Theme: Default
+        </Button>
+      </div>
+    );
   }
 
   return (

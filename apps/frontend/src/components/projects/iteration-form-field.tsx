@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { FieldValues, Path, UseFormReturn } from "react-hook-form";
 
 import {
   FormControl,
@@ -20,8 +21,8 @@ import { findIterationsByProjectId } from "@/lib/actions/project-iteration.actio
 import { useError } from "@/providers/error-provider";
 import { ProjectIterationDTO } from "@/types/projects";
 
-interface IterationFormFieldProps {
-  form: any;
+interface IterationFormFieldProps<T extends FieldValues = FieldValues> {
+  form: UseFormReturn<T>;
   projectId: number;
   name: string;
   label?: string;
@@ -30,7 +31,7 @@ interface IterationFormFieldProps {
   testId?: string;
 }
 
-export function IterationFormField({
+export function IterationFormField<T extends FieldValues = FieldValues>({
   form,
   projectId,
   name,
@@ -38,7 +39,7 @@ export function IterationFormField({
   description,
   required = false,
   testId,
-}: IterationFormFieldProps) {
+}: IterationFormFieldProps<T>) {
   const t = useAppClientTranslations();
   const [iterations, setIterations] = useState<ProjectIterationDTO[]>([]);
   const [loading, setLoading] = useState(false);
@@ -67,7 +68,7 @@ export function IterationFormField({
   return (
     <FormField
       control={form.control}
-      name={name}
+      name={name as Path<T>}
       render={({ field }) => (
         <FormItem>
           <FormLabel>
