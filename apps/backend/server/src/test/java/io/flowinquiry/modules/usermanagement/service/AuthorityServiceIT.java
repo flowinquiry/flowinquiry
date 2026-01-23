@@ -46,7 +46,7 @@ class AuthorityServiceIT {
     @BeforeEach
     public void setup() {
         // Find the admin user for testing user-authority operations
-        adminUser = userRepository.findOneByEmailIgnoreCase("admin@flowinquiry.io").orElseThrow();
+        adminUser = userRepository.findOneByEmailIgnoreCase("admin@example.com").orElseThrow();
 
         // Create a test authority
         testAuthority = new Authority();

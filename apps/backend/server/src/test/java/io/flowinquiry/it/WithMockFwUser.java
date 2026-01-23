@@ -41,7 +41,7 @@ public @interface WithMockFwUser {
     long userId() default 1L;
 
     /** The username to use for the authenticated user. Defaults to "admin". */
-    String username() default "admin@flowinquiry.io";
+    String username() default "admin@example.com";
 
     String tenantIdAsString() default "00000000-0000-0000-0000-000000000001";
 

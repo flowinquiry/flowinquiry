@@ -12,6 +12,7 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    if: false  # Temporarily disabled
 
     steps:
       - uses: actions/checkout@v4

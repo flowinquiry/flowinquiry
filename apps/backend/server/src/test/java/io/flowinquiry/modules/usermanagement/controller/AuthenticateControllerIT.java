@@ -55,7 +55,7 @@ class AuthenticateControllerIT {
 
     @Transactional
     @ParameterizedTest
-    @CsvSource({"admin@flowinquiry.io, admin", "bob.brown@flowinquiry.io, user1234"})
+    @CsvSource({"admin@example.com, admin", "bob.brown@example.com, user1234"})
     void shouldAuthorizeUserSuccessfully(String email, String password) throws Exception {
         LoginVM login = new LoginVM();
         login.setEmail(email);
