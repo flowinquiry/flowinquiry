@@ -28,7 +28,7 @@ const IdInputSelect: React.FC<IdInputSelectProps> = ({
   readOnly = true,
   onButtonClick,
 }) => {
-  const { control } = useFormContext(); // Get the form context from React Hook Form
+  const { control, getValues } = useFormContext(); // Get the form context from React Hook Form
 
   return (
     <FormField

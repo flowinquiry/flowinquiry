@@ -31,7 +31,7 @@ const PRIORITY_COLORS: Record<TicketPriority, string> = {
 
 const TeamUnresolvedTicketsPriorityDistributionChart = () => {
   const { data: session } = useSession();
-  const userId = Number(session?.user?.id ?? 0);
+  const userId = Number(session?.user?.id!);
 
   const [data, setData] = useState<
     Record<string, Record<TicketPriority, number>>
@@ -71,7 +71,7 @@ const TeamUnresolvedTicketsPriorityDistributionChart = () => {
     };
 
     fetchData();
-  }, [userId, setError]);
+  }, [userId]);
 
   const chartData = Object.entries(data).map(([teamName, priorities]) => ({
     teamName,

@@ -76,7 +76,7 @@ export class HomePage {
 
     try {
       console.log("[DEBUG_LOG] Attempting login");
-      await this.login("admin@example.com", "admin");
+      await this.login("admin@flowinquiry.io", "admin");
 
       const url = this.page.url();
       if (url.includes("/portal")) {

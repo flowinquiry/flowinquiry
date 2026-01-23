@@ -96,9 +96,9 @@ public class TicketServiceIT {
                 watchers.stream().map(watcher -> watcher.getWatchUser().getEmail()).toList();
         assertThat(emails)
                 .containsExactlyInAnyOrder(
-                        "alice.johnson@example.com",
-                        "charlie.green@example.com",
-                        "bob.brown@example.com");
+                        "alice.johnson@flowinquiry.io",
+                        "charlie.green@flowinquiry.io",
+                        "bob.brown@flowinquiry.io");
 
         ArgumentCaptor<AuditLogUpdateEvent> auditLogUpdateEventArgumentCaptor =
                 ArgumentCaptor.forClass(AuditLogUpdateEvent.class);

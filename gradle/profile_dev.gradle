@@ -50,10 +50,7 @@ task integrationTest(type: Test) {
     systemProperty('spring.profiles.active', 'test')
     systemProperty('java.security.egd', 'file:/dev/./urandom')
     // ignoreFailures true
-    reports {
-        html.required = true
-        junitXml.required = true
-    }
+    reports.html.required = false
 
     // Configure JaCoCo for integration tests
     jacoco {

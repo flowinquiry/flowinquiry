@@ -3,13 +3,13 @@ import path from "path";
 
 export async function loadMessages(
   locale: string,
-): Promise<Record<string, unknown>> {
+): Promise<Record<string, any>> {
   const filePath = path.resolve(process.cwd(), "messages", `${locale}.json`);
 
   try {
     const file = await fs.readFile(filePath, "utf8");
     return JSON.parse(file);
-  } catch {
+  } catch (err) {
     console.warn(
       `[i18n] Missing or invalid locale file for "${locale}", falling back to "en"`,
     );

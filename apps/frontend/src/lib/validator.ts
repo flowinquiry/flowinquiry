@@ -1,13 +1,12 @@
 "use client";
 
-import { FieldValues, Path, UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod/v4";
 
-export const validateForm = <T extends FieldValues>(
+export const validateForm = <T>(
   formDataObject: T,
   schema: z.ZodSchema<T>,
-  form: UseFormReturn<T>,
+  form: any,
 ) => {
   form.clearErrors(); // Clear existing errors
   // Validate against schema
@@ -16,10 +15,8 @@ export const validateForm = <T extends FieldValues>(
   if (!validation.success) {
     // If validation fails, set errors on the form
     validation.error.issues.forEach((issue) => {
-      const field = issue.path[0];
-      if (field) {
-        form.setError(field as Path<T>, { message: issue.message });
-      }
+      const field = issue.path[0] as string;
+      form.setError(field, { message: issue.message });
     });
 
     // Show error toast

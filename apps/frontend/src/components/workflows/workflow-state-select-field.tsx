@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FieldValues, Path, UseFormReturn } from "react-hook-form";
+import { UseFormReturn } from "react-hook-form";
 
 import {
   FormControl,
@@ -25,8 +25,8 @@ import { cn } from "@/lib/utils";
 import { useError } from "@/providers/error-provider";
 import { WorkflowStateDTO } from "@/types/workflows";
 
-type WorkflowStateSelectProps<T extends FieldValues = FieldValues> = {
-  form: UseFormReturn<T>;
+type WorkflowStateSelectProps = {
+  form: UseFormReturn<any>;
   name: string;
   label?: string;
   workflowId: number;
@@ -36,7 +36,7 @@ type WorkflowStateSelectProps<T extends FieldValues = FieldValues> = {
   testId?: string;
 };
 
-const WorkflowStateSelectField = <T extends FieldValues = FieldValues>({
+const WorkflowStateSelectField = ({
   form,
   name,
   label = "Select Workflow State",
@@ -45,7 +45,7 @@ const WorkflowStateSelectField = <T extends FieldValues = FieldValues>({
   includeSelf = false,
   required = false,
   testId,
-}: WorkflowStateSelectProps<T>) => {
+}: WorkflowStateSelectProps) => {
   const [workflowStates, setWorkflowStates] = useState<WorkflowStateDTO[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { setError } = useError();
@@ -81,7 +81,7 @@ const WorkflowStateSelectField = <T extends FieldValues = FieldValues>({
 
   useEffect(() => {
     if (workflowStates.length > 0) {
-      const currentValue = form.getValues(name as Path<T>);
+      const currentValue = form.getValues(name);
 
       // ✅ Ensure the Select component reflects the correct value
       if (
@@ -93,8 +93,7 @@ const WorkflowStateSelectField = <T extends FieldValues = FieldValues>({
           workflowStates[0];
 
         if (defaultState) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          form.setValue(name as Path<T>, defaultState.id as any, {
+          form.setValue(name, defaultState.id, {
             shouldValidate: true,
             shouldDirty: true,
           });
@@ -106,7 +105,7 @@ const WorkflowStateSelectField = <T extends FieldValues = FieldValues>({
   return (
     <FormField
       control={form.control}
-      name={name as Path<T>}
+      name={name}
       render={({ field }) => {
         const selectedState = workflowStates.find(
           (state) => state.id === field.value,

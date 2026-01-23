@@ -46,59 +46,6 @@ const COLORS = [
   "#63cdda", // Light Blue
 ];
 
-// Custom Y-axis tick component
-const CustomYAxisTick = ({
-  x,
-  y,
-  payload,
-}: {
-  x: number;
-  y: number;
-  payload: { value: string };
-}) => {
-  return (
-    <text
-      x={x - 10}
-      y={y}
-      dy={4}
-      textAnchor="end"
-      fill="currentColor"
-      className="dark:fill-white fill-black"
-    >
-      <tspan>{payload.value}</tspan>
-    </text>
-  );
-};
-
-// Custom tooltip to show user and count
-const CustomTooltip = ({
-  active,
-  payload,
-}: {
-  active?: boolean;
-  payload?: Array<{
-    value: number;
-    payload: {
-      name: string;
-      value: number;
-      userId: number | null;
-      colorIndex: number;
-    };
-  }>;
-}) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-white dark:bg-gray-800 p-2 border rounded shadow-sm">
-        <p className="font-medium">{payload[0].payload.name}</p>
-        <p>
-          <span className="font-semibold">{payload[0].value}</span> tickets
-        </p>
-      </div>
-    );
-  }
-  return null;
-};
-
 const TicketDistributionChart: React.FC<TicketDistributionChartProps> = ({
   teamId,
 }) => {
@@ -129,6 +76,44 @@ const TicketDistributionChart: React.FC<TicketDistributionChartProps> = ({
 
   // Sort data by ticket count (descending) to make the chart more readable
   chartData.sort((a, b) => b.value - a.value);
+
+  const CustomYAxisTick = ({
+    x,
+    y,
+    payload,
+  }: {
+    x: number;
+    y: number;
+    payload: { value: string };
+  }) => {
+    return (
+      <text
+        x={x - 10}
+        y={y}
+        dy={4}
+        textAnchor="end"
+        fill="currentColor"
+        className="dark:fill-white fill-black"
+      >
+        <tspan>{payload.value}</tspan>
+      </text>
+    );
+  };
+
+  // Custom tooltip to show user and count
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white dark:bg-gray-800 p-2 border rounded shadow-sm">
+          <p className="font-medium">{payload[0].payload.name}</p>
+          <p>
+            <span className="font-semibold">{payload[0].value}</span> tickets
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <Card className="w-full max-w-[800px] mx-auto">

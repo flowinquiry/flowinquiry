@@ -2,8 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { Check, ChevronsUpDown } from "lucide-react";
-import React from "react";
-import { FieldValues, Path, UseFormReturn } from "react-hook-form";
+import React, { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -34,11 +33,8 @@ import {
 import { cn } from "@/lib/utils";
 import { UiAttributes } from "@/types/ui-components";
 
-interface ValuesQuerySelectProps<
-  T,
-  F extends FieldValues = FieldValues,
-> extends UiAttributes {
-  form: UseFormReturn<F>;
+interface ValuesQuerySelectProps<T> extends UiAttributes {
+  form: any;
   queryName: string;
   fieldName: string;
   fieldLabel: string;
@@ -52,7 +48,7 @@ interface ValuesQuerySelectProps<
   searchPlaceholder?: string;
 }
 
-const ValuesQuerySelect = <T, F extends FieldValues = FieldValues>({
+const ValuesQuerySelect = <T,>({
   form,
   queryName,
   fieldName,
@@ -62,12 +58,11 @@ const ValuesQuerySelect = <T, F extends FieldValues = FieldValues>({
   valueKey,
   renderOption,
   renderTooltip,
-  placeholder = "Select an item...",
-  noDataMessage = "No items found.",
+  placeholder = "Select an option",
+  noDataMessage = "No options found",
   searchPlaceholder = "Search...",
-  testId: _testId,
-}: ValuesQuerySelectProps<T, F>) => {
-  const [isOpen, setIsOpen] = React.useState(false);
+}: ValuesQuerySelectProps<T>) => {
+  const [open, setOpen] = useState(false);
 
   const optionsResult = useQuery<Array<T>>({
     queryKey: [queryName],
@@ -84,14 +79,14 @@ const ValuesQuerySelect = <T, F extends FieldValues = FieldValues>({
     <TooltipProvider>
       <FormField
         control={form.control}
-        name={fieldName as Path<F>}
+        name={fieldName}
         render={({ field }) => (
           <FormItem className="w-[20rem]">
             <FormLabel>
               {fieldLabel}
               {required && <span className="text-destructive"> *</span>}
             </FormLabel>
-            <Popover open={isOpen} onOpenChange={setIsOpen}>
+            <Popover open={open} onOpenChange={setOpen}>
               <PopoverTrigger asChild>
                 <FormControl>
                   <Button
@@ -128,11 +123,8 @@ const ValuesQuerySelect = <T, F extends FieldValues = FieldValues>({
                           value={String(option[valueKey])}
                           key={String(option[valueKey])}
                           onSelect={() => {
-                            form.setValue(
-                              fieldName as Path<F>,
-                              option[valueKey] as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-                            );
-                            setIsOpen(false);
+                            form.setValue(fieldName, option[valueKey]);
+                            setOpen(false);
                           }}
                         >
                           {renderTooltip ? (

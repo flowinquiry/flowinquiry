@@ -50,7 +50,7 @@ public class SendEmailForTicketOverdueTest {
             new GreenMailExtension(ServerSetupTest.SMTP)
                     .withConfiguration(
                             GreenMailConfiguration.aConfig()
-                                    .withUser("noreply@example.com", "user", "pass"))
+                                    .withUser("noreply@flowinquiry.io", "user", "pass"))
                     .withPerMethodLifecycle(true);
 
     @BeforeEach

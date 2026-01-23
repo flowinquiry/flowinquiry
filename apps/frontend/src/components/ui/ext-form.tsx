@@ -3,7 +3,6 @@
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import React from "react";
-import { FieldValues, Path, UseFormReturn } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -26,12 +25,13 @@ import { useAppClientTranslations } from "@/hooks/use-translations";
 import { cn } from "@/lib/utils";
 import { UiAttributes } from "@/types/ui-components";
 
-export interface ExtInputProps<T extends FieldValues = FieldValues> {
-  form: UseFormReturn<T>;
+export interface ExtInputProps {
+  form: any;
   fieldName: string;
   label: string;
   placeholder?: string;
   type?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export interface FormProps<Entity> {
@@ -42,20 +42,21 @@ export interface ViewProps<DValue> {
   entity: DValue;
 }
 
-export const ExtInputField = <T extends FieldValues = FieldValues>({
+export const ExtInputField = ({
   form,
   fieldName,
   label,
   placeholder,
   required = false,
   type = undefined,
+  onChange,
   className = "",
   ...props
-}: ExtInputProps<T> & UiAttributes) => {
+}: ExtInputProps & UiAttributes) => {
   return (
     <FormField
       control={form.control}
-      name={fieldName as Path<T>}
+      name={fieldName}
       render={({ field }) => (
         <FormItem>
           <FormLabel>
@@ -80,7 +81,7 @@ export const ExtInputField = <T extends FieldValues = FieldValues>({
   );
 };
 
-export const ExtTextAreaField = <T extends FieldValues = FieldValues>({
+export const ExtTextAreaField = ({
   form,
   fieldName,
   label,
@@ -88,12 +89,12 @@ export const ExtTextAreaField = <T extends FieldValues = FieldValues>({
   required,
   className = "",
   ...props
-}: ExtInputProps<T> & UiAttributes) => {
+}: ExtInputProps & UiAttributes) => {
   return (
     <div className="md:col-span-2">
       <FormField
         control={form.control}
-        name={fieldName as Path<T>}
+        name={fieldName}
         render={({ field }) => (
           <FormItem>
             <FormLabel>
@@ -124,7 +125,7 @@ interface SubmitButtonProps {
 
 export const SubmitButton = ({
   label,
-  labelWhileLoading: _labelWhileLoading,
+  labelWhileLoading,
   testId,
 }: SubmitButtonProps) => {
   return (
@@ -134,8 +135,8 @@ export const SubmitButton = ({
   );
 };
 
-type DatePickerFieldProps<T extends FieldValues = FieldValues> = {
-  form: UseFormReturn<T>;
+type DatePickerFieldProps = {
+  form: any;
   fieldName: string;
   label: string;
   description?: string;
@@ -146,7 +147,9 @@ type DatePickerFieldProps<T extends FieldValues = FieldValues> = {
 
 type DateSelectionMode = "past" | "future" | "any";
 
-export const DatePickerField = <T extends FieldValues = FieldValues>({
+export const DatePickerField: React.FC<
+  DatePickerFieldProps & { required?: boolean }
+> = ({
   form,
   fieldName,
   label,
@@ -155,12 +158,12 @@ export const DatePickerField = <T extends FieldValues = FieldValues>({
   dateSelectionMode = "any",
   required = false,
   testId,
-}: DatePickerFieldProps<T> & { required?: boolean }) => {
+}) => {
   const clearText = useAppClientTranslations().common.buttons("clear");
   return (
     <FormField
       control={form.control}
-      name={fieldName as Path<T>}
+      name={fieldName}
       render={({ field }) => (
         <FormItem className="flex flex-col">
           <FormLabel>
@@ -180,7 +183,7 @@ export const DatePickerField = <T extends FieldValues = FieldValues>({
                     testId={testId}
                   >
                     {field.value ? (
-                      format(field.value as Date, "PPP")
+                      format(field.value, "PPP")
                     ) : (
                       <span>{placeholder}</span>
                     )}
@@ -191,17 +194,16 @@ export const DatePickerField = <T extends FieldValues = FieldValues>({
               <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                   mode="single"
-                  selected={(field.value as Date) || undefined}
+                  selected={field.value || undefined}
                   onSelect={(date) => {
                     if (date) {
                       field.onChange(date.toISOString()); // convert Date -> string
                     } else {
                       field.onChange(undefined);
                     }
-
                     form.setValue(
-                      fieldName as Path<T>,
-                      (date ? date.toISOString() : undefined) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+                      fieldName,
+                      date ? date.toISOString() : undefined,
                       {
                         shouldValidate: true,
                       },
@@ -237,8 +239,7 @@ export const DatePickerField = <T extends FieldValues = FieldValues>({
                   field.onChange(undefined);
 
                   // Force re-render if needed by triggering form state update
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  form.setValue(fieldName as Path<T>, undefined as any, {
+                  form.setValue(fieldName, undefined, {
                     shouldValidate: true,
                     shouldDirty: true,
                     shouldTouch: true,

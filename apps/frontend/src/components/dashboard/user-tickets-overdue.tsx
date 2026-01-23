@@ -26,7 +26,7 @@ import { TicketDTO, TicketPriority } from "@/types/tickets";
 
 const UserTeamsOverdueTickets = () => {
   const { data: session } = useSession();
-  const userId = Number(session?.user?.id ?? 0);
+  const userId = Number(session?.user?.id!);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [totalTickets, setTotalTickets] = useState<number>(0);
@@ -34,7 +34,7 @@ const UserTeamsOverdueTickets = () => {
   const [loading, setLoading] = useState(false);
   const [collapsed, setCollapsed] = useState(false); // State for collapsible content
 
-  const sortBy = "priority"; // Fixed sort by priority
+  const [sortBy, setSortBy] = useState("priority");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const { setError } = useError();
   const pageT = useTranslations("dashboard.overdue_tickets");
@@ -59,7 +59,7 @@ const UserTeamsOverdueTickets = () => {
     };
 
     fetchOverdueTickets();
-  }, [userId, currentPage, sortBy, sortDirection, setError]);
+  }, [userId, currentPage, sortBy, sortDirection]);
 
   const toggleSortDirection = () => {
     setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));

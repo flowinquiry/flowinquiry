@@ -7,8 +7,8 @@
 
 logging:
   level:
-    ROOT: ERROR
-    sql: INFO # built-in group sql include org.springframework.jdbc.core, org.hibernate.SQL
+    ROOT: WARN
+    sql: DEBUG # built-in group sql include org.springframework.jdbc.core, org.hibernate.SQL
     io.flowinquiry: DEBUG
 
 spring:

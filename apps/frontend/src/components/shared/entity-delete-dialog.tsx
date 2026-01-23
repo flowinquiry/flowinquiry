@@ -27,7 +27,7 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { useAppClientTranslations } from "@/hooks/use-translations";
 
 export interface EntitiesDeleteDialogProps<
-  TEntity extends { id: number },
+  TEntity extends Record<string, any>,
 > extends React.ComponentPropsWithoutRef<typeof Dialog> {
   entities: TEntity[];
   isOpen: boolean;
@@ -38,7 +38,7 @@ export interface EntitiesDeleteDialogProps<
   entityName: string;
 }
 
-export function EntitiesDeleteDialog<TEntity extends { id: number }>({
+export function EntitiesDeleteDialog<TEntity extends Record<string, any>>({
   entities,
   isOpen,
   onOpenChange,
@@ -65,7 +65,7 @@ export function EntitiesDeleteDialog<TEntity extends { id: number }>({
 
         try {
           await deleteEntitiesFn(ids);
-        } catch {
+        } catch (error) {
           toast.error(
             `Cannot delete ${entityName}${entities.length > 1 ? "s" : ""}`,
           );

@@ -1,8 +1,7 @@
 "use client";
 
 import { Check, ChevronsUpDown } from "lucide-react";
-import React, { useCallback, useEffect, useState } from "react";
-import { FieldValues, Path } from "react-hook-form";
+import React, { useEffect, useState } from "react";
 
 import { UserAvatar } from "@/components/shared/avatar-display";
 import { Button } from "@/components/ui/button";
@@ -39,12 +38,12 @@ import { useError } from "@/providers/error-provider";
 import { QueryDTO } from "@/types/query";
 import { UiAttributes } from "@/types/ui-components";
 
-export const UserSelectField = <T extends FieldValues = FieldValues>({
+export const UserSelectField = ({
   form,
   fieldName,
   label,
   required = false,
-}: ExtInputProps<T> & UiAttributes) => {
+}: ExtInputProps & UiAttributes) => {
   const [users, setUsers] = useState<
     { label: string; value: string; email: string; avatarUrl?: string }[]
   >([]);
@@ -58,59 +57,56 @@ export const UserSelectField = <T extends FieldValues = FieldValues>({
   const [open, setOpen] = useState(false);
 
   // Function to fetch users - only search when there's a term
-  const fetchUsers = useCallback(
-    async (term: string) => {
-      if (!term) {
-        setUsers([]);
-        return;
-      }
+  const fetchUsers = async (term: string) => {
+    if (!term) {
+      setUsers([]);
+      return;
+    }
 
-      setIsLoading(true);
-      try {
-        const query: QueryDTO = {
-          filters: [
+    setIsLoading(true);
+    try {
+      const query: QueryDTO = {
+        filters: [
+          {
+            field: "firstName,lastName",
+            operator: "lk",
+            value: term,
+          },
+        ],
+      };
+
+      const data = await findUsers(
+        query,
+        {
+          page: 1,
+          size: 10,
+          sort: [
             {
               field: "firstName,lastName",
-              operator: "lk",
-              value: term,
+              direction: "desc",
             },
           ],
-        };
+        },
+        setError,
+      );
 
-        const data = await findUsers(
-          query,
-          {
-            page: 1,
-            size: 10,
-            sort: [
-              {
-                field: "firstName,lastName",
-                direction: "desc",
-              },
-            ],
-          },
-          setError,
-        );
+      const filterUsers = data.content.map((user) => ({
+        label: `${user.firstName} ${user.lastName}`,
+        value: String(user.id),
+        email: user.email,
+        avatarUrl: user.imageUrl ?? undefined,
+      }));
 
-        const filterUsers = data.content.map((user) => ({
-          label: `${user.firstName} ${user.lastName}`,
-          value: String(user.id),
-          email: user.email,
-          avatarUrl: user.imageUrl ?? undefined,
-        }));
-
-        setUsers(filterUsers);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [setError],
-  );
+      setUsers(filterUsers);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Effect to fetch users when debounced search term changes
   useEffect(() => {
     fetchUsers(debouncedSearchTerm);
-  }, [debouncedSearchTerm, fetchUsers]);
+  }, [debouncedSearchTerm]);
 
   // No longer doing an initial fetch when popover opens
   // We only want to search when the user types
@@ -118,7 +114,7 @@ export const UserSelectField = <T extends FieldValues = FieldValues>({
   return (
     <FormField
       control={form.control}
-      name={fieldName as Path<T>}
+      name={fieldName}
       render={({ field }) => (
         <FormItem className="flex flex-col py-2 w-[20rem]">
           <FormLabel>
@@ -142,13 +138,13 @@ export const UserSelectField = <T extends FieldValues = FieldValues>({
                         imageUrl={
                           users.find(
                             (user) => Number(user.value) === field.value,
-                          )?.avatarUrl
+                          )?.avatarUrl ?? form.getValues("managerImageUrl") // Fallback to form data
                         }
                       />
                       <span>
                         {users.find(
                           (user) => Number(user.value) === field.value,
-                        )?.label || "Unknown User"}
+                        )?.label ?? form.getValues("managerName")}{" "}
                       </span>
                     </div>
                   ) : (
@@ -185,8 +181,7 @@ export const UserSelectField = <T extends FieldValues = FieldValues>({
                     <CommandItem
                       value="none"
                       onSelect={() => {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        form.setValue(fieldName as Path<T>, null as any); // Reset the field value to null
+                        form.setValue(fieldName, null); // Reset the field value to null
                         setOpen(false);
                       }}
                       className="gap-2 text-gray-500"
@@ -208,10 +203,7 @@ export const UserSelectField = <T extends FieldValues = FieldValues>({
                               value={user.label}
                               onSelect={() => {
                                 const numericValue = Number(user.value);
-                                form.setValue(
-                                  fieldName as Path<T>,
-                                  numericValue as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-                                );
+                                form.setValue(fieldName, numericValue);
                                 setOpen(false);
                               }}
                             >

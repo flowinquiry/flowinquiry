@@ -2,7 +2,6 @@
 
 import { Check, ChevronsUpDown } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { FieldValues, Path } from "react-hook-form";
 
 import { UserAvatar } from "@/components/shared/avatar-display";
 import { Button } from "@/components/ui/button";
@@ -33,13 +32,13 @@ import { useError } from "@/providers/error-provider";
 import { UserWithTeamRoleDTO } from "@/types/teams";
 import { UiAttributes } from "@/types/ui-components";
 
-const TeamUserSelectField = <T extends FieldValues = FieldValues>({
+const TeamUserSelectField = ({
   form,
   fieldName,
   label,
   teamId,
   onUserSelect,
-}: ExtInputProps<T> &
+}: ExtInputProps &
   UiAttributes & {
     teamId: number;
     onUserSelect?: (user: UserWithTeamRoleDTO | null) => void; // Allow null for unselect
@@ -52,12 +51,12 @@ const TeamUserSelectField = <T extends FieldValues = FieldValues>({
       findMembersByTeamId(teamId, setError).then((data) => setUsers(data));
     }
     fetchUsers();
-  }, [teamId, setError]);
+  }, [teamId]);
 
   return (
     <FormField
       control={form.control}
-      name={fieldName as Path<T>}
+      name={fieldName}
       render={({ field }) => (
         <FormItem className="grid grid-cols-1">
           {label && label.trim() && <FormLabel>{label}</FormLabel>}
@@ -99,8 +98,7 @@ const TeamUserSelectField = <T extends FieldValues = FieldValues>({
                     <CommandItem
                       value="none"
                       onSelect={() => {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        form.setValue(fieldName as Path<T>, null as any); // Reset the value
+                        form.setValue(fieldName, null); // Reset the value
                         if (onUserSelect) {
                           onUserSelect(null);
                         }
@@ -121,8 +119,7 @@ const TeamUserSelectField = <T extends FieldValues = FieldValues>({
                         value={user.firstName!}
                         key={user.id}
                         onSelect={() => {
-                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                          form.setValue(fieldName as Path<T>, user.id as any);
+                          form.setValue(fieldName, user.id);
                           if (onUserSelect) {
                             onUserSelect(user);
                           }

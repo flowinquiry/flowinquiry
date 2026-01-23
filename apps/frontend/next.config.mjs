@@ -14,17 +14,6 @@ const nextConfig = {
     };
   },
   eslint: {
-    // Only lint these specific directories
-    dirs: [
-      "src",
-      "app",
-      "components",
-      "lib",
-      "hooks",
-      "utils",
-      "providers",
-      "types",
-    ],
     // Warning: This allows production builds to successfully complete even if
     // your project has ESLint errors.
     ignoreDuringBuilds: true,

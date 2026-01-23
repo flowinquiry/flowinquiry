@@ -25,7 +25,7 @@ const UserNotifications = () => {
   const [collapsed, setCollapsed] = useState(false); // State for collapsible content
   const { setError } = useError();
   const { data: session } = useSession();
-  const userId = Number(session?.user?.id ?? 0);
+  const userId = Number(session?.user?.id!);
   const componentT = useTranslations("dashboard.notifications");
   const miscT = useTranslations("common.misc");
 
@@ -40,7 +40,7 @@ const UserNotifications = () => {
         .finally(() => setLoading(false));
     }
     fetchNotifications();
-  }, [userId, currentPage, setError]);
+  }, [userId, currentPage]);
 
   const handleMarkAsRead = async (notificationId: number) => {
     markNotificationsAsRead([notificationId], setError).finally(() => {

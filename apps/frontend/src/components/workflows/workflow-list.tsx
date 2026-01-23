@@ -91,7 +91,15 @@ const WorkflowsView = () => {
         setTotalPages(pageResult.totalPages);
       })
       .finally(() => setLoading(false));
-  }, [workflowSearchTerm, currentPage, sortDirection, setError]);
+  }, [
+    workflowSearchTerm,
+    currentPage,
+    sortDirection,
+    setLoading,
+    setItems,
+    setTotalElements,
+    setTotalPages,
+  ]);
 
   const handleSearchTeams = useDebouncedCallback((userName: string) => {
     const params = new URLSearchParams(searchParams);
@@ -104,11 +112,9 @@ const WorkflowsView = () => {
     replace(`${pathname}?${params.toString()}`);
   }, 2000);
 
-  // Fetch workflows when dependencies change
   useEffect(() => {
     fetchWorkflows();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [workflowSearchTerm, currentPage, sortDirection]);
+  }, [fetchWorkflows]);
 
   const toggleSortDirection = () => {
     setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));

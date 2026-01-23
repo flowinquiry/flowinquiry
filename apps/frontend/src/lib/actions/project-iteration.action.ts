@@ -18,9 +18,8 @@ export const closeProjectIteration = async (
   projectId: number,
   setError?: (error: HttpError | string | null) => void,
 ) => {
-  return post<Record<string, never>, ProjectIterationDTO>(
+  return post<any, ProjectIterationDTO>(
     `/api/project-iterations/${projectId}/close`,
-    undefined,
     setError,
   );
 };

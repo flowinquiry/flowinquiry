@@ -3,7 +3,7 @@
 import { MoonIcon, SunIcon } from "@radix-ui/react-icons";
 import { useTheme } from "next-themes";
 import * as React from "react";
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -45,12 +45,9 @@ export function ModeToggle() {
       : t.common.misc("switch_to_light_mode");
 
   // Load theme variant from localStorage on mount
-  // Using useLayoutEffect to handle SSR hydration
-  // This is the standard Next.js pattern for handling SSR/CSR differences
-  useLayoutEffect(() => {
+  useEffect(() => {
     const savedThemeVariant = localStorage.getItem("theme-variant");
     if (savedThemeVariant) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCurrentThemeVariant(savedThemeVariant);
     }
     setMounted(true);

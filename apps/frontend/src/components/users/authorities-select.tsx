@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { FieldValues, Path, UseFormReturn } from "react-hook-form";
 
 import {
   FormField,
@@ -16,19 +15,19 @@ import { useError } from "@/providers/error-provider";
 import { AuthorityDTO } from "@/types/authorities";
 import { UiAttributes } from "@/types/ui-components";
 
-interface AuthoritiesSelectProps<T extends FieldValues = FieldValues> {
-  form: UseFormReturn<T>;
+interface AuthoritiesSelectProps {
+  form: any;
   fieldName: string;
   label: string;
   required?: boolean;
 }
 
-const AuthoritiesSelect = <T extends FieldValues = FieldValues>({
+const AuthoritiesSelect = ({
   form,
   fieldName,
   label,
   required,
-}: AuthoritiesSelectProps<T> & UiAttributes) => {
+}: AuthoritiesSelectProps & UiAttributes) => {
   const [authorities, setAuthorities] = useState<AuthorityDTO[]>();
   const { setError } = useError();
 
@@ -41,7 +40,7 @@ const AuthoritiesSelect = <T extends FieldValues = FieldValues>({
     };
 
     fetchAuthorities();
-  }, [setError]);
+  }, []);
 
   if (authorities === undefined) {
     return <div>{t.authorities.common("no_data")}</div>;
@@ -56,9 +55,9 @@ const AuthoritiesSelect = <T extends FieldValues = FieldValues>({
   return (
     <FormField
       control={form.control}
-      name={fieldName as Path<T>}
+      name={fieldName}
       render={({ field }) => {
-        const defaultValues = (field.value as string[] | undefined) ?? [];
+        const defaultValues = field.value ?? [];
 
         return (
           <FormItem className="space-y-2">

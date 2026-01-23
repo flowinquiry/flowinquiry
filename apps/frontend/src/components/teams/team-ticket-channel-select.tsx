@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { FieldValues, Path, UseFormReturn } from "react-hook-form";
 
 import {
   FormControl,
@@ -20,8 +19,8 @@ import {
 import { useAppClientTranslations } from "@/hooks/use-translations";
 import { TicketChannel } from "@/types/tickets";
 
-type TicketChannelSelectFieldProps<T extends FieldValues = FieldValues> = {
-  form: UseFormReturn<T>;
+type TicketChannelSelectFieldProps = {
+  form: any;
   testId?: string;
 };
 
@@ -38,25 +37,22 @@ const ticketChannels: TicketChannel[] = [
   "internal",
 ];
 
-const TicketChannelSelectField = <T extends FieldValues = FieldValues>({
+const TicketChannelSelectField: React.FC<TicketChannelSelectFieldProps> = ({
   form,
   testId,
-}: TicketChannelSelectFieldProps<T>) => {
+}) => {
   const t = useAppClientTranslations();
   useEffect(() => {
     // Set default value if the field is empty
-    if (!form.getValues("channel" as Path<T>)) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      form.setValue("channel" as Path<T>, "internal" as any, {
-        shouldValidate: true,
-      });
+    if (!form.getValues("channel")) {
+      form.setValue("channel", "internal", { shouldValidate: true });
     }
   }, [form]);
 
   return (
     <FormField
       control={form.control}
-      name={"channel" as Path<T>}
+      name="channel"
       render={({ field }) => (
         <FormItem>
           <FormLabel>{t.teams.tickets.form.base("channel")}</FormLabel>

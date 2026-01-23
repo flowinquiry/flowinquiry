@@ -144,24 +144,25 @@ export function MailSettings() {
   });
 
   // Handle field value change with proper typing
-  const handleValueChange = (
-    fieldName: keyof z.infer<typeof emailSettingsSchema>,
-    value: string,
-  ) => {
+  const handleValueChange = (fieldName: string, value: string) => {
     setFormValues((prev) => ({
       ...prev,
-      [fieldName]: value,
+      [fieldName]: value as any,
     }));
 
     // Update the form state
-    form.setValue(fieldName, value as never, {
+    form.setValue(fieldName as any, value as any, {
       shouldDirty: true,
       shouldValidate: false,
     });
 
     // Clear the error for this field if it exists
-    if (form.formState.errors[fieldName]) {
-      form.clearErrors(fieldName);
+    if (
+      form.formState.errors[
+        fieldName as keyof z.infer<typeof emailSettingsSchema>
+      ]
+    ) {
+      form.clearErrors(fieldName as any);
     }
 
     // Optionally validate just this field for immediate feedback
@@ -172,27 +173,27 @@ export function MailSettings() {
   };
 
   // Validate a single field
-  const validateField = (
-    fieldName: keyof z.infer<typeof emailSettingsSchema>,
-    value: string,
-  ) => {
+  const validateField = (fieldName: string, value: string) => {
     try {
       // Create a schema just for this field
       const fieldSchema = z.object({
-        [fieldName]: emailSettingsSchema.shape[fieldName],
+        [fieldName]:
+          emailSettingsSchema.shape[
+            fieldName as keyof z.infer<typeof emailSettingsSchema>
+          ],
       });
 
       // Validate just this field
       fieldSchema.parse({ [fieldName]: value });
 
       // Clear error if validation passes
-      form.clearErrors(fieldName);
+      form.clearErrors(fieldName as any);
     } catch (error) {
       if (error instanceof z.ZodError) {
         // Set error if validation fails
         const fieldError = error.issues.find((e) => e.path[0] === fieldName);
         if (fieldError) {
-          form.setError(fieldName, {
+          form.setError(fieldName as any, {
             type: "manual",
             message: fieldError.message,
           });
@@ -239,7 +240,6 @@ export function MailSettings() {
     };
 
     loadSettings();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setError]);
 
   // Handle form submission
@@ -264,7 +264,7 @@ export function MailSettings() {
       const errors = validationResult.error.flatten().fieldErrors;
       Object.entries(errors).forEach(([field, errorMessages]) => {
         if (errorMessages && errorMessages.length > 0) {
-          form.setError(field as keyof z.infer<typeof emailSettingsSchema>, {
+          form.setError(field as any, {
             type: "manual",
             message: errorMessages[0],
           });
@@ -304,13 +304,15 @@ export function MailSettings() {
                 <h3 className="text-lg font-semibold mb-2">{groupLabel}</h3>
                 {keys.map((key) => {
                   const meta = FIELD_META[key];
+                  // Use type casting to handle the FormField typing issue
+                  const fieldKey = key as any;
 
                   return (
                     <FormField
                       key={key}
-                      control={form.control}
-                      name={key}
-                      render={() => (
+                      control={form.control as any}
+                      name={fieldKey}
+                      render={({ field }) => (
                         <FormItem className="space-y-2">
                           <FormLabel>
                             {meta.label}

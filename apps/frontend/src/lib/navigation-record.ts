@@ -2,7 +2,7 @@ import { toast } from "sonner";
 
 import { HttpError } from "@/lib/errors";
 
-export async function navigateToRecord<T, Args extends unknown[]>(
+export async function navigateToRecord<T, Args extends any[]>(
   fn: (...args: Args) => Promise<T>, // The main function to execute with parameters
   notFoundMessage: string, // Custom message for 404 errors
   ...args: Args // Spread operator to pass parameters to `fn`

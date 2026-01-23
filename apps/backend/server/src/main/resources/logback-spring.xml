@@ -17,6 +17,23 @@
 		</encoder>
 	</appender>
 
+	<!-- File appender with masking for error and custom logs only -->
+	<!-- <appender name="MASKED_FILE" -->
+	<!-- class="ch.qos.logback.core.FileAppender"> -->
+	<!-- <file>./logs/masked-log.log</file> -->
+	<!-- <encoder> -->
+	<!-- <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - -->
+	<!-- %mask{%msg}%n</pattern> -->
+	<!-- </encoder> -->
+
+	<!-- &lt;!&ndash; Filter to include only ERROR level logs &ndash;&gt; -->
+	<!-- <filter class="ch.qos.logback.classic.filter.LevelFilter"> -->
+	<!-- <level>ERROR</level> -->
+	<!-- <onMatch>ACCEPT</onMatch> -->
+	<!-- <onMismatch>DENY</onMismatch> -->
+	<!-- </filter> -->
+	<!-- </appender> -->
+
 	<include
 		resource="org/springframework/boot/logging/logback/defaults.xml" />
 	<include
