@@ -43,7 +43,7 @@ pnpm add -w -D eslint @eslint/js eslint-config-next
 if $run_frontend; then
   echo "🧹 Running Prettier and ESLint for frontend..."
   pnpm prettier --write apps/frontend
-  pnpm eslint apps/frontend --fix --ignore-pattern '.next/**'
+  pnpm eslint apps/frontend --fix
   if [ $? -ne 0 ]; then
     echo "❌ Frontend lint failed. Commit aborted."
     exit 1
@@ -54,7 +54,7 @@ fi
 if $run_docs; then
   echo "🧹 Running Prettier and ESLint for docs..."
   pnpm exec prettier --write apps/docs
-  pnpm exec eslint apps/docs --fix --ignore-pattern '.next/**'
+  pnpm exec eslint apps/docs --fix
   if [ $? -ne 0 ]; then
     echo "❌ Docs lint failed. Commit aborted."
     exit 1
