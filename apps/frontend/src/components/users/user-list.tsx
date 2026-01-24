@@ -113,7 +113,15 @@ export const UserList = () => {
         setTotalPages(pageResult.totalPages);
       })
       .finally(() => setLoading(false));
-  }, [userSearchTerm, currentPage, sortDirection, setError]);
+  }, [
+    userSearchTerm,
+    currentPage,
+    sortDirection,
+    setLoading,
+    setItems,
+    setTotalElements,
+    setTotalPages,
+  ]);
 
   const handleSearchTeams = useDebouncedCallback((userName: string) => {
     const params = new URLSearchParams(searchParams);
@@ -126,11 +134,9 @@ export const UserList = () => {
     replace(`${pathname}?${params.toString()}`);
   }, 2000);
 
-  // Fetch users when dependencies change
   useEffect(() => {
     fetchUsers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userSearchTerm, currentPage, sortDirection]);
+  }, [fetchUsers]);
 
   const toggleSortDirection = () => {
     setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));

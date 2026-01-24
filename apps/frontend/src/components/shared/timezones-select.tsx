@@ -1,20 +1,19 @@
 import React from "react";
-import { FieldValues } from "react-hook-form";
 
 import ValuesQuerySelect from "@/components/shared/values-query-select";
 import { ExtInputProps } from "@/components/ui/ext-form";
 import { getTimezones, TimezoneInfo } from "@/lib/actions/shared.action";
 import { UiAttributes } from "@/types/ui-components";
 
-const TimezoneSelect = <T extends FieldValues = FieldValues>({
+const TimezoneSelect = ({
   form,
   fieldName,
   label,
   placeholder,
   required,
-}: ExtInputProps<T> & UiAttributes) => {
+}: ExtInputProps & UiAttributes) => {
   return (
-    <ValuesQuerySelect<TimezoneInfo, T>
+    <ValuesQuerySelect<TimezoneInfo>
       form={form}
       queryName="timezones"
       fieldName={fieldName}

@@ -4,14 +4,15 @@ import React from "react";
 
 import { UserAvatar } from "@/components/shared/avatar-display";
 
-interface PersonNodeData {
-  label: string;
-  avatarUrl: string;
-  userPageLink: string;
-  onClick?: () => void;
+interface PersonNodeProps {
+  data: {
+    label: string;
+    avatarUrl: string;
+    userPageLink: string;
+  };
 }
 
-const PersonNode = ({ data }: { data: PersonNodeData }) => {
+const PersonNode = ({ data }: { data: any }) => {
   const { label, avatarUrl, userPageLink, onClick } = data;
 
   // Detect dark mode

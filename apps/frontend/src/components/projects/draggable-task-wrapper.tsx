@@ -44,7 +44,7 @@ export const DraggableTaskWrapper: React.FC<DraggableTaskWrapperProps> = ({
   const modifiedListeners = listeners
     ? {
         ...listeners,
-        onDragStart: (e: React.DragEvent) => {
+        onDragStart: (e: any) => {
           isDraggedRef.current = true;
           if (listeners.onDragStart) {
             listeners.onDragStart(e);

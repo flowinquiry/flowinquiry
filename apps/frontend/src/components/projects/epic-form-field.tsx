@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { FieldValues, Path, UseFormReturn } from "react-hook-form";
 
 import {
   FormControl,
@@ -21,8 +20,8 @@ import { findEpicsByProjectId } from "@/lib/actions/project-epic.action";
 import { useError } from "@/providers/error-provider";
 import { ProjectEpicDTO } from "@/types/projects";
 
-interface EpicFormFieldProps<T extends FieldValues = FieldValues> {
-  form: UseFormReturn<T>;
+interface EpicFormFieldProps {
+  form: any;
   projectId: number;
   name: string;
   label?: string;
@@ -31,7 +30,7 @@ interface EpicFormFieldProps<T extends FieldValues = FieldValues> {
   testId?: string;
 }
 
-export function EpicFormField<T extends FieldValues = FieldValues>({
+export function EpicFormField({
   form,
   projectId,
   name,
@@ -39,7 +38,7 @@ export function EpicFormField<T extends FieldValues = FieldValues>({
   description,
   required = false,
   testId,
-}: EpicFormFieldProps<T>) {
+}: EpicFormFieldProps) {
   const t = useAppClientTranslations();
   const [epics, setEpics] = useState<ProjectEpicDTO[]>([]);
   const [loading, setLoading] = useState(false);
@@ -65,7 +64,7 @@ export function EpicFormField<T extends FieldValues = FieldValues>({
   return (
     <FormField
       control={form.control}
-      name={name as Path<T>}
+      name={name}
       render={({ field }) => (
         <FormItem>
           <FormLabel>

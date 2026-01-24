@@ -45,7 +45,7 @@ import { updateTicket } from "@/lib/actions/tickets.action";
 import { obfuscate } from "@/lib/endecode";
 import { cn, getSpecifiedColor } from "@/lib/utils";
 import { useError } from "@/providers/error-provider";
-import { TicketDTO, TicketPriority } from "@/types/tickets";
+import { TicketDTO } from "@/types/tickets";
 
 const EditableSection = ({
   children,
@@ -104,7 +104,7 @@ const TicketDetailSheet: React.FC<TicketDetailsProps> = ({
 }) => {
   const [ticket, setTicket] = useState<TicketDTO>(initialTicket);
   const workflowColor = getSpecifiedColor(initialTicket.workflowRequestName!);
-  const [_submitting, setSubmitting] = useState<boolean>(false);
+  const [submitting, setSubmitting] = useState<boolean>(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [isEditingStatus, setIsEditingStatus] = useState(false);
@@ -259,7 +259,7 @@ const TicketDetailSheet: React.FC<TicketDetailsProps> = ({
                       <Button
                         variant="link"
                         className={`px-0 text-xl grow text-left ${initialTicket.isCompleted ? "line-through" : ""}`}
-                        onClick={(_e) => {
+                        onClick={(e) => {
                           // Allow the link navigation to proceed (don't call preventDefault)
                         }}
                         onDoubleClick={(e) => {
@@ -458,7 +458,7 @@ const TicketDetailSheet: React.FC<TicketDetailsProps> = ({
                             control={form.control}
                             render={({ field }) => (
                               <TicketPrioritySelect
-                                value={field.value as TicketPriority}
+                                value={field.value as any}
                                 onChange={(value) => {
                                   field.onChange(value);
                                 }}

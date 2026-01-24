@@ -15,16 +15,6 @@ import {
 } from "@/lib/constants/ticket-priorities";
 import { TicketPriority } from "@/types/tickets";
 
-const PriorityItem = ({ priority }: { priority: TicketPriority }) => {
-  const itemConfig = PRIORITY_CONFIG[priority];
-  return (
-    <div className="flex items-center gap-2">
-      <span className={itemConfig.iconColor}>{itemConfig.icon}</span>
-      <span className={`${itemConfig.textColor} font-medium`}>{priority}</span>
-    </div>
-  );
-};
-
 export const TicketPrioritySelect = ({
   value,
   onChange,
@@ -33,6 +23,19 @@ export const TicketPrioritySelect = ({
   onChange: (value: TicketPriority) => void;
 }) => {
   const priorityKey = value as TicketPriority;
+
+  // Create a PriorityItem component for consistent rendering
+  const PriorityItem = ({ priority }: { priority: TicketPriority }) => {
+    const itemConfig = PRIORITY_CONFIG[priority];
+    return (
+      <div className="flex items-center gap-2">
+        <span className={itemConfig.iconColor}>{itemConfig.icon}</span>
+        <span className={`${itemConfig.textColor} font-medium`}>
+          {priority}
+        </span>
+      </div>
+    );
+  };
 
   return (
     <Select

@@ -67,7 +67,7 @@ import { TicketDTO } from "@/types/tickets";
 import { WorkflowDetailDTO, WorkflowStateDTO } from "@/types/workflows";
 
 // Function to generate a constant background color for workflow states.
-const getColumnColor = (): string => "bg-[hsl(var(--card))]";
+const getColumnColor = (_: number): string => "bg-[hsl(var(--card))]";
 
 export default function ProjectView({
   projectShortName,
@@ -120,6 +120,8 @@ export default function ProjectView({
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   // State for Project Edit Dialog visibility.
   const [isProjectEditDialogOpen, setIsProjectEditDialogOpen] = useState(false);
+  // Track if dragging is in progress
+  const [isDragging, setIsDragging] = useState(false);
   // Track the time when drag starts
   const [dragStartTime, setDragStartTime] = useState<number | null>(null);
 
@@ -258,7 +260,7 @@ export default function ProjectView({
   };
 
   // Handler for saving a new iteration
-  const handleSaveIteration = async () => {
+  const handleSaveIteration = async (createdIteration: ProjectIterationDTO) => {
     // Refresh iterations list after creating a new one
     await fetchIterations();
 
@@ -292,7 +294,7 @@ export default function ProjectView({
   };
 
   // handler for saving an epic (works for both create and edit)
-  const handleSaveEpic = async () => {
+  const handleSaveEpic = async (epic: ProjectEpicDTO) => {
     // Refresh epics list after creating/editing
     await fetchEpics();
 
@@ -392,6 +394,8 @@ export default function ProjectView({
   const handleDragStart = (event: DragStartEvent) => {
     const activeId = event.active.id.toString();
 
+    // Set dragging state
+    setIsDragging(true);
     // Record drag start time
     setDragStartTime(Date.now());
 
@@ -419,6 +423,7 @@ export default function ProjectView({
     const dragDuration = dragStartTime ? Date.now() - dragStartTime : 0;
 
     // Reset drag tracking state
+    setIsDragging(false);
     setDragStartTime(null);
 
     const { active, over } = event;
@@ -525,7 +530,7 @@ export default function ProjectView({
       title: t.common.navigation("projects"),
       link: `/portal/teams/${obfuscate(team.id)}/projects`,
     },
-    { title: project?.name ?? "", link: "#" },
+    { title: project?.name!, link: "#" },
   ];
 
   // Helper to get iteration status display
@@ -1021,14 +1026,12 @@ export default function ProjectView({
                         <StateColumn
                           key={state.id}
                           workflowState={state}
-                          tasks={
-                            filteredTasks[state.id?.toString() ?? ""] || []
-                          }
+                          tasks={filteredTasks[state.id!.toString()] || []}
                           setIsSheetOpen={setIsSheetOpen}
                           setSelectedWorkflowState={() =>
                             setSelectedWorkflowState(state)
                           }
-                          columnColor={getColumnColor()}
+                          columnColor={getColumnColor(state.id!)}
                         />
                       ))}
                     {/* Add an extra padding div that matches column width */}
@@ -1065,9 +1068,9 @@ export default function ProjectView({
           setIsOpen={setIsSheetOpen}
           selectedWorkflowState={selectedWorkflowState}
           setTasks={setTasks}
-          teamId={project?.teamId ?? 0}
-          projectId={projectId ?? 0}
-          projectWorkflowId={workflow?.id ?? 0}
+          teamId={project?.teamId!}
+          projectId={projectId!}
+          projectWorkflowId={workflow?.id!}
           onTaskCreated={fetchProjectData} // Pass the fetchProjectData function as a callback
         />
         <TaskDetailSheet
