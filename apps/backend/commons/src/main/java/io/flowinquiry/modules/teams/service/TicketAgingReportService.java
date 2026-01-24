@@ -1,15 +1,36 @@
 package io.flowinquiry.modules.teams.service;
 
+import static io.flowinquiry.modules.teams.repository.specifications.TicketSpecification.buildThroughputSpecification;
+import static io.flowinquiry.modules.teams.utils.PeriodHelper.findPeriodForTicket;
+import static io.flowinquiry.modules.teams.utils.PeriodHelper.generatePeriods;
 import static io.flowinquiry.query.QueryUtils.createSpecification;
+
 import static java.util.Objects.nonNull;
 
 import io.flowinquiry.modules.teams.domain.Ticket;
+import io.flowinquiry.modules.teams.domain.Ticket_;
 import io.flowinquiry.modules.teams.repository.TicketRepository;
 import io.flowinquiry.modules.teams.service.dto.TicketAgingDTO;
 import io.flowinquiry.modules.teams.service.dto.TicketAgingReportDTO;
 import io.flowinquiry.modules.teams.service.dto.TicketQueryParams;
+import io.flowinquiry.modules.teams.service.dto.report.Period;
+import io.flowinquiry.modules.teams.service.dto.report.ThroughputDTO;
+import io.flowinquiry.modules.teams.service.dto.report.ThroughputReportDTO;
+import io.flowinquiry.modules.teams.service.dto.report.TicketThroughputQueryParams;
 import io.flowinquiry.modules.teams.service.mapper.TicketMapper;
 import io.flowinquiry.query.*;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import org.jetbrains.annotations.NotNull;
+import org.springframework.data.domain.ScrollPosition;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.support.WindowIterator;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -17,11 +38,6 @@ import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -160,5 +176,46 @@ public class TicketAgingReportService {
         filter.setFilters(filters);
         queryDTO.setGroups(List.of(filter));
         return createSpecification(queryDTO);
+    }
+
+    @Transactional(readOnly = true)
+    public ThroughputReportDTO getThroughputReport(TicketThroughputQueryParams params) {
+        List<Period> periods = generatePeriods(params.getFrom(), params.getTo(), params.getGranularity());
+        Map<Period, ThroughputDTO> throughputPerPeriod = initializeThroughputPerPeriod(periods);
+
+        WindowIterator<Ticket> tickets = retrieveCompletedTickets(params);
+        tickets.forEachRemaining(ticket ->
+              findPeriodForTicket(periods, ticket.getActualCompletionDate())
+                    .ifPresent(period -> throughputPerPeriod.get(period).incrementThroughput())
+        );
+
+        return ThroughputReportDTO.builder()
+              .fromDate(params.getFrom())
+              .toDate(params.getTo())
+              .groupBy(params.getGroupBy())
+              .granularity(params.getGranularity())
+              .data(throughputPerPeriod)
+              .build();
+    }
+
+    private WindowIterator<Ticket> retrieveCompletedTickets(TicketThroughputQueryParams params) {
+        Specification<Ticket> spec = buildThroughputSpecification(params);
+        Sort sort = Sort.by(Sort.Direction.DESC, Ticket_.ID);
+        return WindowIterator
+              .of(pos -> ticketRepository.findAllWindowed(spec, sort, params.getLimit(), pos))
+              .startingAt(ScrollPosition.offset());
+    }
+
+    private Map<Period, ThroughputDTO> initializeThroughputPerPeriod(
+          List<Period> periods) {
+        Map<Period, ThroughputDTO> result = new LinkedHashMap<>();
+        for (Period period : periods) {
+            ThroughputDTO throughput = ThroughputDTO.builder()
+                  .throughput(0)
+                  .groupedTickets(new HashMap<>())
+                  .build();
+            result.put(period, throughput);
+        }
+        return result;
     }
 }
