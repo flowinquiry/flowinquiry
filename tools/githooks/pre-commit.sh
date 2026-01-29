@@ -5,16 +5,28 @@ CHANGED_FILES=$(git diff --cached --name-only)
 run_frontend=false
 run_docs=false
 run_backend=false
+only_cli=true
 
 for file in $CHANGED_FILES; do
   if [[ $file == apps/frontend/* ]]; then
     run_frontend=true
+    only_cli=false
   elif [[ $file == apps/docs/* ]]; then
     run_docs=true
+    only_cli=false
   elif [[ $file == apps/backend/* ]]; then
     run_backend=true
+    only_cli=false
+  elif [[ $file != apps/cli/* ]]; then
+    only_cli=false
   fi
 done
+
+# Skip pnpm checks for CLI-only changes
+if $only_cli; then
+  echo "✅ CLI-only changes, skipping pnpm hooks."
+  exit 0
+fi
 
 if $run_backend; then
   echo "🧹 Running Spotless for backend..."
@@ -35,10 +47,8 @@ fi
 # Ensure ESLint is available
 if ! pnpm exec eslint --version > /dev/null 2>&1; then
   echo "ℹ️ eslint not found. Installing..."
-  pnpm add -w -D eslint
+  pnpm add -w -D eslint @eslint/js eslint-config-next
 fi
-
-pnpm add -w -D eslint @eslint/js eslint-config-next
 
 if $run_frontend; then
   echo "🧹 Running Prettier and ESLint for frontend..."
