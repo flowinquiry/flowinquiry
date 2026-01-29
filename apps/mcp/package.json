@@ -1,0 +1,14 @@
+{
+  "name": "@flowinquiry/mcp",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "bun src/index.ts",
+    "build": "bun build src/index.ts --compile --minify --outfile dist/fi-mcp"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.1.0",
+    "typescript": "^5.4.0"
+  }
+}
