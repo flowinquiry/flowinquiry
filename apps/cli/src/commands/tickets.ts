@@ -1,6 +1,6 @@
 import { request } from "../http";
 import { CliConfig } from "../config";
-import { TicketPriority } from "../types";
+import { TicketDTO, TicketPriority } from "../types";
 
 export type TicketCreateInput = {
   teamId: number;
@@ -15,8 +15,8 @@ export type TicketCreateInput = {
 export async function createTicket(
   config: CliConfig,
   input: TicketCreateInput,
-) {
-  const payload = {
+): Promise<TicketDTO> {
+  const payload: Partial<TicketDTO> = {
     teamId: input.teamId,
     workflowId: input.workflowId,
     currentStateId: input.stateId,
@@ -26,5 +26,5 @@ export async function createTicket(
     requestDescription: input.description,
   };
 
-  return request("POST", "/api/tickets", config, payload);
+  return request<TicketDTO>("POST", "/api/tickets", config, payload);
 }

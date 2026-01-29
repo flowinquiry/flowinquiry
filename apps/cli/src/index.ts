@@ -8,30 +8,21 @@ import { listTeams, listTeamUsers } from "./commands/teams";
 import { listWorkflowsForTeam, getWorkflowDetail } from "./commands/workflows";
 import { listProjects } from "./commands/projects";
 import { createTicket } from "./commands/tickets";
-import { TicketPriority } from "./types";
+import { parsePriority } from "./utils";
 
 const program = new Command();
-const allowedPriorities: TicketPriority[] = [
-  "Critical",
-  "High",
-  "Medium",
-  "Low",
-  "Trivial",
-];
-
-function parsePriority(value: string): TicketPriority {
-  if (allowedPriorities.includes(value as TicketPriority)) {
-    return value as TicketPriority;
-  }
-  throw new Error(
-    `Invalid priority. Use one of: ${allowedPriorities.join(", ")}`,
-  );
-}
 
 program
   .name("fi")
   .description("FlowInquiry CLI")
   .option("--base-url <url>", "FlowInquiry API base URL");
+
+program
+  .command("help")
+  .description("Show CLI help")
+  .action(() => {
+    program.outputHelp();
+  });
 
 const auth = program.command("auth").description("Authentication helpers");
 
@@ -122,7 +113,7 @@ workflow
         config,
         Number(options.workflowId),
       );
-      const states = (result as { states?: unknown[] }).states ?? [];
+      const states = result?.states ?? [];
       printJson(states);
     } catch (error) {
       printError(error);

@@ -1,6 +1,6 @@
 import { request } from "../http";
 import { CliConfig } from "../config";
-import { PageableResult, Pagination, QueryDTO } from "../types";
+import { PageableResult, Pagination, QueryDTO, ProjectDTO } from "../types";
 
 export async function listProjects(
   config: CliConfig,
@@ -8,7 +8,7 @@ export async function listProjects(
   query: QueryDTO,
 ) {
   const params = new URLSearchParams({
-    page: String(pagination.page),
+    page: String(pagination.page - 1), // Spring uses 0-indexed pages
     size: String(pagination.size),
   });
   if (pagination.sort?.length) {
@@ -16,7 +16,7 @@ export async function listProjects(
     params.set("sort", `${sort.field},${sort.direction}`);
   }
 
-  return request<PageableResult<unknown>>(
+  return request<PageableResult<ProjectDTO>>(
     "POST",
     `/api/projects/search?${params.toString()}`,
     config,

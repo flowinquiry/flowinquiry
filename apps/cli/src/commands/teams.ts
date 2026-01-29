@@ -1,6 +1,12 @@
 import { request } from "../http";
 import { CliConfig } from "../config";
-import { PageableResult, Pagination, QueryDTO } from "../types";
+import {
+  PageableResult,
+  Pagination,
+  QueryDTO,
+  TeamDTO,
+  UserWithTeamRoleDTO,
+} from "../types";
 
 export async function listTeams(
   config: CliConfig,
@@ -8,7 +14,7 @@ export async function listTeams(
   query: QueryDTO,
 ) {
   const params = new URLSearchParams({
-    page: String(pagination.page),
+    page: String(pagination.page - 1), // Spring uses 0-indexed pages
     size: String(pagination.size),
   });
   if (pagination.sort?.length) {
@@ -16,7 +22,7 @@ export async function listTeams(
     params.set("sort", `${sort.field},${sort.direction}`);
   }
 
-  return request<PageableResult<unknown>>(
+  return request<PageableResult<TeamDTO>>(
     "POST",
     `/api/teams/search?${params.toString()}`,
     config,
@@ -25,5 +31,9 @@ export async function listTeams(
 }
 
 export async function listTeamUsers(config: CliConfig, teamId: number) {
-  return request<unknown[]>("GET", `/api/teams/${teamId}/members`, config);
+  return request<UserWithTeamRoleDTO[]>(
+    "GET",
+    `/api/teams/${teamId}/members`,
+    config,
+  );
 }
