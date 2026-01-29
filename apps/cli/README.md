@@ -3,45 +3,82 @@
 Minimal Bun + TypeScript CLI for the FlowInquiry HTTP API.
 
 ## Requirements
+
 - Bun
 - `FLOWINQUIRY_TOKEN` environment variable (JWT)
 - Optional: `FLOWINQUIRY_BASE_URL` (defaults to `http://localhost:8080`)
 
+## Getting a Token
+
+```bash
+curl -s -X POST http://localhost:1234/api/authenticate \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@flowinquiry.io","password":"admin"}'
+# Returns: {"id_token":"eyJ..."}
+```
+
 ## Usage
 
 ```bash
-FLOWINQUIRY_TOKEN=... bun apps/flowinquiry-cli/src/index.ts auth whoami
+export FLOWINQUIRY_TOKEN="your_jwt_token"
+export FLOWINQUIRY_BASE_URL="http://localhost:1234"  # if using Caddy proxy
+
+bun apps/cli/src/index.ts <command>
+```
+
+### Auth
+
+```bash
+bun apps/cli/src/index.ts auth whoami
 ```
 
 ### Teams
 
 ```bash
-FLOWINQUIRY_TOKEN=... bun apps/flowinquiry-cli/src/index.ts team list
-FLOWINQUIRY_TOKEN=... bun apps/flowinquiry-cli/src/index.ts team users --team-id 1
+bun apps/cli/src/index.ts team list
+bun apps/cli/src/index.ts team users --team-id 1
 ```
 
 ### Workflows
 
 ```bash
-FLOWINQUIRY_TOKEN=... bun apps/flowinquiry-cli/src/index.ts workflow list --team-id 1
-FLOWINQUIRY_TOKEN=... bun apps/flowinquiry-cli/src/index.ts workflow states --workflow-id 10
+bun apps/cli/src/index.ts workflow list --team-id 1
+bun apps/cli/src/index.ts workflow states --workflow-id 4
 ```
 
 ### Projects
 
 ```bash
-FLOWINQUIRY_TOKEN=... bun apps/flowinquiry-cli/src/index.ts project list
+bun apps/cli/src/index.ts project list
 ```
 
 ### Tickets
 
 ```bash
-FLOWINQUIRY_TOKEN=... bun apps/flowinquiry-cli/src/index.ts ticket create \
+bun apps/cli/src/index.ts ticket create \
   --team-id 1 \
-  --workflow-id 10 \
-  --state-id 100 \
-  --requester-id 55 \
+  --workflow-id 4 \
+  --state-id 13 \
+  --requester-id 1 \
   --priority High \
   --title "Login issue" \
   --description "User cannot login"
+```
+
+## Project Structure
+
+```
+src/
+├── index.ts          # Entry point
+├── cli.ts            # Command definitions (Commander.js)
+├── config.ts         # Config loader (env vars)
+├── http.ts           # HTTP client wrapper
+├── output.ts         # JSON/error output
+├── utils.ts          # Priority parser
+└── commands/
+    ├── auth.ts       # whoami
+    ├── teams.ts      # list, users
+    ├── workflows.ts  # list, states
+    ├── projects.ts   # list
+    └── tickets.ts    # create
 ```
