@@ -10,6 +10,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql:5432/flowinquiry
       - SPRING_DATASOURCE_USERNAME=flowinquiry
       - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+      - JWT_BASE64_SECRET=${JWT_BASE64_SECRET}
     depends_on:
       postgresql:
         condition: service_healthy

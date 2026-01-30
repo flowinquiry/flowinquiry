@@ -9,9 +9,6 @@ import { parsePriority } from "../../cli/src/utils";
 import type { CliConfig } from "../../cli/src/config";
 import type { TicketPriority } from "../../cli/src/types";
 
-const encoder = new TextEncoder();
-const PORT = Number.parseInt(process.env.MCP_PORT || "3001", 10);
-
 const DEFAULT_BASE_URL = "http://localhost:8080";
 
 type JsonRpcId = string | number | null;
@@ -53,7 +50,7 @@ type ToolDefinition = {
 
 const tools: ToolDefinition[] = [
   {
-    name: "fi.auth.whoami",
+    name: "fi_get_current_user",
     description: "Validate token and return current user",
     inputSchema: {
       type: "object",
@@ -64,7 +61,7 @@ const tools: ToolDefinition[] = [
     },
   },
   {
-    name: "fi.team.list",
+    name: "fi_list_teams",
     description: "List teams",
     inputSchema: {
       type: "object",
@@ -79,7 +76,7 @@ const tools: ToolDefinition[] = [
     },
   },
   {
-    name: "fi.team.users",
+    name: "fi_list_team_members",
     description: "List users for a team",
     inputSchema: {
       type: "object",
@@ -92,7 +89,7 @@ const tools: ToolDefinition[] = [
     },
   },
   {
-    name: "fi.workflow.list",
+    name: "fi_list_workflows",
     description: "List workflows for a team",
     inputSchema: {
       type: "object",
@@ -105,7 +102,7 @@ const tools: ToolDefinition[] = [
     },
   },
   {
-    name: "fi.workflow.states",
+    name: "fi_get_workflow_states",
     description: "List states for a workflow",
     inputSchema: {
       type: "object",
@@ -118,7 +115,7 @@ const tools: ToolDefinition[] = [
     },
   },
   {
-    name: "fi.project.list",
+    name: "fi_list_projects",
     description: "List projects",
     inputSchema: {
       type: "object",
@@ -133,7 +130,7 @@ const tools: ToolDefinition[] = [
     },
   },
   {
-    name: "fi.ticket.create",
+    name: "fi_create_ticket",
     description: "Create a ticket",
     inputSchema: {
       type: "object",
@@ -261,10 +258,10 @@ async function handleToolCall(name: string, args: Record<string, unknown>) {
   const config = resolveConfig(baseUrl);
 
   switch (name) {
-    case "fi.auth.whoami": {
+    case "fi_get_current_user": {
       return whoami(config);
     }
-    case "fi.team.list": {
+    case "fi_list_teams": {
       const page = asNumber(args.page, "page") ?? 1;
       const size = asNumber(args.size, "size") ?? 20;
       const sortField = asString(args.sortField, "sortField") ?? "name";
@@ -279,20 +276,20 @@ async function handleToolCall(name: string, args: Record<string, unknown>) {
         { filters: [] },
       );
     }
-    case "fi.team.users": {
+    case "fi_list_team_members": {
       const teamId = asNumber(args.teamId, "teamId", true) as number;
       return listTeamUsers(config, teamId);
     }
-    case "fi.workflow.list": {
+    case "fi_list_workflows": {
       const teamId = asNumber(args.teamId, "teamId", true) as number;
       return listWorkflowsForTeam(config, teamId);
     }
-    case "fi.workflow.states": {
+    case "fi_get_workflow_states": {
       const workflowId = asNumber(args.workflowId, "workflowId", true) as number;
       const detail = await getWorkflowDetail(config, workflowId);
       return (detail as { states?: unknown[] }).states ?? [];
     }
-    case "fi.project.list": {
+    case "fi_list_projects": {
       const page = asNumber(args.page, "page") ?? 1;
       const size = asNumber(args.size, "size") ?? 20;
       const sortField = asString(args.sortField, "sortField") ?? "name";
@@ -307,7 +304,7 @@ async function handleToolCall(name: string, args: Record<string, unknown>) {
         { filters: [] },
       );
     }
-    case "fi.ticket.create": {
+    case "fi_create_ticket": {
       const teamId = asNumber(args.teamId, "teamId", true) as number;
       const workflowId = asNumber(args.workflowId, "workflowId", true) as number;
       const stateId = asNumber(args.stateId, "stateId", true) as number;
@@ -343,10 +340,13 @@ async function handleRpcMessage(message: JsonRpcRequest): Promise<JsonRpcRespons
     switch (message.method) {
       case "initialize":
         return jsonRpcResult(id, {
-          protocolVersion: "0.1.0",
+          protocolVersion: "2024-11-05",
           serverInfo: { name: "flowinquiry-mcp", version: "1.0.0" },
           capabilities: { tools: {} },
         });
+      case "notifications/initialized":
+        // Client notification - no response needed
+        return undefined;
       case "tools/list":
         return jsonRpcResult(id, { tools });
       case "tools/call": {
@@ -354,16 +354,15 @@ async function handleRpcMessage(message: JsonRpcRequest): Promise<JsonRpcRespons
         const name = asString(params.name, "name", true) as string;
         const args = params.arguments ? asObject(params.arguments, "arguments") : {};
         const result = await handleToolCall(name, args);
-        return jsonRpcResult(id, result);
+        return jsonRpcResult(id, { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] });
       }
-      case "shutdown": {
-        const response = jsonRpcResult(id, { ok: true });
-        setTimeout(() => {
-          process.exit(0);
-        }, 25);
-        return response;
-      }
+      case "ping":
+        return jsonRpcResult(id, {});
       default:
+        // Ignore unknown notifications (methods without id expecting response)
+        if (message.id === undefined) {
+          return undefined;
+        }
         return jsonRpcError(id, new McpError(-32601, `Method not found: ${message.method}`));
     }
   } catch (error) {
@@ -371,142 +370,32 @@ async function handleRpcMessage(message: JsonRpcRequest): Promise<JsonRpcRespons
   }
 }
 
-type Client = {
-  id: string;
-  send: (payload: JsonRpcResponse) => void;
-  sendRaw: (payload: string) => void;
-  close: () => void;
-};
-
-const clients = new Map<string, Client>();
-
-function formatSse(data: string, event?: string) {
-  const eventLine = event ? `event: ${event}\n` : "";
-  return `${eventLine}data: ${data}\n\n`;
+function write(data: string) {
+  Bun.write(Bun.stdout, data);
 }
 
-function handleSseRequest(req: Request): Response {
-  const url = new URL(req.url);
-  const clientId = url.searchParams.get("clientId") ?? crypto.randomUUID();
+// Stdio transport - read from stdin, write to stdout
+let buffer = "";
+const decoder = new TextDecoder();
 
-  let closed = false;
-  let controllerRef: ReadableStreamDefaultController<Uint8Array> | null = null;
-  const stream = new ReadableStream<Uint8Array>({
-    start(controller) {
-      controllerRef = controller;
-    },
-    cancel() {
-      closed = true;
-      clients.delete(clientId);
-    },
-  });
+for await (const chunk of Bun.stdin.stream()) {
+  buffer += decoder.decode(chunk, { stream: true });
 
-  const sendRaw = (payload: string) => {
-    if (closed || !controllerRef) return;
-    controllerRef.enqueue(encoder.encode(payload));
-  };
+  let newlineIndex: number;
+  while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
+    const line = buffer.slice(0, newlineIndex);
+    buffer = buffer.slice(newlineIndex + 1);
 
-  const client: Client = {
-    id: clientId,
-    send: (payload) => {
-      sendRaw(formatSse(JSON.stringify(payload)));
-    },
-    sendRaw,
-    close: () => {
-      if (closed || !controllerRef) return;
-      closed = true;
-      controllerRef.close();
-    },
-  };
+    if (!line.trim()) continue;
 
-  clients.set(clientId, client);
-
-  sendRaw(formatSse(JSON.stringify({ clientId }), "ready"));
-
-  const keepAlive = setInterval(() => {
-    sendRaw(": ping\n\n");
-  }, 25000);
-
-  const cleanup = () => {
-    clearInterval(keepAlive);
-    clients.delete(clientId);
-  };
-
-  stream.pipeTo(
-    new WritableStream({
-      close: cleanup,
-      abort: cleanup,
-    }),
-  ).catch(() => {
-    cleanup();
-  });
-
-  return new Response(stream, {
-    headers: {
-      "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
-      Connection: "keep-alive",
-    },
-  });
+    try {
+      const request = JSON.parse(line);
+      const response = await handleRpcMessage(request);
+      if (response) {
+        write(JSON.stringify(response) + "\n");
+      }
+    } catch (e) {
+      console.error("Parse error:", e);
+    }
+  }
 }
-
-async function handleMessageRequest(req: Request): Promise<Response> {
-  if (req.method !== "POST") {
-    return new Response("Method Not Allowed", { status: 405 });
-  }
-
-  let payload: unknown;
-  try {
-    payload = await req.json();
-  } catch (error) {
-    console.error("Failed to parse JSON payload", error);
-    return new Response("Invalid JSON", { status: 400 });
-  }
-
-  const url = new URL(req.url);
-  const payloadObject = payload as Record<string, unknown>;
-  const clientId =
-    asString(payloadObject.clientId, "clientId") ||
-    url.searchParams.get("clientId") ||
-    undefined;
-
-  if (!clientId) {
-    return new Response("Missing clientId", { status: 400 });
-  }
-
-  const client = clients.get(clientId);
-  if (!client) {
-    return new Response("Unknown clientId", { status: 404 });
-  }
-
-  const message = payloadObject.message ?? payload;
-  const requests = Array.isArray(message) ? message : [message];
-
-  for (const request of requests) {
-    const response = await handleRpcMessage(request as JsonRpcRequest);
-    if (response && request && (request as JsonRpcRequest).id !== undefined) {
-      client.send(response);
-    }
-  }
-
-  return new Response(null, { status: 202 });
-}
-
-const server = Bun.serve({
-  port: Number.isFinite(PORT) ? PORT : 3001,
-  fetch(req) {
-    const url = new URL(req.url);
-
-    if (url.pathname === "/sse") {
-      return handleSseRequest(req);
-    }
-
-    if (url.pathname === "/message") {
-      return handleMessageRequest(req);
-    }
-
-    return new Response("Not Found", { status: 404 });
-  },
-});
-
-console.error(`MCP server listening on :${server.port}`);
