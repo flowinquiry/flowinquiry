@@ -37,4 +37,13 @@ describe("loadConfig", () => {
 
     expect(config.baseUrl).toBe("http://localhost:8080");
   });
+
+  it("allows missing token when requireToken is false", () => {
+    resetEnv();
+    delete process.env.FLOWINQUIRY_TOKEN;
+
+    const config = loadConfig(undefined, { requireToken: false });
+
+    expect(config.token).toBeUndefined();
+  });
 });

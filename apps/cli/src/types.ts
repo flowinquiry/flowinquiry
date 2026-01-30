@@ -2,6 +2,9 @@
 // Query & Pagination
 // ============================================================================
 
+export type ApiObject = Record<string, unknown>;
+export type ApiList<T = ApiObject> = T[];
+
 export type QueryFilter = {
   field: string;
   operator: "eq" | "ne" | "gt" | "lt" | "lk" | "in";
@@ -170,4 +173,169 @@ export type TicketDTO = {
   estimate?: number;
   parentTicketId?: number;
   childTicketIds?: number[];
+};
+
+// ============================================================================
+// Users & Auth
+// ============================================================================
+
+export type AuthResponseDTO = {
+  id_token: string;
+};
+
+export type UserDTO = {
+  id?: number;
+  email?: string;
+  login?: string;
+  firstName?: string;
+  lastName?: string;
+  imageUrl?: string;
+  activated?: boolean;
+  langKey?: string;
+  createdBy?: string;
+  createdDate?: string;
+  lastModifiedBy?: string;
+  lastModifiedDate?: string;
+  authorities?: string[];
+  timezone?: string;
+  title?: string;
+  managerId?: number;
+};
+
+export type AuthorityDTO = {
+  id?: number;
+  name: string;
+  description?: string;
+};
+
+export type ResourceDTO = {
+  id?: number;
+  name?: string;
+  description?: string;
+  code?: string;
+};
+
+// ============================================================================
+// Organizations
+// ============================================================================
+
+export type OrganizationDTO = {
+  id?: number;
+  name: string;
+  description?: string;
+  website?: string;
+};
+
+// ============================================================================
+// Project Iterations & Epics
+// ============================================================================
+
+export type ProjectIterationDTO = {
+  id?: number;
+  name: string;
+  projectId: number;
+  startDate?: string;
+  endDate?: string;
+  status?: string;
+};
+
+export type ProjectEpicDTO = {
+  id?: number;
+  name: string;
+  projectId: number;
+  description?: string;
+  status?: string;
+};
+
+export type ProjectSettingDTO = {
+  id?: number;
+  projectId: number;
+  settings?: ApiObject;
+};
+
+// ============================================================================
+// Collaboration
+// ============================================================================
+
+export type CommentDTO = {
+  id?: number;
+  entityType?: string;
+  entityId?: number;
+  content?: string;
+  createdBy?: number;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type NotificationDTO = {
+  id?: number;
+  userId?: number;
+  title?: string;
+  message?: string;
+  isRead?: boolean;
+  createdAt?: string;
+};
+
+export type ActivityLogDTO = {
+  id?: number;
+  userId?: number;
+  action?: string;
+  entityType?: string;
+  entityId?: number;
+  createdAt?: string;
+  metadata?: ApiObject;
+};
+
+export type WatcherDTO = {
+  id?: number;
+  entityType?: string;
+  entityId?: number;
+  userId?: number;
+};
+
+export type AppSettingDTO = {
+  id?: number;
+  key: string;
+  value?: string;
+  description?: string;
+};
+
+// ============================================================================
+// Files
+// ============================================================================
+
+export type FileUploadDTO = {
+  id?: number;
+  name?: string;
+  url?: string;
+  size?: number;
+  contentType?: string;
+};
+
+export type AttachmentDTO = {
+  id?: number;
+  entityType?: string;
+  entityId?: number;
+  file?: FileUploadDTO;
+};
+
+// ============================================================================
+// Shared / Misc
+// ============================================================================
+
+export type TimezoneDTO = {
+  id?: string;
+  label?: string;
+  offset?: string;
+};
+
+export type VersionDTO = {
+  version?: string;
+  build?: string;
+  commit?: string;
+};
+
+export type AiResponseDTO = {
+  summary?: string;
+  metadata?: ApiObject;
 };

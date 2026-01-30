@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "bun src/index.ts",
+    "gen:api": "mkdir -p .openapi && curl -s http://localhost:8080/v3/api-docs -o .openapi/flowinquiry.json && bunx openapi-typescript .openapi/flowinquiry.json -o src/gen/api.ts",
     "test": "bun test",
     "typecheck": "tsc --noEmit"
   },
@@ -15,6 +16,7 @@
     "commander": "^12.1.0"
   },
   "devDependencies": {
+    "openapi-typescript": "^7.5.0",
     "@types/bun": "^1.1.0",
     "typescript": "^5.4.0"
   }

@@ -44,4 +44,45 @@ describe("request", () => {
       }),
     ).rejects.toThrow("HTTP 400 Bad Request");
   });
+
+  it("returns text response when requested", async () => {
+    mockFetch(async () => {
+      return new Response("ok", {
+        status: 200,
+        headers: { "content-type": "text/plain" },
+      });
+    });
+
+    const result = await request(
+      "GET",
+      "/path",
+      { baseUrl: "http://example.com", token: "token" },
+      undefined,
+      { responseType: "text" },
+    );
+
+    expect(result).toBe("ok");
+  });
+
+  it("omits authorization header when token is missing", async () => {
+    let authHeader: string | undefined;
+    mockFetch(async (_input, init) => {
+      const headers = init?.headers as Record<string, string> | undefined;
+      authHeader = headers?.Authorization;
+      return new Response("ok", {
+        status: 200,
+        headers: { "content-type": "text/plain" },
+      });
+    });
+
+    await request(
+      "GET",
+      "/path",
+      { baseUrl: "http://example.com" },
+      undefined,
+      { responseType: "text" },
+    );
+
+    expect(authHeader).toBeUndefined();
+  });
 });
