@@ -183,7 +183,7 @@ test.describe("Home Page", () => {
     await homePage.expectRedirectToLogin();
 
     // Login with admin credentials
-    await homePage.login("admin@flowinquiry.io", "admin");
+    await homePage.login("admin@example.com", "admin");
 
     // Verify redirection to dashboard after login
     await homePage.expectPageLoaded();
@@ -337,7 +337,7 @@ You can view traces in UI mode or by opening the trace file in Playwright Trace 
 test("should authenticate user", async ({ page }) => {
   const loginPage = new LoginPage(page);
   await loginPage.goto();
-  await loginPage.login("admin@flowinquiry.io", "admin");
+  await loginPage.login("admin@example.com", "admin");
   await expect(page).toHaveURL("/portal/dashboard");
 });
 ```

@@ -34,7 +34,10 @@ test {
         events 'FAILED', 'SKIPPED'
     }
     jvmArgs += '-Djava.security.egd=file:/dev/./urandom -Xmx512m'
-    reports.html.required = false
+    reports {
+        html.required = true
+        junitXml.required = true
+    }
     testLogging.exceptionFormat "full"
 }
 

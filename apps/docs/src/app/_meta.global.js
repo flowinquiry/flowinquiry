@@ -47,6 +47,7 @@ export default {
           getting_started: "Getting-started",
           high_level_architect: "High-level architect",
           data_layer: "Data Layer",
+          dynamic_query_parameters: "Using Dynamic Query Parameters",
           scheduler: "Scheduler",
           database_migration: "Database migration",
           integration_testing: "Integration Testing",

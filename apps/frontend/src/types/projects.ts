@@ -44,6 +44,7 @@ export const ProjectIterationDTOSchema = z.object({
   projectId: z.number(),
   name: z.string(),
   description: z.string().optional(),
+  status: z.string().optional(),
   startDate: z.string().optional().nullable(),
   endDate: z.string().optional().nullable(),
   totalTickets: z.number().optional(),

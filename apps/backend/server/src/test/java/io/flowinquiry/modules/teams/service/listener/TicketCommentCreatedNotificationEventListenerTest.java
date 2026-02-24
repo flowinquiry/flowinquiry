@@ -163,9 +163,7 @@ public class TicketCommentCreatedNotificationEventListenerTest {
 
         verify(sseController, times(2))
                 .sendEventToUser(
-                        anyLong(),
-                        eq(EventPayloadType.NEW_TICKET_COMMENT),
-                        any(Notification.class));
+                        anyLong(), eq(EventPayloadType.NOTIFICATION), any(Notification.class));
 
         ArgumentCaptor<ActivityLog> activityLogCaptor = ArgumentCaptor.forClass(ActivityLog.class);
         verify(activityLogRepository).save(activityLogCaptor.capture());

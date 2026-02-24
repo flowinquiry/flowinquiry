@@ -10,12 +10,20 @@ import globals from "globals";
 
 export default [
     {
-        files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"],
         ignores: [
             "apps/frontend/.next/**",
             "apps/frontend/playwright-report/**",
-            "apps/frontend/out/**"
+            "apps/frontend/out/**",
+            "apps/frontend/node_modules/**",
+            "apps/docs/.next/**",
+            "apps/docs/node_modules/**",
+            "node_modules/**",
+            "**/build/**",
+            "**/dist/**",
         ],
+    },
+    {
+        files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"],
         plugins: {
             "unused-imports": unusedImports,
             "simple-import-sort": simpleImportSort,

@@ -19,7 +19,6 @@ import io.flowinquiry.modules.teams.service.dto.TicketDTO;
 import io.flowinquiry.modules.usermanagement.service.UserService;
 import io.flowinquiry.modules.usermanagement.service.dto.UserDTO;
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
@@ -31,10 +30,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.MessageSource;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 @ExtendWith(MockitoExtension.class)
 public class SendEmailForTicketOverdueTest {
@@ -55,7 +50,7 @@ public class SendEmailForTicketOverdueTest {
             new GreenMailExtension(ServerSetupTest.SMTP)
                     .withConfiguration(
                             GreenMailConfiguration.aConfig()
-                                    .withUser("noreply@flowinquiry.io", "user", "pass"))
+                                    .withUser("noreply@example.com", "user", "pass"))
                     .withPerMethodLifecycle(true);
 
     @BeforeEach
@@ -84,8 +79,6 @@ public class SendEmailForTicketOverdueTest {
                         .estimatedCompletionDate(LocalDate.now().minusDays(1))
                         .teamId(1L)
                         .build();
-        Pageable pageable = Pageable.ofSize(1);
-        Page<TicketDTO> ticketPage = new PageImpl<>(Collections.singletonList(ticket), pageable, 1);
 
         EntityWatcherDTO entityWatcherDTO = new EntityWatcherDTO();
         entityWatcherDTO.setEntityId(ticket.getId());
@@ -101,7 +94,7 @@ public class SendEmailForTicketOverdueTest {
         user.setLangKey("en");
         Optional<UserDTO> userinfo = Optional.of(user);
 
-        when(ticketService.getAllOverdueTickets(PageRequest.of(0, 500))).thenReturn(ticketPage);
+        when(ticketService.getAllOverdueTicketsAfterId(0L, 500)).thenReturn(List.of(ticket));
         when(entityWatcherService.getWatchersForEntity(any(), anyLong()))
                 .thenReturn(entityWatcherDTOs);
         when(userService.getUserById(anyLong())).thenReturn(userinfo);

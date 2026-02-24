@@ -6,9 +6,20 @@ export const createProjectIteration = async (
   projectIteration: ProjectIterationDTO,
   setError?: (error: HttpError | string | null) => void,
 ) => {
+  projectIteration.status = "ACTIVE";
   return post<ProjectIterationDTO, ProjectIterationDTO>(
     `/api/project-iterations`,
     projectIteration,
+    setError,
+  );
+};
+
+export const closeProjectIteration = async (
+  projectId: number,
+  setError?: (error: HttpError | string | null) => void,
+) => {
+  return post<any, ProjectIterationDTO>(
+    `/api/project-iterations/${projectId}/close`,
     setError,
   );
 };

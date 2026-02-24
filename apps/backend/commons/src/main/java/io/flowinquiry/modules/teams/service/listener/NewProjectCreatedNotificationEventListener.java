@@ -93,7 +93,7 @@ public class NewProjectCreatedNotificationEventListener {
 
         for (Notification notification : savedNotifications) {
             sseController.sendEventToUser(
-                    notification.getUser().getId(), EventPayloadType.NEW_PROJECT, notification);
+                    notification.getUser().getId(), EventPayloadType.NOTIFICATION, notification);
         }
 
         ActivityLog activityLog =

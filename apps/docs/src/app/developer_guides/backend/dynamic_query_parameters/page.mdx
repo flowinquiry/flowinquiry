@@ -1,0 +1,117 @@
+---
+description: Learn how to run database migrations for FlowInquiry using Liquibase. Follow step-by-step instructions to apply schema changes and manage versioning efficiently.
+---
+
+# Using Dynamic Query Parameters in FlowInquiry
+
+This document explains how to use the dynamic query parameter system in the FlowInquiry backend, focusing on the `io.flowinquiry.query` package and how to leverage these features in the service layer.
+
+## Overview
+
+The dynamic query system allows clients to build complex, flexible queries for filtering and searching entities. This is achieved using a set of DTOs and utility classes that translate query parameters into JPA Specifications.
+
+## Core Classes
+
+### QueryDTO
+
+The entry point for dynamic queries is the `QueryDTO` class:
+
+```java
+public class QueryDTO {
+    private List<GroupFilter> groups;
+    private List<Filter> filters;
+}
+```
+
+- `filters`: A list of simple filters (field, operator, value).
+- `groups`: A list of grouped filters, allowing for nested logical operations (AND/OR).
+
+### Filter
+
+Represents a single filter condition:
+
+```java
+public class Filter {
+    @NotEmpty private String field;
+    @NotNull private FilterOperator operator;
+    @NotNull private Object value;
+    // ...constructor and accessors...
+}
+```
+
+- `field`: The entity field to filter on.
+- `operator`: The comparison operator (e.g., EQUALS, LIKE, GREATER_THAN).
+- `value`: The value to compare against.
+
+### GroupFilter
+
+Allows grouping of filters and/or other groups with a logical operator:
+
+```java
+public class GroupFilter {
+    private List<Filter> filters; // Simple filters in this group
+    private List<GroupFilter> groups; // Nested groups
+    private LogicalOperator logicalOperator; // AND or OR
+}
+```
+
+## Query Execution: QueryUtils
+
+The `QueryUtils` class provides the method to convert a `QueryDTO` into a JPA `Specification`:
+
+```java
+public static <Entity> Specification<Entity> createSpecification(QueryDTO queryDTO)
+```
+
+- If `groups` are present, it recursively builds predicates for each group.
+- If only `filters` are present, it builds predicates for each filter.
+- Returns a `Specification` that can be used with Spring Data JPA repositories.
+
+## Example Usage in Service Layer
+
+See the `ProjectService` for a real-world example:
+
+```java
+@Transactional(readOnly = true)
+public Page<ProjectDTO> findProjects(Optional<QueryDTO> queryDTO, Pageable pageable) {
+    Specification<Project> spec = createSpecification(queryDTO.orElse(null));
+    return projectRepository.findAll(spec, pageable).map(projectMapper::toDto);
+}
+```
+
+- The service receives a `QueryDTO` (often from a controller or API request).
+- It calls `QueryUtils.createSpecification(queryDTO)` to build the query.
+- The resulting `Specification` is passed to the repository's `findAll` method.
+
+## Example QueryDTO JSON
+
+A sample JSON payload for a dynamic query might look like:
+
+```json
+{
+  "filters": [
+    { "field": "name", "operator": "LIKE", "value": "%demo%" },
+    { "field": "status", "operator": "EQUALS", "value": "ACTIVE" }
+  ],
+  "groups": [
+    {
+      "filters": [
+        {
+          "field": "createdDate",
+          "operator": "GREATER_THAN",
+          "value": "2024-01-01"
+        }
+      ],
+      "logicalOperator": "AND"
+    }
+  ]
+}
+```
+
+## Summary
+
+- Use `QueryDTO` to define dynamic filters and groups.
+- Use `QueryUtils.createSpecification` to convert the DTO to a JPA Specification.
+- Pass the Specification to your repository for flexible, dynamic querying.
+
+Refer to the `io.flowinquiry.query` package for more details and available operators.

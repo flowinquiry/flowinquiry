@@ -112,6 +112,7 @@ const RichTextEditor = ({
 
   // Initialize the editor
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit,
       Link.configure({

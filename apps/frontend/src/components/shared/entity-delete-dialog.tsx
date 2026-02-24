@@ -26,8 +26,9 @@ import {
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useAppClientTranslations } from "@/hooks/use-translations";
 
-export interface EntitiesDeleteDialogProps<TEntity extends Record<string, any>>
-  extends React.ComponentPropsWithoutRef<typeof Dialog> {
+export interface EntitiesDeleteDialogProps<
+  TEntity extends Record<string, any>,
+> extends React.ComponentPropsWithoutRef<typeof Dialog> {
   entities: TEntity[];
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;

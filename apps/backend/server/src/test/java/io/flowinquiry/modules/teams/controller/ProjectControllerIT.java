@@ -1,12 +1,14 @@
 package io.flowinquiry.modules.teams.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -30,6 +32,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -139,6 +142,43 @@ class ProjectControllerIT {
                                 .content("{}"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE));
+    }
+
+    @Test
+    void exportToCsv() throws Exception {
+        restProjectMockMvc
+                .perform(
+                        post("/api/projects/export")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept("text/csv")
+                                .content("{}"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.CONTENT_TYPE, containsString("text/csv")))
+                .andExpect(
+                        header().string(
+                                        HttpHeaders.CONTENT_DISPOSITION,
+                                        containsString("projects.csv")));
+    }
+
+    @Test
+    void exportToXlsx() throws Exception {
+        restProjectMockMvc
+                .perform(
+                        post("/api/projects/export")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(
+                                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                                .content("{}"))
+                .andExpect(status().isOk())
+                .andExpect(
+                        header().string(
+                                        HttpHeaders.CONTENT_TYPE,
+                                        containsString(
+                                                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")))
+                .andExpect(
+                        header().string(
+                                        HttpHeaders.CONTENT_DISPOSITION,
+                                        containsString("projects.xlsx")));
     }
 
     @Test

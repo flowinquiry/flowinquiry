@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useAppClientTranslations } from "@/hooks/use-translations";
 import {
+  closeProjectIteration,
   createProjectIteration,
   updateProjectIteration,
 } from "@/lib/actions/project-iteration.action";
@@ -70,6 +71,7 @@ export function ProjectIterationDialog({
       id: iteration?.id,
       projectId: project?.id,
       name: iteration?.name || "",
+      status: iteration?.status,
       description: iteration?.description || "",
       startDate: iteration?.startDate,
       endDate: iteration?.endDate,
@@ -84,6 +86,7 @@ export function ProjectIterationDialog({
         id: iteration?.id,
         projectId: project.id,
         name: iteration?.name || "",
+        status: iteration?.status,
         description: iteration?.description || "",
         startDate: iteration?.startDate,
         endDate: iteration?.endDate,
@@ -201,6 +204,19 @@ export function ProjectIterationDialog({
     }
   };
 
+  const handleClose = async () => {
+    setIsSubmitting(true);
+    try {
+      let result: ProjectIterationDTO;
+      result = await closeProjectIteration(iteration?.id!);
+      onOpenChange(false);
+
+      onSave?.(result);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-240" data-testid="iteration-dialog">
@@ -295,6 +311,15 @@ export function ProjectIterationDialog({
                 data-testid="iteration-cancel-button"
               >
                 {t.common.buttons("cancel")}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={handleClose}
+                disabled={iteration?.status !== "ACTIVE" || isSubmitting}
+                data-testid="iteration-close-button"
+              >
+                {t.common.buttons("close")}
               </Button>
               <Button
                 type="submit"

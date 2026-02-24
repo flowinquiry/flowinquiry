@@ -1,0 +1,61 @@
+name: PR Comments (Coverage & Playwright)
+
+on:
+  workflow_run:
+    workflows: ["FlowInquiry CI"]   # must match the CI workflow 'name:'
+    types: [completed]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  comment:
+    # Only run on successful CI that was triggered by a pull_request
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      (github.event.workflow_run.pull_requests && github.event.workflow_run.pull_requests[0])
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Coverage artifact
+        uses: dawidd6/action-download-artifact@v11
+        with:
+          run_id: ${{ github.event.workflow_run.id }}
+          name: CoverageReport
+          path: cov
+          if_no_artifact_found: warn
+
+      - name: Download Playwright summary artifact
+        uses: dawidd6/action-download-artifact@v11
+        with:
+          run_id: ${{ github.event.workflow_run.id }}
+          name: PlaywrightSummary
+          path: pw
+          if_no_artifact_found: warn
+
+      # Post Coverage comment (sticky)
+      - name: Post Coverage comment
+        if: ${{ hashFiles('cov/TrimmedSummary.md') != '' }}
+        uses: marocchino/sticky-pull-request-comment@v2.9.2
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          number: ${{ github.event.workflow_run.pull_requests[0].number }}
+          header: coverage-report
+          path: cov/TrimmedSummary.md
+          append: false
+          recreate: false
+
+      # Post Playwright comment (sticky)
+      - name: Post Playwright comment
+        if: ${{ hashFiles('pw/playwright-summary.md') != '' }}
+        uses: marocchino/sticky-pull-request-comment@v2.9.2
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          number: ${{ github.event.workflow_run.pull_requests[0].number }}
+          header: playwright
+          path: pw/playwright-summary.md
+          append: false
+          recreate: false

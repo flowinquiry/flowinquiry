@@ -27,4 +27,7 @@ public interface ProjectRepository
 """)
     @EntityGraph(attributePaths = {"team"})
     Page<Project> findAllByUserId(@Param("userId") Long userId, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"projectSetting"})
+    Optional<Project> findById(@Param("id") Long id);
 }

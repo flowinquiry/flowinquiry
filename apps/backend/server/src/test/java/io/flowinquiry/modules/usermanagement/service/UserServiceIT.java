@@ -179,7 +179,7 @@ class UserServiceIT {
     @Test
     @Transactional
     void testFindResourcesWithHighestPermissionsByUserId() {
-        User user = userRepository.findOneByEmailIgnoreCase("admin@flowinquiry.io").orElseThrow();
+        User user = userRepository.findOneByEmailIgnoreCase("admin@example.com").orElseThrow();
         // Act - call the method to test
         List<ResourcePermissionDTO> result =
                 userService.getResourcesWithPermissionsByUserId(user.getId());

@@ -6,12 +6,14 @@ import java.time.Instant;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Formula;
 
 @Entity
 @Table(name = "fw_project_iteration")
 @Getter
 @Setter
+@SuperBuilder
 @NoArgsConstructor
 public class ProjectIteration extends TenantScopedAuditingEntity<Long> {
 
@@ -46,6 +48,7 @@ public class ProjectIteration extends TenantScopedAuditingEntity<Long> {
     @Formula("(SELECT COUNT(r.id) FROM fw_ticket r WHERE r.iteration_id = id)")
     private Long totalTickets;
 
-    @Formula("(SELECT SUM(r.estimate) FROM fw_ticket r WHERE r.iteration_id = id)")
+    @Formula(
+            "(SELECT COALESCE(SUM(r.estimate),0) FROM fw_ticket r WHERE r.iteration_id = id and r.is_deleted = FALSE)")
     private Long totalStoryPoints;
 }

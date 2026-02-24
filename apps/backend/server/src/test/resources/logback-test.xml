@@ -14,48 +14,14 @@
 	<include
 		resource="org/springframework/boot/logging/logback/console-appender.xml" />
 
+	<!-- Only io.flowinquiry gets DEBUG level, all other packages inherit ERROR 
+		from root logger -->
 	<logger name="io.flowinquiry" level="DEBUG" />
 
-	<!-- https://www.testcontainers.org/supported_docker_environment/logging_config/ -->
-	<logger name="org.testcontainers" level="INFO" />
-	<logger name="ch.qos" level="ERROR" />
-	<logger name="com.github.dockerjava" level="WARN" />
-	<logger name="com.tngtech" level="ERROR" />
-	<logger name="jakarta.activation" level="WARN" />
-	<logger name="jakarta.mail" level="WARN" />
-	<logger name="jakarta.xml.bind" level="WARN" />
-	<logger name="ch.qos.logback" level="WARN" />
-	<logger name="com.jayway.jsonpath" level="WARN" />
-	<logger name="com.ryantenney" level="WARN" />
-	<logger name="com.sun" level="WARN" />
-	<logger name="com.zaxxer" level="WARN" />
-	<logger name="io.undertow" level="WARN" />
-	<logger name="io.undertow.websockets.jsr" level="ERROR" />
-	<logger name="org.apache" level="WARN" />
-	<logger name="org.apache.catalina.startup.DigesterFactory"
-		level="OFF" />
-	<logger name="org.bson" level="WARN" />
-	<logger name="org.hibernate.validator" level="WARN" />
-	<logger name="org.hibernate" level="WARN" />
-	<logger name="org.hibernate.ejb.HibernatePersistence"
-		level="OFF" />
-	<logger name="org.postgresql.jdbc" level="WARN" />
-	<logger name="org.springframework" level="WARN" />
-	<logger name="org.springframework.web" level="WARN" />
-	<logger name="org.springframework.security" level="WARN" />
-	<logger name="org.springframework.cache" level="WARN" />
-	<logger name="org.thymeleaf" level="WARN" />
-	<logger name="org.xnio" level="WARN" />
-	<logger name="sun.rmi" level="WARN" />
-	<logger name="sun.rmi.transport" level="WARN" />
-	<logger name="com.tngtech.archunit.core.importer" level="ERROR" />
-	<logger name="org.hibernate.orm.incubating" level="ERROR" />
-	<logger name="liquibase" level="WARN" />
-	<logger name="LiquibaseSchemaResolver" level="INFO" />
-
 	<springProperty name="log.level"
-		source="logging.level.root" defaultValue="INFO" />
-	<root level="${log.level}">
+		source="logging.level.root" defaultValue="ERROR" />
+	<root>
+		<level value="${log.level:ERROR}" />
 		<appender-ref ref="CONSOLE" />
 	</root>
 
