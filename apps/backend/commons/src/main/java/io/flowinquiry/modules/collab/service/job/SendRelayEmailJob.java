@@ -28,6 +28,7 @@ import org.thymeleaf.context.Context;
 @Component
 public class SendRelayEmailJob {
     private static final int MAX_RETRIES = 3;
+    private static final int EMAIL_JOB_BATCH_LIMIT = 500;
 
     private static final String BASE_URL = "baseUrl";
     static final String BASE_URL_SETTING = "mail.base_url";
@@ -60,38 +61,53 @@ public class SendRelayEmailJob {
     public void run() {
         List<EmailJob> jobs =
                 emailJobRepository.findByStatusOrderByCreatedAtAsc(
-                        EmailJobStatus.PENDING, Limit.of(500));
+                        EmailJobStatus.PENDING, Limit.of(EMAIL_JOB_BATCH_LIMIT));
+
+        if (jobs.isEmpty()) {
+            log.debug("No pending email jobs found.");
+            return;
+        }
+
+        ObjectMapper objectMapper = new ObjectMapper();
 
         for (EmailJob job : jobs) {
             try {
                 Locale locale =
                         Locale.forLanguageTag(
                                 Optional.ofNullable(job.getRecipientLocale()).orElse("en"));
-                Context context = new Context(locale);
-                Map<String, Object> contextMap =
-                        new ObjectMapper()
-                                .convertValue(job.getTemplateContext(), new TypeReference<>() {});
-                context.setVariable(BASE_URL, baseUrl);
-                context.setVariables(contextMap);
+                Context context = prepareContext(job, locale, objectMapper);
                 RenderedEmail rendered =
                         emailTemplateRenderer.render(job.getTemplateKey(), context, locale);
 
                 String subject =
-                        (job.getSubjectOverride() != null)
-                                ? job.getSubjectOverride()
-                                : rendered.subject();
+                        Optional.ofNullable(job.getSubjectOverride()).orElse(rendered.subject());
                 emailSender.sendEmail(job.getRecipients(), subject, rendered.body(), false, true);
 
                 job.setStatus(EmailJobStatus.SENT);
+                log.info("Email job {} sent successfully.", job.getId());
             } catch (Exception ex) {
                 job.setRetries(job.getRetries() + 1);
+                log.error("Failed to send email job {}: {}", job.getId(), ex.getMessage(), ex);
                 if (job.getRetries() >= MAX_RETRIES) {
                     job.setStatus(EmailJobStatus.FAILED);
+                    log.warn(
+                            "Email job {} marked as FAILED after {} retries.",
+                            job.getId(),
+                            MAX_RETRIES);
                 }
             }
 
             job.setUpdatedAt(Instant.now());
             emailJobRepository.save(job);
         }
+    }
+
+    private Context prepareContext(EmailJob job, Locale locale, ObjectMapper objectMapper) {
+        Context context = new Context(locale);
+        Map<String, Object> contextMap =
+                objectMapper.convertValue(job.getTemplateContext(), new TypeReference<>() {});
+        context.setVariable(BASE_URL, baseUrl);
+        context.setVariables(contextMap);
+        return context;
     }
 }

@@ -38,6 +38,26 @@ public class MailTemplateRendererService {
     /**
      * Renders an email template with the given context and locale.
      *
+     * <p><b>Template Format (.yaml.md):</b>
+     *
+     * <ul>
+     *   <li>File must start with YAML frontmatter delimited by <code>---</code> (three dashes).
+     *   <li>The YAML section must include a <code>subject</code> field.
+     *   <li>After the second <code>---</code>, the Markdown body follows.
+     * </ul>
+     *
+     * <p>Example:
+     *
+     * <pre>
+     * ---
+     * subject: Welcome to FlowInquiry!
+     * ---
+     *
+     * # Hello, {{name}}!
+     *
+     * Thank you for joining FlowInquiry. We're excited to have you.
+     * </pre>
+     *
      * @param templateKey The key identifying the template to render
      * @param context The Thymeleaf context containing variables for template rendering
      * @param locale The locale to use for template selection and rendering
@@ -84,7 +104,6 @@ public class MailTemplateRendererService {
     }
 
     private String renderTemplate(String templateString, Context context) throws IOException {
-
         return templateEngine.process(templateString, context);
     }
 
