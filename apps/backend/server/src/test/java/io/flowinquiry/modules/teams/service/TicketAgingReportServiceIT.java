@@ -7,7 +7,15 @@ import io.flowinquiry.modules.teams.domain.TicketPriority;
 import io.flowinquiry.modules.teams.service.dto.*;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+
+import io.flowinquiry.modules.teams.service.dto.report.Granularity;
+import io.flowinquiry.modules.teams.service.dto.report.GroupBy;
+import io.flowinquiry.modules.teams.service.dto.report.Period;
+import io.flowinquiry.modules.teams.service.dto.report.ThroughputReportDTO;
+import io.flowinquiry.modules.teams.service.dto.report.TicketThroughputQueryParams;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -310,5 +318,48 @@ public class TicketAgingReportServiceIT {
                     .toList()
                     .forEach(item -> assertThat(item.getStatus()).isIn("Backlog", "Ready"));
         }
+    }
+
+    @Test
+    void testGetThroughputReport() {
+        TicketThroughputQueryParams queryParams = new TicketThroughputQueryParams();
+        queryParams.setProjectId(3L);
+        queryParams.setFrom(LocalDate.of(2025, 10, 1));
+        queryParams.setTo(LocalDate.of(2025, 11, 30));
+        queryParams.setGranularity(Granularity.MONTH);
+
+        ThroughputReportDTO report = ticketAgingReportService.getThroughputReport(queryParams);
+
+        // Verify the results
+        assertThat(report).isNotNull();
+        assertThat(report.getFromDate()).isEqualTo(LocalDate.of(2025, 10, 1));
+        assertThat(report.getToDate()).isEqualTo(LocalDate.of(2025, 11, 30));
+        assertThat(report.getGranularity()).isEqualTo(Granularity.MONTH);
+
+        // Verify the data
+        assertThat(report.getData()).isNotEmpty();
+
+        // There should be 2 periods (October and November 2025)
+        assertThat(report.getData().size()).isEqualTo(2);
+
+        // Get the periods
+        List<Period> periods = new ArrayList<>(report.getData().keySet());
+
+        // Sort periods by start date
+        periods.sort(Comparator.comparing(Period::getStart));
+
+        // Verify October period
+        Period octPeriod = periods.get(0);
+        assertThat(octPeriod.getStart()).isEqualTo(LocalDate.of(2025, 10, 1));
+        assertThat(octPeriod.getEnd()).isEqualTo(LocalDate.of(2025, 10, 31));
+
+        // Verify November period
+        Period novPeriod = periods.get(1);
+        assertThat(novPeriod.getStart()).isEqualTo(LocalDate.of(2025, 11, 1));
+        assertThat(novPeriod.getEnd()).isEqualTo(LocalDate.of(2025, 11, 30));
+
+        // Verify throughput counts
+        // In November, there should be 6 completed tickets (all with completion date 2025-11-15)
+        assertThat(report.getData().get(novPeriod).getThroughput()).isEqualTo(6);
     }
 }
