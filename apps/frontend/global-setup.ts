@@ -67,7 +67,7 @@ async function authenticateUser(
  * Global setup function to authenticate test users and prepare storage states.
  */
 export default async function globalSetup() {
-  await authenticateUser("admin@flowinquiry.io", "admin", "admin.json");
+  await authenticateUser("admin@example.com", "admin", "admin.json");
   // await authenticateUser("user@flowinquiry.io", "user1234", "user.json");
 
   // Create an unauthenticated session state
