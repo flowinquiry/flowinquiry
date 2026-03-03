@@ -1,7 +1,14 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { EyeIcon, EyeOffIcon } from "lucide-react";
+import {
+  EyeIcon,
+  EyeOffIcon,
+  Lock,
+  Mail,
+  Server,
+  Settings2,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -10,6 +17,7 @@ import * as z from "zod/v4";
 
 import { Heading } from "@/components/heading";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -28,6 +36,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAppClientTranslations } from "@/hooks/use-translations";
 import {
   findAppSettingsByGroup,
@@ -35,6 +44,13 @@ import {
 } from "@/lib/actions/settings.action";
 import { useError } from "@/providers/error-provider";
 import { AppSettingDTO } from "@/types/commons";
+
+const GROUP_ICONS: Record<string, React.ReactNode> = {
+  "SMTP Server": <Server className="h-4 w-4" />,
+  Authentication: <Lock className="h-4 w-4" />,
+  "Sender Info": <Mail className="h-4 w-4" />,
+  "Advanced Options": <Settings2 className="h-4 w-4" />,
+};
 
 export function MailSettings() {
   const { setError } = useError();
@@ -275,14 +291,32 @@ export function MailSettings() {
 
   if (loading) {
     return (
-      <p className="text-muted-foreground text-sm">
-        {t.common.misc("loading_data")}
-      </p>
+      <div className="flex flex-col gap-4">
+        <Heading title={t.mail("title")} description={t.mail("description")} />
+        <Separator />
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 max-w-5xl">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-5 w-32" />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {Array.from({ length: 3 }).map((_, j) => (
+                  <div key={j} className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-9 w-full" />
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4">
+    <div className="flex flex-col gap-4">
       <div className="flex flex-row justify-between">
         <Heading title={t.mail("title")} description={t.mail("description")} />
       </div>
@@ -293,118 +327,143 @@ export function MailSettings() {
             e.preventDefault();
             onSubmit();
           }}
-          className="space-y-6 max-w-5xl"
+          className="flex flex-col gap-6"
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-5xl">
             {Object.entries(FIELD_GROUPS).map(([groupLabel, keys]) => (
-              <div
-                key={groupLabel}
-                className="space-y-4 border p-4 rounded-lg h-full"
-              >
-                <h3 className="text-lg font-semibold mb-2">{groupLabel}</h3>
-                {keys.map((key) => {
-                  const meta = FIELD_META[key];
-                  // Use type casting to handle the FormField typing issue
-                  const fieldKey = key as any;
+              <Card key={groupLabel} className="flex flex-col">
+                <CardHeader className="pb-2 border-b">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    {GROUP_ICONS[groupLabel]}
+                    {groupLabel}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex-1 pt-4 space-y-4">
+                  {keys.map((key) => {
+                    const meta = FIELD_META[key];
+                    const fieldKey = key as any;
 
-                  return (
-                    <FormField
-                      key={key}
-                      control={form.control as any}
-                      name={fieldKey}
-                      render={({ field }) => (
-                        <FormItem className="space-y-2">
-                          <FormLabel>
-                            {meta.label}
-                            {(key === "mail.host" || key === "mail.port") &&
-                              " *"}
-                          </FormLabel>
-                          <FormControl>
-                            {meta.type === "boolean" ? (
-                              <Select
-                                value={
-                                  formValues[key as keyof typeof formValues]
-                                }
-                                onValueChange={(value) =>
-                                  handleValueChange(key, value)
-                                }
-                                defaultValue={
-                                  key.includes("ssl") || key.includes("debug")
-                                    ? "false"
-                                    : "true"
-                                }
-                              >
-                                <SelectTrigger className="w-full">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="true">True</SelectItem>
-                                  <SelectItem value="false">False</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            ) : meta.type === "password" ? (
-                              <div className="relative">
+                    return (
+                      <FormField
+                        key={key}
+                        control={form.control as any}
+                        name={fieldKey}
+                        render={() => (
+                          <FormItem className="space-y-1.5">
+                            <FormLabel>
+                              {meta.label}
+                              {(key === "mail.host" || key === "mail.port") && (
+                                <span className="ml-0.5 text-destructive">
+                                  *
+                                </span>
+                              )}
+                            </FormLabel>
+                            <FormControl>
+                              {meta.type === "boolean" ? (
+                                <Select
+                                  value={
+                                    formValues[key as keyof typeof formValues]
+                                  }
+                                  onValueChange={(value) =>
+                                    handleValueChange(key, value)
+                                  }
+                                  defaultValue={
+                                    key.includes("ssl") || key.includes("debug")
+                                      ? "false"
+                                      : "true"
+                                  }
+                                >
+                                  <SelectTrigger className="w-full">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="true">
+                                      Enabled
+                                    </SelectItem>
+                                    <SelectItem value="false">
+                                      Disabled
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              ) : meta.type === "password" ? (
+                                <div className="relative">
+                                  <Input
+                                    type={showPassword ? "text" : "password"}
+                                    value={
+                                      formValues[key as keyof typeof formValues]
+                                    }
+                                    onChange={(e) =>
+                                      handleValueChange(key, e.target.value)
+                                    }
+                                    className="pr-10"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setShowPassword((prev) => !prev)
+                                    }
+                                    className="absolute right-2 top-2 text-muted-foreground hover:text-foreground transition-colors"
+                                    aria-label={
+                                      showPassword
+                                        ? "Hide password"
+                                        : "Show password"
+                                    }
+                                  >
+                                    {showPassword ? (
+                                      <EyeOffIcon className="w-4 h-4" />
+                                    ) : (
+                                      <EyeIcon className="w-4 h-4" />
+                                    )}
+                                  </button>
+                                </div>
+                              ) : (
                                 <Input
-                                  type={showPassword ? "text" : "password"}
                                   value={
                                     formValues[key as keyof typeof formValues]
                                   }
                                   onChange={(e) =>
                                     handleValueChange(key, e.target.value)
                                   }
-                                  className="pr-10"
                                 />
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    setShowPassword((prev) => !prev)
-                                  }
-                                  className="absolute right-2 top-2 text-muted-foreground hover:text-foreground"
-                                >
-                                  {showPassword ? (
-                                    <EyeOffIcon className="w-4 h-4" />
-                                  ) : (
-                                    <EyeIcon className="w-4 h-4" />
-                                  )}
-                                </button>
-                              </div>
-                            ) : (
-                              <Input
-                                value={
-                                  formValues[key as keyof typeof formValues]
-                                }
-                                onChange={(e) =>
-                                  handleValueChange(key, e.target.value)
-                                }
-                              />
+                              )}
+                            </FormControl>
+                            {meta.description && (
+                              <FormDescription>
+                                {meta.description}
+                              </FormDescription>
                             )}
-                          </FormControl>
-                          {meta.description && (
-                            <FormDescription>
-                              {meta.description}
-                            </FormDescription>
-                          )}
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  );
-                })}
-              </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    );
+                  })}
+                </CardContent>
+              </Card>
             ))}
           </div>
 
           {submitAttempted && Object.keys(form.formState.errors).length > 0 && (
-            <div className="text-destructive font-medium p-3 bg-destructive/10 rounded-md">
-              Please fill in all required fields before submitting
+            <div className="max-w-5xl rounded-md bg-destructive/10 p-3 text-sm font-medium text-destructive">
+              Please fill in all required fields before submitting.
             </div>
           )}
 
-          <Button type="submit" disabled={form.formState.isSubmitting}>
-            {form.formState.isSubmitting
-              ? t.common.buttons("saving")
-              : t.common.buttons("save")}
-          </Button>
+          {/* Sticky save bar */}
+          <div className="sticky bottom-0 max-w-5xl flex items-center justify-end gap-3 rounded-xl border bg-background/80 px-4 py-3 shadow-sm backdrop-blur supports-backdrop-filter:bg-background/60">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push("/portal/settings")}
+            >
+              {t.common.buttons("cancel")}
+            </Button>
+            <Button type="submit" disabled={form.formState.isSubmitting}>
+              {form.formState.isSubmitting
+                ? t.common.buttons("saving")
+                : t.common.buttons("save")}
+            </Button>
+          </div>
         </form>
       </Form>
     </div>
