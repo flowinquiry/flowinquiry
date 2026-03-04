@@ -187,7 +187,7 @@ const ProjectListView = () => {
       data-testid="user-project-list-container"
     >
       {/* ── Toolbar ── */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Heading
           title={t.teams.projects.list("title", { totalElements })}
           description={t.teams.projects.list("description")}
@@ -198,14 +198,22 @@ const ProjectListView = () => {
           onValueChange={(v) => {
             if (v === "flat" || v === "grouped") setViewMode(v as ViewMode);
           }}
-          className="shrink-0"
+          className="shrink-0 rounded-lg border bg-muted p-1 gap-1"
           data-testid="project-view-mode-toggle"
         >
-          <ToggleGroupItem value="flat" data-testid="project-view-flat">
+          <ToggleGroupItem
+            value="flat"
+            className="rounded-md px-3 data-[state=on]:bg-background data-[state=on]:shadow-sm data-[state=on]:text-foreground text-muted-foreground"
+            data-testid="project-view-flat"
+          >
             <LayoutList className="mr-1.5 h-4 w-4" />
             {t.teams.projects.list("flat_view")}
           </ToggleGroupItem>
-          <ToggleGroupItem value="grouped" data-testid="project-view-grouped">
+          <ToggleGroupItem
+            value="grouped"
+            className="rounded-md px-3 data-[state=on]:bg-background data-[state=on]:shadow-sm data-[state=on]:text-foreground text-muted-foreground"
+            data-testid="project-view-grouped"
+          >
             <Users className="mr-1.5 h-4 w-4" />
             {t.teams.projects.list("group_by_team")}
           </ToggleGroupItem>
@@ -234,12 +242,21 @@ const ProjectListView = () => {
             if (v === "Active" || v === "Closed")
               setStatusFilter(v as ProjectStatus);
           }}
+          className="rounded-lg border bg-muted p-1 gap-1"
           data-testid="project-status-filter"
         >
-          <ToggleGroupItem value="Active" data-testid="project-status-active">
+          <ToggleGroupItem
+            value="Active"
+            className="rounded-md px-3 data-[state=on]:bg-background data-[state=on]:shadow-sm data-[state=on]:text-foreground text-muted-foreground"
+            data-testid="project-status-active"
+          >
             {t.teams.projects.list("status_active")}
           </ToggleGroupItem>
-          <ToggleGroupItem value="Closed" data-testid="project-status-closed">
+          <ToggleGroupItem
+            value="Closed"
+            className="rounded-md px-3 data-[state=on]:bg-background data-[state=on]:shadow-sm data-[state=on]:text-foreground text-muted-foreground"
+            data-testid="project-status-closed"
+          >
             {t.teams.projects.list("status_closed")}
           </ToggleGroupItem>
         </ToggleGroup>

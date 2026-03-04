@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState } from "react";
 import { DateRange } from "react-day-picker";
 
 // Define time range options
-export type TimeRange = "7d" | "30d" | "90d" | "custom";
+export type TimeRange = "7d" | "14d" | "30d" | "90d" | "custom";
 
 interface TimeRangeContextType {
   timeRange: TimeRange;
