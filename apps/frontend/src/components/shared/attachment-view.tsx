@@ -1,6 +1,12 @@
 "use client";
 
-import { Download, FilePlus, Paperclip, Trash } from "lucide-react";
+import {
+  Download,
+  FilePlus2,
+  Paperclip,
+  Trash,
+  UploadCloud,
+} from "lucide-react";
 import React, { useRef, useState } from "react";
 import useSWR from "swr";
 
@@ -18,8 +24,9 @@ import { getSecureBlobResource } from "@/lib/actions/commons.action";
 import {
   deleteEntityAttachment,
   getEntityAttachments,
-  uploadAttachmentsForEntity, // ✅ Multi-file upload
+  uploadAttachmentsForEntity,
 } from "@/lib/actions/entity-attachments.action";
+import { cn } from "@/lib/utils";
 import { useError } from "@/providers/error-provider";
 import { useUserTeamRole } from "@/providers/user-team-role-provider";
 import { EntityAttachmentDTO, EntityType } from "@/types/commons";
@@ -53,7 +60,7 @@ const formatDate = (dateStr: string) => {
 const AttachmentView = ({ entityType, entityId }: AttachmentViewProps) => {
   const { setError } = useError();
   const [deleting, setDeleting] = useState<number | null>(null);
-  const [hovered, setHovered] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const permissionLevel = usePagePermission();
   const teamRole = useUserTeamRole().role;
@@ -81,25 +88,32 @@ const AttachmentView = ({ entityType, entityId }: AttachmentViewProps) => {
     () => getEntityAttachments(entityType, entityId, setError),
   );
 
-  // Handle file selection via input dialog
-  const handleFileSelect = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    if (!event.target.files) return;
-    await uploadFiles(Array.from(event.target.files));
-  };
-
-  // Handle file upload via drag & drop
-  const handleDrop = async (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    await uploadFiles(Array.from(event.dataTransfer.files));
-  };
+  // Open file picker dialog
+  const openFilePicker = () => fileInputRef.current?.click();
 
   // Upload selected files
   const uploadFiles = async (files: File[]) => {
     if (!canWrite || files.length === 0) return;
     await uploadAttachmentsForEntity(entityType, entityId, files, setError);
     mutate(); // Refresh the attachment list
+  };
+
+  // Handle file selection via input dialog
+  const handleFileSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    if (!event.target.files) return;
+    await uploadFiles(Array.from(event.target.files));
+
+    // Reset input value so the same file can be re-uploaded
+    event.target.value = "";
+  };
+
+  // Handle file upload via drag & drop
+  const handleDrop = async (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setDragOver(false);
+    await uploadFiles(Array.from(event.dataTransfer.files));
   };
 
   // Handle file download
@@ -143,100 +157,121 @@ const AttachmentView = ({ entityType, entityId }: AttachmentViewProps) => {
     }
   };
 
+  const hasAttachments = (attachments?.length ?? 0) > 0;
+
   return (
-    <div
-      className={`w-full rounded-md transition-all duration-200 ${
-        hovered ? "border border-dotted border-gray-400" : ""
-      } space-y-2 flex flex-col justify-center`} // ✅ Ensures component has a minimum height
-      onClick={(event) => {
-        if (
-          event.target instanceof HTMLButtonElement ||
-          event.target instanceof SVGElement
-        )
-          return; // ✅ Prevent triggering upload on button/icon click
-        if (canWrite) fileInputRef.current?.click();
-      }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      onDragOver={(event) => event.preventDefault()}
-      onDrop={handleDrop}
-    >
-      {isValidating ? (
-        <Skeleton className="h-10 w-full" />
-      ) : attachments?.length === 0 ? (
-        // Placeholder when no attachments exist
-        canWrite && (
-          <div className="flex items-center justify-start gap-2 text-gray-500 cursor-pointer">
-            <FilePlus className="w-5 h-5" />
-            <span>{t.common.misc("attachment_place_holder")}</span>
+    <div className="flex flex-col gap-3">
+      {/* ── Drop zone / upload button ── */}
+      {canWrite && (
+        <div
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragOver(true);
+          }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={handleDrop}
+          onClick={openFilePicker}
+          className={cn(
+            "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-4 py-6 transition-colors",
+            dragOver
+              ? "border-primary bg-primary/5 text-primary"
+              : "border-muted-foreground/25 text-muted-foreground hover:border-primary/50 hover:bg-muted/40",
+          )}
+        >
+          <UploadCloud className={cn("h-8 w-8", dragOver && "text-primary")} />
+          <div className="text-center space-y-1">
+            <p className="text-sm font-medium">
+              {t.common.misc("attachment_place_holder")}
+            </p>
+            <p className="text-xs text-muted-foreground/70">
+              {t.common.misc("attachment_drop_hint")}
+            </p>
           </div>
-        )
-      ) : (
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-1 pointer-events-none"
+            tabIndex={-1}
+          >
+            <FilePlus2 className="mr-2 h-4 w-4" />
+            {t.common.misc("attachment_browse")}
+          </Button>
+        </div>
+      )}
+
+      {/* ── File list ── */}
+      {isValidating ? (
+        <div className="space-y-2">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <Skeleton key={i} className="h-8 w-full" />
+          ))}
+        </div>
+      ) : hasAttachments ? (
         <div className="flex flex-col">
-          {attachments
-            ?.sort(
+          {attachments!
+            .sort(
               (a, b) =>
                 new Date(b.uploadedAt).getTime() -
                 new Date(a.uploadedAt).getTime(),
-            ) // Ensure newest file is on top
+            )
             .map((attachment, index) => (
               <div
                 key={attachment.id}
-                className={`flex items-center transition-all duration-200 cursor-pointer ${
-                  index === 0 ? "p-0" : "mt-1" // ✅ First file has no padding
-                }`}
+                className={cn(
+                  "flex items-center gap-2 rounded-md px-2 py-1.5 transition-colors",
+                  index % 2 === 0 ? "bg-muted/30" : "",
+                  "hover:bg-muted/50",
+                )}
               >
-                {/* Attachment Icon */}
-                <Paperclip className="w-4 h-4 text-gray-500 mr-2" />
+                <Paperclip className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
 
-                {/* File Name with Tooltip */}
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="truncate font-medium">
+                    <span className="flex-1 truncate text-sm font-medium">
                       {attachment.fileName}
                     </span>
                   </TooltipTrigger>
-                  <TooltipContent>
-                    <div className="text-sm">
-                      <p>
-                        <strong>
-                          {t.common.misc("attachment_file_name")}:
-                        </strong>{" "}
-                        {attachment.fileName}
-                      </p>
-                      <p>
-                        <strong>{t.common.misc("attachment_type")}:</strong>{" "}
-                        {attachment.fileType ?? "Unknown"}
-                      </p>
-                      <p>
-                        <strong>{t.common.misc("attachment_size")}:</strong>{" "}
-                        {formatFileSize(attachment.fileSize)}
-                      </p>
-                      <p>
-                        <strong>Uploaded:</strong>{" "}
-                        {formatDate(attachment.uploadedAt)}
-                      </p>
-                    </div>
+                  <TooltipContent className="space-y-1 text-xs">
+                    <p>
+                      <strong>{t.common.misc("attachment_file_name")}:</strong>{" "}
+                      {attachment.fileName}
+                    </p>
+                    <p>
+                      <strong>{t.common.misc("attachment_type")}:</strong>{" "}
+                      {attachment.fileType ?? "Unknown"}
+                    </p>
+                    <p>
+                      <strong>{t.common.misc("attachment_size")}:</strong>{" "}
+                      {formatFileSize(attachment.fileSize)}
+                    </p>
+                    <p>
+                      <strong>{t.common.misc("attachment_uploaded")}:</strong>{" "}
+                      {formatDate(attachment.uploadedAt)}
+                    </p>
                   </TooltipContent>
                 </Tooltip>
 
-                {/* Action Buttons (Download, Delete) */}
-                <div className="flex items-center ml-2">
+                <span className="shrink-0 text-xs text-muted-foreground/70">
+                  {formatFileSize(attachment.fileSize)}
+                </span>
+
+                <div className="flex shrink-0 items-center">
                   {canView && (
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={(event) =>
+                          className="h-7 w-7"
+                          onClick={(e) =>
                             handleDownload(
                               attachment.fileUrl,
                               attachment.fileName,
-                              event,
+                              e,
                             )
                           }
                         >
-                          <Download className="w-4 h-4" />
+                          <Download className="h-3.5 w-3.5" />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
@@ -244,23 +279,20 @@ const AttachmentView = ({ entityType, entityId }: AttachmentViewProps) => {
                       </TooltipContent>
                     </Tooltip>
                   )}
-
                   {canWrite && (
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={(event) =>
-                            handleDelete(attachment.id, event)
-                          }
+                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                          onClick={(e) => handleDelete(attachment.id, e)}
                           disabled={deleting === attachment.id}
-                          className="text-red-500 hover:text-red-700"
                         >
                           {deleting === attachment.id ? (
-                            <Spinner className="h-4 w-4" />
+                            <Spinner className="h-3.5 w-3.5" />
                           ) : (
-                            <Trash className="w-4 h-4" />
+                            <Trash className="h-3.5 w-3.5" />
                           )}
                         </Button>
                       </TooltipTrigger>
@@ -271,7 +303,12 @@ const AttachmentView = ({ entityType, entityId }: AttachmentViewProps) => {
               </div>
             ))}
         </div>
-      )}
+      ) : !canWrite ? (
+        <p className="text-sm text-muted-foreground text-center py-4">
+          {t.common.misc("attachment_no_files")}
+        </p>
+      ) : null}
+
       <input
         type="file"
         ref={fileInputRef}

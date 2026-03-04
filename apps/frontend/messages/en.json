@@ -41,6 +41,7 @@
       "no_results_found": "No results found",
       "no_data_available": "No data available",
       "loading_data": "Loading data ...",
+      "completed": "Completed",
       "fail_to_load_data": "Oops! We couldn’t load the data. Try refreshing the page",
       "zoom_in": "Zoom In",
       "zoom_out": "Zoom Out",
@@ -50,10 +51,16 @@
       "comments": "Comments",
       "add_comment": "Add a comment",
       "no_comments": "No comments available",
-      "attachment_place_holder": "Click or Drag to upload",
+      "attachment_place_holder": "Click or drag files here to upload",
+      "attachment_drop_hint": "Supports any file type",
+      "attachment_browse": "Browse files",
       "attachment_file_name": "File name",
       "attachment_type": "Type",
       "attachment_size": "Size",
+      "attachment_uploaded": "Uploaded",
+      "attachment_no_files": "No attachments yet.",
+      "download": "Download",
+      "delete": "Delete",
       "none": "None",
       "yes": "Yes",
       "no": "No"
@@ -586,6 +593,13 @@
       "customize_workflow": "Customize workflow",
       "ticket_type_label": "Ticket type: {requestName}",
       "error_loading": "Error loading workflow detail"
+    },
+    "review": {
+      "state_transitions": "Transitions",
+      "no_transitions": "No transitions defined.",
+      "sla_hours": "{hours}h SLA",
+      "no_sla": "No SLA",
+      "escalates": "Escalates"
     },
     "add": {
       "title": "Create new workflow",

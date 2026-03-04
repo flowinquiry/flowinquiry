@@ -8,8 +8,8 @@ import {
   Edit,
   Eye,
   FileText,
-  Loader2,
   MessageSquarePlus,
+  Paperclip,
   Users,
 } from "lucide-react";
 import Link from "next/link";
@@ -19,6 +19,7 @@ import React, { useEffect, useRef, useState } from "react";
 import AttachmentView from "@/components/shared/attachment-view";
 import AuditLogView from "@/components/shared/audit-log-view";
 import { UserAvatar } from "@/components/shared/avatar-display";
+import CollapsibleCard from "@/components/shared/collapsible-card";
 import CommentsView from "@/components/shared/comments-view";
 import EntityWatchers from "@/components/shared/entity-watchers";
 import TeamNavLayout from "@/components/teams/team-nav";
@@ -36,7 +37,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Tooltip,
@@ -65,6 +66,20 @@ import { WorkflowStateDTO } from "@/types/workflows";
 
 import WorkflowReviewDialog from "../workflows/workflow-review-dialog";
 
+/* ─── tiny helper ─── */
+const MetaField = ({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) => (
+  <div>
+    <p className="text-xs text-muted-foreground mb-1">{label}</p>
+    <div className="text-sm">{children}</div>
+  </div>
+);
+
 const TicketDetailView = ({ ticketId }: { ticketId: number }) => {
   const permissionLevel = usePagePermission();
   const teamRole = useUserTeamRole().role;
@@ -78,7 +93,6 @@ const TicketDetailView = ({ ticketId }: { ticketId: number }) => {
   const [currentRequestState, setCurrentRequestState] = useState<String>("");
   const [isWorkflowDialogOpen, setWorkflowDialogOpen] = useState(false);
   const t = useAppClientTranslations();
-
   const commentsViewRef = useRef<HTMLDivElement | null>(null);
 
   const canEdit =
@@ -92,9 +106,8 @@ const TicketDetailView = ({ ticketId }: { ticketId: number }) => {
       setLoading(true);
       try {
         const data = await findTicketById(ticketId, setError);
-        if (!data) {
+        if (!data)
           throw new Error("Could not find the specified team request.");
-        }
         setTicket(data);
         setCurrentRequestState(data.currentStateName!);
       } finally {
@@ -116,71 +129,69 @@ const TicketDetailView = ({ ticketId }: { ticketId: number }) => {
         setWorkflowStates(data);
       }
     };
-
     loadWorkflowStates();
   }, [ticket?.workflowId, ticket?.currentStateId, setError]);
 
-  const handleViewWorkflow = () => {
-    setWorkflowDialogOpen(true);
-  };
-
-  const handleTabChange = (value: string) => {
-    setSelectedTab(value);
-  };
-
   const navigateToPreviousRecord = async () => {
     if (!ticket) return;
-    const previousTicket = await findPreviousTicket(
+    const prev = await findPreviousTicket(
       ticket.id!,
       ticket.projectId,
       setError,
     );
-    setTicket(previousTicket);
+    setTicket(prev);
   };
 
   const navigateToNextRecord = async () => {
     if (!ticket) return;
-    const nextTicket = await findNextTicket(
-      ticket.id!,
-      ticket.projectId,
-      setError,
-    );
-    setTicket(nextTicket);
+    const next = await findNextTicket(ticket.id!, ticket.projectId, setError);
+    setTicket(next);
   };
 
   const handleFocusComments = () => {
     setSelectedTab("comments");
     setTimeout(() => {
-      if (commentsViewRef.current) {
-        commentsViewRef.current.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      }
+      commentsViewRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
     }, 100);
   };
 
   const handleStateChangeRequest = async (state: WorkflowStateDTO) => {
-    const updatedRequest = {
+    const updated = {
       ...ticket,
       currentStateId: state.id,
       currentStateName: state.stateName,
     };
-    await updateTicket(updatedRequest.id!, updatedRequest, setError);
-    setTicket(updatedRequest);
+    await updateTicket(updated.id!, updated, setError);
+    setTicket(updated);
     setCurrentRequestState(state.stateName);
   };
 
+  /* ── Loading skeleton ── */
   if (loading) {
     return (
-      <div
-        className="flex h-64 items-center justify-center"
-        data-testid="ticket-loading"
-      >
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <span className="ml-2 text-lg font-medium">
-          {t.common.misc("loading_data")}
-        </span>
+      <div className="flex flex-col gap-4" data-testid="ticket-loading">
+        {/* header skeleton */}
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-8 w-8 rounded-md" />
+          <div className="space-y-2 flex-1">
+            <Skeleton className="h-4 w-48" />
+            <Skeleton className="h-6 w-72" />
+          </div>
+        </div>
+        <Skeleton className="h-10 w-full rounded-xl" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="md:col-span-2 space-y-3">
+            <Skeleton className="h-40 w-full" />
+            <Skeleton className="h-32 w-full" />
+          </div>
+          <div className="space-y-3">
+            <Skeleton className="h-40 w-full" />
+            <Skeleton className="h-32 w-full" />
+          </div>
+        </div>
       </div>
     );
   }
@@ -189,20 +200,17 @@ const TicketDetailView = ({ ticketId }: { ticketId: number }) => {
     return (
       <Card className="my-4" data-testid="ticket-not-found">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-red-500">
+          <CardTitle className="text-2xl font-bold text-destructive">
             {t.teams.tickets.detail("ticket_not_found_title")}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="mb-4">
+          <p className="mb-4 text-muted-foreground">
             {t.teams.tickets.detail("ticket_not_found_description")}
           </p>
-          <Button
-            variant="secondary"
-            onClick={() => router.back()}
-            data-testid="go-back-button"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" /> {t.common.buttons("go_back")}
+          <Button variant="secondary" onClick={() => router.back()}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            {t.common.buttons("go_back")}
           </Button>
         </CardContent>
       </Card>
@@ -226,10 +234,7 @@ const TicketDetailView = ({ ticketId }: { ticketId: number }) => {
             title: ticket.projectName!,
             link: `/portal/teams/${obfuscate(ticket.teamId)}/projects/${ticket.projectShortName}`,
           },
-          {
-            title: ticket.requestTitle!,
-            link: "#",
-          },
+          { title: ticket.requestTitle!, link: "#" },
         ]
       : [
           {
@@ -245,13 +250,17 @@ const TicketDetailView = ({ ticketId }: { ticketId: number }) => {
   return (
     <BreadcrumbProvider items={breadcrumbItems}>
       <TeamNavLayout teamId={ticket.teamId!}>
-        <div className="space-y-4" data-testid="ticket-detail-container">
-          {/* Header with Title and Navigation */}
+        <div
+          className="flex flex-col gap-4"
+          data-testid="ticket-detail-container"
+        >
+          {/* ── Title bar ── */}
           <div
             className="flex items-start justify-between gap-4"
             data-testid="ticket-header"
           >
-            <div className="flex items-center">
+            {/* Left: prev + title */}
+            <div className="flex items-start gap-2 min-w-0">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -259,10 +268,10 @@ const TicketDetailView = ({ ticketId }: { ticketId: number }) => {
                       variant="ghost"
                       size="icon"
                       onClick={navigateToPreviousRecord}
-                      className="mr-1"
+                      className="shrink-0 mt-0.5"
                       data-testid="previous-ticket-button"
                     >
-                      <ArrowLeft className="h-5 w-5" />
+                      <ArrowLeft className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -271,10 +280,11 @@ const TicketDetailView = ({ ticketId }: { ticketId: number }) => {
                 </Tooltip>
               </TooltipProvider>
 
-              <div className="flex flex-col">
-                <div className="flex items-center space-x-2">
+              <div className="min-w-0">
+                {/* Badge row */}
+                <div className="flex flex-wrap items-center gap-1.5 mb-2">
                   <span
-                    className="inline-block rounded-md px-2 py-1 text-xs font-semibold"
+                    className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset ring-transparent"
                     style={{
                       backgroundColor: workflowColor.background,
                       color: workflowColor.text,
@@ -283,23 +293,26 @@ const TicketDetailView = ({ ticketId }: { ticketId: number }) => {
                   >
                     {ticket.workflowRequestName}
                   </span>
-
                   <Badge
-                    variant={ticket.isCompleted ? "secondary" : "outline"}
-                    className="font-normal"
+                    variant={ticket.isCompleted ? "secondary" : "default"}
+                    className="rounded-full px-2.5 text-xs font-medium"
                     data-testid="ticket-state"
                   >
                     {currentRequestState}
                   </Badge>
-
-                  <TicketPriorityDisplay
-                    priority={ticket.priority}
-                    data-testid="ticket-priority"
-                  />
+                  <TicketPriorityDisplay priority={ticket.priority} />
+                  {ticket.isCompleted && (
+                    <Badge
+                      variant="secondary"
+                      className="rounded-full px-2.5 text-xs"
+                    >
+                      ✓ {t.common.misc("completed")}
+                    </Badge>
+                  )}
                 </div>
 
                 <h1
-                  className={`mt-1 text-2xl font-semibold ${
+                  className={`text-2xl font-bold leading-tight tracking-tight ${
                     ticket.isCompleted
                       ? "line-through text-muted-foreground"
                       : ""
@@ -311,35 +324,36 @@ const TicketDetailView = ({ ticketId }: { ticketId: number }) => {
               </div>
             </div>
 
-            <div className="flex items-center">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={navigateToNextRecord}
-                      className="ml-1"
-                      data-testid="next-ticket-button"
-                    >
-                      <ArrowRight className="h-5 w-5" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {t.teams.tickets.detail("next_ticket")}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
+            {/* Right: next */}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={navigateToNextRecord}
+                    className="shrink-0 mt-0.5"
+                    data-testid="next-ticket-button"
+                  >
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {t.teams.tickets.detail("next_ticket")}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
 
+          {/* ── Action bar ── */}
           <div
-            className="flex flex-wrap items-center justify-end gap-3"
+            className="flex flex-wrap items-center gap-2"
             data-testid="ticket-actions"
           >
             {canEdit && (
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() =>
                   router.push(
                     `/portal/teams/${obfuscate(ticket.teamId)}/tickets/${obfuscate(ticket.id)}/edit?${randomPair()}`,
@@ -347,7 +361,7 @@ const TicketDetailView = ({ ticketId }: { ticketId: number }) => {
                 }
                 data-testid="edit-ticket-button"
               >
-                <Edit className="mr-2 h-4 w-4" />{" "}
+                <Edit className="mr-2 h-4 w-4" />
                 {t.teams.tickets.detail("edit_ticket")}
               </Button>
             )}
@@ -355,10 +369,11 @@ const TicketDetailView = ({ ticketId }: { ticketId: number }) => {
             {canComment && (
               <Button
                 variant="outline"
+                size="sm"
                 onClick={handleFocusComments}
                 data-testid="add-comment-button"
               >
-                <MessageSquarePlus className="mr-2 h-4 w-4" />{" "}
+                <MessageSquarePlus className="mr-2 h-4 w-4" />
                 {t.teams.tickets.detail("add_comment")}
               </Button>
             )}
@@ -366,12 +381,9 @@ const TicketDetailView = ({ ticketId }: { ticketId: number }) => {
             {canEdit && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button
-                    className="flex items-center gap-2"
-                    data-testid="change-status-button"
-                  >
-                    {t.teams.tickets.detail("change_status")}{" "}
-                    <ArrowRight className="ml-1 h-4 w-4" />
+                  <Button size="sm" data-testid="change-status-button">
+                    {t.teams.tickets.detail("change_status")}
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
@@ -380,7 +392,7 @@ const TicketDetailView = ({ ticketId }: { ticketId: number }) => {
                 >
                   <DropdownMenuGroup>
                     {workflowStates
-                      .filter((state) => state.id !== ticket.currentStateId)
+                      .filter((s) => s.id !== ticket.currentStateId)
                       .map((state) => (
                         <DropdownMenuItem
                           key={state.id}
@@ -391,9 +403,8 @@ const TicketDetailView = ({ ticketId }: { ticketId: number }) => {
                           {state.stateName}
                         </DropdownMenuItem>
                       ))}
-
                     {workflowStates.filter(
-                      (state) => state.id !== ticket.currentStateId,
+                      (s) => s.id !== ticket.currentStateId,
                     ).length === 0 && (
                       <DropdownMenuItem
                         disabled
@@ -402,14 +413,13 @@ const TicketDetailView = ({ ticketId }: { ticketId: number }) => {
                         {t.teams.tickets.detail("no_available_states")}
                       </DropdownMenuItem>
                     )}
-
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
-                      onClick={handleViewWorkflow}
+                      onClick={() => setWorkflowDialogOpen(true)}
                       className="cursor-pointer"
                       data-testid="view-workflow-option"
                     >
-                      <Eye className="mr-2 h-4 w-4" />{" "}
+                      <Eye className="mr-2 h-4 w-4" />
                       {t.teams.tickets.detail("view_workflow")}
                     </DropdownMenuItem>
                   </DropdownMenuGroup>
@@ -420,16 +430,17 @@ const TicketDetailView = ({ ticketId }: { ticketId: number }) => {
             {!canEdit && canComment && (
               <Button
                 variant="outline"
-                onClick={handleViewWorkflow}
+                size="sm"
+                onClick={() => setWorkflowDialogOpen(true)}
                 data-testid="view-workflow-button"
               >
-                <Eye className="mr-2 h-4 w-4" />{" "}
+                <Eye className="mr-2 h-4 w-4" />
                 {t.teams.tickets.detail("view_workflow")}
               </Button>
             )}
           </div>
 
-          {/* Health Level Indicator */}
+          {/* ── Health indicator ── */}
           {ticket.conversationHealth?.healthLevel && (
             <TicketHealthLevelDisplay
               currentLevel={ticket.conversationHealth.healthLevel}
@@ -437,302 +448,244 @@ const TicketDetailView = ({ ticketId }: { ticketId: number }) => {
             />
           )}
 
-          <Card className="overflow-hidden" data-testid="ticket-details-card">
-            <CardContent className="p-0">
-              <div className="p-6 space-y-6" data-testid="ticket-content">
-                <div data-testid="ticket-description-section">
-                  <h3 className="text-lg font-medium mb-2 flex items-center">
-                    <FileText className="mr-2 h-5 w-5" />{" "}
+          {/* ── Main layout: 2/3 + 1/3 ── */}
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            {/* ── Left column: description + tabs ── */}
+            <div className="flex flex-col gap-4 lg:col-span-2">
+              {/* Description card */}
+              <Card data-testid="ticket-description-card">
+                <CardHeader className="border-b pb-4">
+                  <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                    <FileText className="h-4 w-4 text-muted-foreground" />
                     {t.teams.tickets.form.base("description")}
-                  </h3>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-4">
                   <div
-                    className="prose dark:prose-invert max-w-none text-muted-foreground"
+                    className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground"
                     dangerouslySetInnerHTML={{
                       __html: ticket.requestDescription!,
                     }}
                     data-testid="ticket-description-content"
                   />
-                </div>
+                </CardContent>
+              </Card>
 
-                <Separator />
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div
-                    className="space-y-4"
-                    data-testid="ticket-people-section"
-                  >
-                    <h3 className="text-sm font-medium mb-2 flex items-center">
-                      <Users className="mr-2 h-4 w-4" />{" "}
-                      {t.teams.tickets.detail("people")}
-                    </h3>
-
-                    <div className="space-y-3">
-                      <div data-testid="ticket-requester">
-                        <p className="text-xs text-muted-foreground mb-1">
-                          {t.teams.tickets.form.base("requester")}
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <UserAvatar
-                            imageUrl={ticket.requestUserImageUrl}
-                            size="w-6 h-6"
-                            data-testid="requester-avatar"
-                          />
-                          <Link
-                            href={`/portal/users/${obfuscate(ticket.requestUserId)}`}
-                            className="text-sm hover:underline"
-                            data-testid="requester-link"
-                          >
-                            {ticket.requestUserName}
-                          </Link>
-                        </div>
-                      </div>
-
-                      <div data-testid="ticket-assignee">
-                        <p className="text-xs text-muted-foreground mb-1">
-                          {t.teams.tickets.form.base("assignee")}
-                        </p>
-                        {ticket.assignUserId ? (
-                          <div className="flex items-center gap-2">
-                            <UserAvatar
-                              imageUrl={ticket.assignUserImageUrl}
-                              size="w-6 h-6"
-                              data-testid="assignee-avatar"
-                            />
-                            <Link
-                              href={`/portal/users/${obfuscate(ticket.assignUserId)}`}
-                              className="text-sm hover:underline"
-                              data-testid="assignee-link"
-                            >
-                              {ticket.assignUserName}
-                            </Link>
-                          </div>
-                        ) : (
-                          <span
-                            className="text-sm text-muted-foreground"
-                            data-testid="unassigned-message"
-                          >
-                            {t.teams.tickets.detail("unassigned")}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div
-                    className="space-y-4"
-                    data-testid="ticket-details-section"
-                  >
-                    <h3 className="text-sm font-medium mb-2 flex items-center">
-                      <FileText className="mr-2 h-4 w-4" />{" "}
-                      {t.teams.tickets.detail("ticker_detail")}
-                    </h3>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div data-testid="ticket-type">
-                        <p className="text-xs text-muted-foreground mb-1">
-                          {t.teams.tickets.form.base("type")}
-                        </p>
-                        <Badge
-                          variant="outline"
-                          className="font-normal"
-                          data-testid="ticket-type-badge"
-                        >
-                          {ticket.workflowRequestName}
-                        </Badge>
-                      </div>
-
-                      <div data-testid="ticket-state-detail">
-                        <p className="text-xs text-muted-foreground mb-1">
-                          {t.teams.tickets.form.base("state")}
-                        </p>
-                        <Badge
-                          variant="outline"
-                          className="font-normal"
-                          data-testid="ticket-state-badge"
-                        >
-                          {ticket.currentStateName}
-                        </Badge>
-                      </div>
-
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">
-                          {t.teams.tickets.form.base("priority")}
-                        </p>
-                        <TicketPriorityDisplay priority={ticket.priority} />
-                      </div>
-
-                      {ticket.channel && (
-                        <div>
-                          <p className="text-xs text-muted-foreground mb-1">
-                            {t.teams.tickets.form.base("channel")}
-                          </p>
-                          <Badge variant="outline" className="font-normal">
-                            {t.teams.tickets.form.channels(ticket.channel)}
-                          </Badge>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-6">
-                  <h3 className="text-sm font-medium mb-2 flex items-center">
-                    <Calendar className="mr-2 h-4 w-4" />{" "}
-                    {t.teams.tickets.detail("important_dates")}
-                  </h3>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">
-                        {t.teams.tickets.form.base("created_at")}
-                      </p>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <p className="text-sm">
-                              {formatDateTimeDistanceToNow(
-                                new Date(ticket.createdAt!),
-                              )}
-                            </p>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            {new Date(ticket.createdAt!).toLocaleString()}
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">
-                        {t.teams.tickets.form.base("last_modified_at")}
-                      </p>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <p className="text-sm">
-                              {formatDateTimeDistanceToNow(
-                                new Date(ticket.modifiedAt!),
-                              )}
-                            </p>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            {new Date(ticket.modifiedAt!).toLocaleString()}
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">
-                        {t.teams.tickets.form.base("target_completion_date")}
-                      </p>
-                      <p className="text-sm">
-                        {ticket.estimatedCompletionDate
-                          ? new Date(
-                              ticket.estimatedCompletionDate,
-                            ).toLocaleDateString()
-                          : t.teams.tickets.detail("not_set")}
-                      </p>
-                    </div>
-
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">
-                        {t.teams.tickets.form.base("actual_completion_date")}
-                      </p>
-                      <p className="text-sm">
-                        {ticket.actualCompletionDate
-                          ? new Date(
-                              ticket.actualCompletionDate,
-                            ).toLocaleDateString()
-                          : t.teams.tickets.detail("not_completed")}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4 mt-6"></div>
-
-                <div className="space-y-4 mt-6">
-                  <div>
-                    <h3 className="text-sm font-medium mb-2 flex items-center">
-                      <FileText className="mr-2 h-4 w-4" />{" "}
-                      {t.teams.tickets.detail("attachments")}
-                    </h3>
-                    <AttachmentView entityType="Ticket" entityId={ticket.id!} />
-                  </div>
-
-                  <div>
-                    <h3 className="text-sm font-medium mb-2 flex items-center">
-                      <Users className="mr-2 h-4 w-4" />{" "}
-                      {t.teams.tickets.detail("watchers")}
-                    </h3>
-                    <EntityWatchers entityType="Ticket" entityId={ticket.id!} />
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div className="pb-6">
+              {/* Tabs card */}
+              <Card data-testid="ticket-tabs-card">
                 <Tabs
                   defaultValue="comments"
                   value={selectedTab}
-                  onValueChange={handleTabChange}
-                  className="w-full"
+                  onValueChange={setSelectedTab}
                 >
-                  <TabsList className="mx-6 mt-6 grid w-full grid-cols-3 bg-muted/50">
-                    <TabsTrigger
-                      value="comments"
-                      className="data-[state=active]:bg-background data-[state=active]:shadow-xs"
-                    >
-                      <MessageSquarePlus className="mr-2 h-4 w-4" />{" "}
-                      {t.teams.tickets.detail("comments")}
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="changes-history"
-                      className="data-[state=active]:bg-background data-[state=active]:shadow-xs"
-                    >
-                      <Clock className="mr-2 h-4 w-4" />{" "}
-                      {t.teams.tickets.detail("changes_history")}
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="timeline-history"
-                      className="data-[state=active]:bg-background data-[state=active]:shadow-xs"
-                    >
-                      <FileText className="mr-2 h-4 w-4" />{" "}
-                      {t.teams.tickets.detail("timeline")}
-                    </TabsTrigger>
-                  </TabsList>
-
-                  <div className="mx-6 mt-6">
+                  <CardHeader className="border-b pb-0 pt-4 px-4">
+                    <TabsList className="grid w-full grid-cols-3 bg-muted/50">
+                      <TabsTrigger
+                        value="comments"
+                        className="data-[state=active]:bg-background data-[state=active]:shadow-xs"
+                      >
+                        <MessageSquarePlus className="mr-2 h-4 w-4" />
+                        {t.teams.tickets.detail("comments")}
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="changes-history"
+                        className="data-[state=active]:bg-background data-[state=active]:shadow-xs"
+                      >
+                        <Clock className="mr-2 h-4 w-4" />
+                        {t.teams.tickets.detail("changes_history")}
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="timeline-history"
+                        className="data-[state=active]:bg-background data-[state=active]:shadow-xs"
+                      >
+                        <FileText className="mr-2 h-4 w-4" />
+                        {t.teams.tickets.detail("timeline")}
+                      </TabsTrigger>
+                    </TabsList>
+                  </CardHeader>
+                  <CardContent className="pt-4">
                     <TabsContent value="comments">
-                      {selectedTab === "comments" && (
-                        <div ref={commentsViewRef}>
-                          <CommentsView
-                            entityType="Ticket"
-                            entityId={ticket.id!}
-                          />
-                        </div>
-                      )}
-                    </TabsContent>
-                    <TabsContent value="changes-history">
-                      {selectedTab === "changes-history" && (
-                        <AuditLogView
+                      <div ref={commentsViewRef}>
+                        <CommentsView
                           entityType="Ticket"
                           entityId={ticket.id!}
                         />
-                      )}
+                      </div>
+                    </TabsContent>
+                    <TabsContent value="changes-history">
+                      <AuditLogView entityType="Ticket" entityId={ticket.id!} />
                     </TabsContent>
                     <TabsContent value="timeline-history">
-                      {selectedTab === "timeline-history" && (
-                        <TicketTimelineHistory teamId={ticket.id!} />
-                      )}
+                      <TicketTimelineHistory teamId={ticket.id!} />
                     </TabsContent>
-                  </div>
+                  </CardContent>
                 </Tabs>
-              </div>
-            </CardContent>
-          </Card>
+              </Card>
+            </div>
+
+            {/* ── Right column: metadata cards ── */}
+            <div className="flex flex-col gap-4">
+              {/* People */}
+              <CollapsibleCard
+                icon={<Users className="h-4 w-4 text-muted-foreground" />}
+                title={t.teams.tickets.detail("people")}
+                data-testid="ticket-people-card"
+              >
+                <div className="space-y-4">
+                  <MetaField label={t.teams.tickets.form.base("requester")}>
+                    <div className="flex items-center gap-2">
+                      <UserAvatar
+                        imageUrl={ticket.requestUserImageUrl}
+                        size="w-6 h-6"
+                      />
+                      <Link
+                        href={`/portal/users/${obfuscate(ticket.requestUserId)}`}
+                        className="hover:text-primary hover:underline underline-offset-4 transition-colors"
+                        data-testid="requester-link"
+                      >
+                        {ticket.requestUserName}
+                      </Link>
+                    </div>
+                  </MetaField>
+                  <MetaField label={t.teams.tickets.form.base("assignee")}>
+                    {ticket.assignUserId ? (
+                      <div className="flex items-center gap-2">
+                        <UserAvatar
+                          imageUrl={ticket.assignUserImageUrl}
+                          size="w-6 h-6"
+                        />
+                        <Link
+                          href={`/portal/users/${obfuscate(ticket.assignUserId)}`}
+                          className="hover:text-primary hover:underline underline-offset-4 transition-colors"
+                          data-testid="assignee-link"
+                        >
+                          {ticket.assignUserName}
+                        </Link>
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground italic">
+                        {t.teams.tickets.detail("unassigned")}
+                      </span>
+                    )}
+                  </MetaField>
+                </div>
+              </CollapsibleCard>
+
+              {/* Details */}
+              <CollapsibleCard
+                icon={<FileText className="h-4 w-4 text-muted-foreground" />}
+                title={t.teams.tickets.detail("ticker_detail")}
+                data-testid="ticket-details-card"
+              >
+                <div className="space-y-4">
+                  <MetaField label={t.teams.tickets.form.base("type")}>
+                    <Badge variant="outline" className="font-normal">
+                      {ticket.workflowRequestName}
+                    </Badge>
+                  </MetaField>
+                  <MetaField label={t.teams.tickets.form.base("state")}>
+                    <Badge variant="outline" className="font-normal">
+                      {ticket.currentStateName}
+                    </Badge>
+                  </MetaField>
+                  <MetaField label={t.teams.tickets.form.base("priority")}>
+                    <TicketPriorityDisplay priority={ticket.priority} />
+                  </MetaField>
+                  {ticket.channel && (
+                    <MetaField label={t.teams.tickets.form.base("channel")}>
+                      <Badge variant="outline" className="font-normal">
+                        {t.teams.tickets.form.channels(ticket.channel)}
+                      </Badge>
+                    </MetaField>
+                  )}
+                </div>
+              </CollapsibleCard>
+
+              {/* Dates */}
+              <CollapsibleCard
+                icon={<Calendar className="h-4 w-4 text-muted-foreground" />}
+                title={t.teams.tickets.detail("important_dates")}
+                data-testid="ticket-dates-card"
+              >
+                <div className="space-y-4">
+                  <MetaField label={t.teams.tickets.form.base("created_at")}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="cursor-default">
+                          {formatDateTimeDistanceToNow(
+                            new Date(ticket.createdAt!),
+                          )}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {new Date(ticket.createdAt!).toLocaleString()}
+                      </TooltipContent>
+                    </Tooltip>
+                  </MetaField>
+                  <MetaField
+                    label={t.teams.tickets.form.base("last_modified_at")}
+                  >
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="cursor-default">
+                          {formatDateTimeDistanceToNow(
+                            new Date(ticket.modifiedAt!),
+                          )}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {new Date(ticket.modifiedAt!).toLocaleString()}
+                      </TooltipContent>
+                    </Tooltip>
+                  </MetaField>
+                  <MetaField
+                    label={t.teams.tickets.form.base("target_completion_date")}
+                  >
+                    {ticket.estimatedCompletionDate ? (
+                      new Date(
+                        ticket.estimatedCompletionDate,
+                      ).toLocaleDateString()
+                    ) : (
+                      <span className="text-muted-foreground/70 italic">
+                        {t.teams.tickets.detail("not_set")}
+                      </span>
+                    )}
+                  </MetaField>
+                  <MetaField
+                    label={t.teams.tickets.form.base("actual_completion_date")}
+                  >
+                    {ticket.actualCompletionDate ? (
+                      new Date(ticket.actualCompletionDate).toLocaleDateString()
+                    ) : (
+                      <span className="text-muted-foreground/70 italic">
+                        {t.teams.tickets.detail("not_completed")}
+                      </span>
+                    )}
+                  </MetaField>
+                </div>
+              </CollapsibleCard>
+
+              {/* Attachments — collapsed by default */}
+              <CollapsibleCard
+                icon={<Paperclip className="h-4 w-4 text-muted-foreground" />}
+                title={t.teams.tickets.detail("attachments")}
+                defaultOpen={false}
+                data-testid="ticket-attachments-card"
+              >
+                <AttachmentView entityType="Ticket" entityId={ticket.id!} />
+              </CollapsibleCard>
+
+              {/* Watchers — collapsed by default */}
+              <CollapsibleCard
+                icon={<Eye className="h-4 w-4 text-muted-foreground" />}
+                title={t.teams.tickets.detail("watchers")}
+                defaultOpen={false}
+                data-testid="ticket-watchers-card"
+              >
+                <EntityWatchers entityType="Ticket" entityId={ticket.id!} />
+              </CollapsibleCard>
+            </div>
+          </div>
         </div>
 
         <WorkflowReviewDialog

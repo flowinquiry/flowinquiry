@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { BarChart3 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
@@ -15,8 +15,8 @@ import {
   YAxis,
 } from "recharts";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Spinner } from "@/components/ui/spinner";
+import CollapsibleCard from "@/components/shared/collapsible-card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getTeamTicketPriorityDistributionForUser } from "@/lib/actions/tickets.action";
 import { useError } from "@/providers/error-provider";
 import { TicketPriority } from "@/types/tickets";
@@ -32,22 +32,16 @@ const PRIORITY_COLORS: Record<TicketPriority, string> = {
 const TeamUnresolvedTicketsPriorityDistributionChart = () => {
   const { data: session } = useSession();
   const userId = Number(session?.user?.id!);
-
   const [data, setData] = useState<
     Record<string, Record<TicketPriority, number>>
   >({});
   const [loading, setLoading] = useState(true);
-  const [collapsed, setCollapsed] = useState(false); // State for collapsible content
   const { setError } = useError();
   const pageT = useTranslations("dashboard.un_resolved_tickets_by_teams");
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const result = await getTeamTicketPriorityDistributionForUser(
-          userId,
-          setError,
-        );
+    getTeamTicketPriorityDistributionForUser(userId, setError)
+      .then((result) => {
         const chartData = result.reduce(
           (acc, item) => {
             if (!acc[item.teamName]) {
@@ -65,12 +59,8 @@ const TeamUnresolvedTicketsPriorityDistributionChart = () => {
           {} as Record<string, Record<TicketPriority, number>>,
         );
         setData(chartData);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
+      })
+      .finally(() => setLoading(false));
   }, [userId]);
 
   const chartData = Object.entries(data).map(([teamName, priorities]) => ({
@@ -79,67 +69,59 @@ const TeamUnresolvedTicketsPriorityDistributionChart = () => {
   }));
 
   return (
-    <Card>
-      {/* Header with Chevron Icon and Title */}
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="flex items-center p-0"
-          >
-            {collapsed ? (
-              <ChevronRight className="w-5 h-5" />
-            ) : (
-              <ChevronDown className="w-5 h-5" />
-            )}
-          </button>
-          <CardTitle>{pageT("title")}</CardTitle>
+    <CollapsibleCard
+      icon={<BarChart3 className="h-4 w-4 text-muted-foreground" />}
+      title={pageT("title")}
+      className="flex flex-col"
+    >
+      {loading ? (
+        <div className="space-y-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <Skeleton className="h-4 w-24 shrink-0" />
+              <Skeleton className="h-6 flex-1" />
+            </div>
+          ))}
         </div>
-      </CardHeader>
-
-      {/* Collapsible Content */}
-      {!collapsed && (
-        <CardContent>
-          <ResponsiveContainer width="100%" height={400}>
-            {loading ? (
-              <div className="flex justify-center items-center">
-                <Spinner />
-              </div>
-            ) : chartData.length === 0 ? (
-              <div className="flex justify-center items-center">
-                <p>{pageT("no_data")}</p>
-              </div>
-            ) : (
-              <BarChart
-                layout="vertical"
-                data={chartData}
-                margin={{
-                  top: 20,
-                  right: 30,
-                  left: 150,
-                  bottom: 20,
-                }}
-                barSize={40}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" />
-                <YAxis type="category" dataKey="teamName" />
-                <Tooltip />
-                <Legend />
-                {Object.keys(PRIORITY_COLORS).map((priority) => (
-                  <Bar
-                    key={`bar-${priority}`}
-                    dataKey={priority}
-                    stackId="a"
-                    fill={PRIORITY_COLORS[priority as TicketPriority]}
-                  />
-                ))}
-              </BarChart>
-            )}
-          </ResponsiveContainer>
-        </CardContent>
+      ) : chartData.length === 0 ? (
+        <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
+          <BarChart3 className="h-10 w-10 text-muted-foreground/40" />
+          <p className="text-sm text-muted-foreground">{pageT("no_data")}</p>
+        </div>
+      ) : (
+        <ResponsiveContainer width="100%" height={320}>
+          <BarChart
+            layout="vertical"
+            data={chartData}
+            margin={{ top: 8, right: 16, left: 120, bottom: 8 }}
+            barSize={28}
+          >
+            <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+            <XAxis type="number" tick={{ fontSize: 12 }} />
+            <YAxis
+              type="category"
+              dataKey="teamName"
+              tick={{ fontSize: 12 }}
+              width={115}
+            />
+            <Tooltip
+              contentStyle={{ fontSize: 12 }}
+              cursor={{ fill: "hsl(var(--muted))" }}
+            />
+            <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
+            {Object.keys(PRIORITY_COLORS).map((priority) => (
+              <Bar
+                key={priority}
+                dataKey={priority}
+                stackId="a"
+                fill={PRIORITY_COLORS[priority as TicketPriority]}
+                radius={priority === "Trivial" ? [0, 4, 4, 0] : [0, 0, 0, 0]}
+              />
+            ))}
+          </BarChart>
+        </ResponsiveContainer>
       )}
-    </Card>
+    </CollapsibleCard>
   );
 };
 

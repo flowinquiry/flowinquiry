@@ -10,23 +10,20 @@ const Page = async () => {
 
   return (
     <ContentLayout title="Dashboard">
-      <h1 className="text-2xl mb-4">{t.common.navigation("dashboard")}</h1>
+      <h1 className="text-2xl font-semibold mb-6">
+        {t.common.navigation("dashboard")}
+      </h1>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 pb-4">
-        <div className="flex flex-col">
-          <RecentUserTeamActivities />
-        </div>
-        <div className="flex flex-col">
-          <UserNotifications />
-        </div>
+      {/* Activities + Notifications: full-width stacked so unequal heights never clash */}
+      <div className="flex flex-col gap-4 mb-4">
+        <RecentUserTeamActivities />
+        <UserNotifications />
       </div>
+
+      {/* Charts: always similar height so 2-col grid is safe */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="flex flex-col">
-          <TeamUnresolvedTicketsPriorityDistributionChart />
-        </div>
-        <div className="flex flex-col">
-          <UserTeamsOverdueTickets />
-        </div>
+        <TeamUnresolvedTicketsPriorityDistributionChart />
+        <UserTeamsOverdueTickets />
       </div>
     </ContentLayout>
   );
