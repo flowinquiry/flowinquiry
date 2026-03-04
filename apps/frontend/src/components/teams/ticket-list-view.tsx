@@ -19,6 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
   TooltipContent,
@@ -47,6 +48,7 @@ export type Pagination = {
 const TicketListView = () => {
   const team = useTeam();
   const t = useAppClientTranslations();
+
   const breadcrumbItems = [
     { title: t.common.navigation("dashboard"), link: "/portal" },
     { title: t.common.navigation("teams"), link: "/portal/teams" },
@@ -58,8 +60,6 @@ const TicketListView = () => {
   const teamRole = useUserTeamRole().role;
 
   const [open, setOpen] = useState(false);
-
-  // Basic state management
   const [searchText, setSearchText] = useState("");
   const [isAscending, setIsAscending] = useState(false);
   const [workflows, setWorkflows] = useState<WorkflowDTO[]>([]);
@@ -73,55 +73,34 @@ const TicketListView = () => {
   const [loading, setLoading] = useState(false);
   const [statuses, setStatuses] = useState<string[]>(["New", "Assigned"]);
   const { setError } = useError();
-
-  // Enhanced state for advanced search
   const [fullQuery, setFullQuery] = useState<QueryDTO | null>(null);
 
-  // Pagination state
   const [pagination, setPagination] = useState<Pagination>({
     page: 1,
     size: 10,
-    sort: [
-      {
-        field: "createdAt",
-        direction: isAscending ? "asc" : "desc",
-      },
-    ],
+    sort: [{ field: "createdAt", direction: isAscending ? "asc" : "desc" }],
   });
 
-  // Update sort direction when isAscending changes
   useEffect(() => {
     setPagination((prev) => ({
       ...prev,
-      sort: [
-        {
-          field: "createdAt",
-          direction: isAscending ? "asc" : "desc",
-        },
-      ],
+      sort: [{ field: "createdAt", direction: isAscending ? "asc" : "desc" }],
     }));
   }, [isAscending]);
 
-  // Fetch team workflows
   useEffect(() => {
-    const fetchWorkflows = () => {
-      getWorkflowsByTeam(team.id!, false, setError).then((data) =>
-        setWorkflows(data),
-      );
-    };
-    fetchWorkflows();
+    getWorkflowsByTeam(team.id!, false, setError).then((data) =>
+      setWorkflows(data),
+    );
   }, [team.id]);
 
-  // Handle filter changes from TicketAdvancedSearch
   const handleFilterChange = (query: QueryDTO) => {
     setFullQuery(query);
     setCurrentPage(1);
   };
 
-  // Fetch tickets with the full query
   const fetchTickets = async () => {
     setLoading(true);
-
     try {
       if (!fullQuery) {
         setRequests([]);
@@ -129,8 +108,6 @@ const TicketListView = () => {
         setTotalPages(0);
         return;
       }
-
-      // Create a combined query that includes team ID filter
       const combinedQuery: QueryDTO = {
         groups: [
           {
@@ -143,17 +120,11 @@ const TicketListView = () => {
           },
         ],
       };
-
       const pageResult = await searchTickets(
         combinedQuery,
-        {
-          page: currentPage,
-          size: 10,
-          sort: pagination.sort,
-        },
+        { page: currentPage, size: 10, sort: pagination.sort },
         setError,
       );
-
       setRequests(pageResult.content);
       setTotalElements(pageResult.totalElements);
       setTotalPages(pageResult.totalPages);
@@ -162,43 +133,48 @@ const TicketListView = () => {
     }
   };
 
-  // Fetch tickets when query parameters change
   useEffect(() => {
     fetchTickets();
   }, [fullQuery, currentPage, pagination.sort]);
 
-  // Handle successful ticket creation
-  const onCreatedTicketSuccess = () => {
-    fetchTickets();
-  };
+  const onCreatedTicketSuccess = () => fetchTickets();
+
+  const canCreateTicket =
+    PermissionUtils.canWrite(permissionLevel) ||
+    teamRole === "manager" ||
+    teamRole === "member" ||
+    teamRole === "guest";
 
   return (
     <BreadcrumbProvider items={breadcrumbItems}>
       <TeamNavLayout teamId={team.id!}>
         <div
-          className="grid grid-cols-1 gap-4"
+          className="flex flex-col gap-4"
           data-testid="ticket-list-view-container"
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+          {/* ── Toolbar ── */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            {/* Team identity + heading */}
+            <div className="flex items-center gap-3 min-w-0">
               <Tooltip>
-                <TooltipTrigger>
-                  <TeamAvatar
-                    imageUrl={team.logoUrl}
-                    size="w-20 h-20"
+                <TooltipTrigger asChild>
+                  <span
+                    className="shrink-0 cursor-default"
                     data-testid="team-avatar"
-                  />
+                  >
+                    <TeamAvatar imageUrl={team.logoUrl} size="w-10 h-10" />
+                  </span>
                 </TooltipTrigger>
-                <TooltipContent className="max-w-xs whitespace-pre-wrap break-words">
-                  <div className="text-left">
-                    <p className="font-bold">{team.name}</p>
-                    <p className="text-sm">
-                      {team.slogan ?? t.teams.common("default_slogan")}
+                <TooltipContent className="max-w-xs" side="bottom">
+                  <p className="font-semibold">{team.name}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {team.slogan ?? t.teams.common("default_slogan")}
+                  </p>
+                  {team.description && (
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {team.description}
                     </p>
-                    {team.description && (
-                      <p className="text-sm">{team.description}</p>
-                    )}
-                  </div>
+                  )}
                 </TooltipContent>
               </Tooltip>
               <Heading
@@ -207,82 +183,80 @@ const TicketListView = () => {
                 data-testid="ticket-list-heading"
               />
             </div>
-            {(PermissionUtils.canWrite(permissionLevel) ||
-              teamRole === "manager" ||
-              teamRole === "member" ||
-              teamRole === "guest") && (
-              <div data-testid="new-ticket-container">
-                <div className="flex items-center">
-                  <Button
-                    className={"rounded-r-none"}
-                    data-testid="new-ticket-button"
-                  >
-                    {t.common.buttons("new")}
-                  </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        className={
-                          "rounded-l-none border-l-2 border-l-current px-2"
-                        }
-                        data-testid="new-ticket-dropdown-trigger"
-                      >
-                        <CaretDownIcon />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    {Array.isArray(workflows) && workflows.length > 0 ? (
-                      <DropdownMenuContent data-testid="workflow-dropdown-content">
-                        {workflows.map((workflow) => (
-                          <DropdownMenuItem
-                            key={workflow.id}
-                            className="cursor-pointer"
-                            onClick={() => {
-                              setSelectedWorkflow(workflow);
-                              setOpen(true);
-                            }}
-                            data-testid={`workflow-item-${workflow.id}`}
-                          >
-                            {workflow.requestName}
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    ) : (
-                      <DropdownMenuContent data-testid="no-workflow-dropdown-content">
-                        {t.teams.tickets.list("no_workflow_available")}{" "}
-                        {PermissionUtils.canWrite(permissionLevel) ||
-                        teamRole === "manager" ? (
-                          <span data-testid="create-workflow-cta">
-                            {t.teams.tickets.list.rich("create_workflow_cta", {
-                              button: (chunks) => (
-                                <Button
-                                  variant="link"
-                                  className="px-0"
-                                  data-testid="create-workflow-button"
-                                >
-                                  {chunks}
-                                </Button>
-                              ),
-                              link: (chunks) => (
-                                <Link
-                                  href={`/portal/teams/${obfuscate(team.id)}/workflows`}
-                                  data-testid="create-workflow-link"
-                                >
-                                  {chunks}
-                                </Link>
-                              ),
-                            })}
-                          </span>
-                        ) : (
-                          <span data-testid="contact-manager-message">
-                            {t.teams.tickets.list(
-                              "contact_manager_to_create_workflow",
-                            )}
-                          </span>
-                        )}
-                      </DropdownMenuContent>
-                    )}
-                  </DropdownMenu>
-                </div>
+
+            {/* New ticket split-button */}
+            {canCreateTicket && (
+              <div
+                className="flex shrink-0 items-center"
+                data-testid="new-ticket-container"
+              >
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button data-testid="new-ticket-button">
+                      {t.common.buttons("new")}
+                      <CaretDownIcon className="ml-2 h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  {Array.isArray(workflows) && workflows.length > 0 ? (
+                    <DropdownMenuContent
+                      align="end"
+                      data-testid="workflow-dropdown-content"
+                    >
+                      {workflows.map((workflow) => (
+                        <DropdownMenuItem
+                          key={workflow.id}
+                          className="cursor-pointer"
+                          onClick={() => {
+                            setSelectedWorkflow(workflow);
+                            setOpen(true);
+                          }}
+                          data-testid={`workflow-item-${workflow.id}`}
+                        >
+                          {workflow.requestName}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  ) : (
+                    <DropdownMenuContent
+                      align="end"
+                      className="max-w-xs p-3 text-sm"
+                      data-testid="no-workflow-dropdown-content"
+                    >
+                      <p>{t.teams.tickets.list("no_workflow_available")}</p>
+                      {PermissionUtils.canWrite(permissionLevel) ||
+                      teamRole === "manager" ? (
+                        <span data-testid="create-workflow-cta">
+                          {t.teams.tickets.list.rich("create_workflow_cta", {
+                            button: (chunks) => (
+                              <Button
+                                variant="link"
+                                className="h-auto px-0 py-0"
+                                data-testid="create-workflow-button"
+                              >
+                                {chunks}
+                              </Button>
+                            ),
+                            link: (chunks) => (
+                              <Link
+                                href={`/portal/teams/${obfuscate(team.id)}/workflows`}
+                                data-testid="create-workflow-link"
+                              >
+                                {chunks}
+                              </Link>
+                            ),
+                          })}
+                        </span>
+                      ) : (
+                        <span data-testid="contact-manager-message">
+                          {t.teams.tickets.list(
+                            "contact_manager_to_create_workflow",
+                          )}
+                        </span>
+                      )}
+                    </DropdownMenuContent>
+                  )}
+                </DropdownMenu>
+
                 <NewTicketToTeamDialog
                   open={open}
                   setOpen={setOpen}
@@ -295,6 +269,9 @@ const TicketListView = () => {
             )}
           </div>
 
+          <Separator />
+
+          {/* ── Filters ── */}
           <TicketAdvancedSearch
             searchText={searchText}
             setSearchText={setSearchText}
@@ -306,22 +283,19 @@ const TicketListView = () => {
             data-testid="ticket-advanced-search"
           />
 
+          {/* ── List ── */}
           {loading ? (
-            <div
-              className="flex justify-center py-4"
+            <LoadingPlaceHolder
+              message={t.common.misc("loading_data")}
               data-testid="ticket-list-loading"
-            >
-              <LoadingPlaceHolder message={t.common.misc("loading_data")} />
-            </div>
+            />
           ) : (
             <>
               <TicketList tickets={requests} data-testid="ticket-list" />
               <PaginationExt
                 currentPage={currentPage}
                 totalPages={totalPages}
-                onPageChange={(page) => {
-                  setCurrentPage(page);
-                }}
+                onPageChange={(page) => setCurrentPage(page)}
                 data-testid="ticket-list-pagination"
               />
             </>

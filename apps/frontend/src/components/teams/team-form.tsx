@@ -1,16 +1,16 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Layers } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
-import { Heading } from "@/components/heading";
 import { ImageCropper } from "@/components/image-cropper";
 import { TeamAvatar } from "@/components/shared/avatar-display";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ExtInputField,
   ExtTextAreaField,
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/ext-form";
 import { Form } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Tooltip,
   TooltipContent,
@@ -64,11 +65,9 @@ export const TeamForm = ({ teamId }: { teamId: number | undefined }) => {
       try {
         if (teamId) {
           const data = await findTeamById(teamId, setError);
-          if (!data) {
-            throw new Error("Team not found.");
-          }
+          if (!data) throw new Error("Team not found.");
           setTeam(data);
-          form.reset(data); // ✅ set form values after fetch
+          form.reset(data);
         } else {
           setTeam(undefined);
           form.reset();
@@ -77,16 +76,13 @@ export const TeamForm = ({ teamId }: { teamId: number | undefined }) => {
         setLoading(false);
       }
     };
-
     fetchTeam();
   }, [teamId]);
 
-  // When team data is loaded, reset form with fetched data
   useEffect(() => {
     if (team) {
       form.reset(team);
     } else {
-      // If no team is fetched (e.g. creation mode), reset with defaults
       form.reset(undefined);
     }
   }, [team]);
@@ -94,54 +90,33 @@ export const TeamForm = ({ teamId }: { teamId: number | undefined }) => {
   async function onSubmit(formValues: TeamDTO) {
     if (validateForm(formValues, TeamDTOSchema, form)) {
       const formData = new FormData();
-      const teamJsonBlob = new Blob([JSON.stringify(formValues)], {
-        type: "application/json",
-      });
-      formData.append("teamDTO", teamJsonBlob);
-
-      if (selectedFile) {
-        formData.append("file", selectedFile);
-      }
+      formData.append(
+        "teamDTO",
+        new Blob([JSON.stringify(formValues)], { type: "application/json" }),
+      );
+      if (selectedFile) formData.append("file", selectedFile);
 
       let redirectTeamId;
       if (formValues.id) {
-        // Edit mode
         redirectTeamId = formValues.id;
         await updateTeam(formData, setError);
       } else {
-        // Create mode
         await createTeam(formData, setError).then(
           (data) => (redirectTeamId = data.id),
         );
       }
-
       router.push(`/portal/teams/${obfuscate(redirectTeamId)}/dashboard`);
     }
   }
 
   const isEdit = !!team;
-  const title = isEdit
-    ? t.teams.form("edit_team_title", { teamName: team?.name })
-    : t.teams.form("create_team_title");
-  const description = isEdit
-    ? t.teams.form("edit_team_description")
-    : t.teams.form("create_team_description");
-  const submitText = isEdit
-    ? t.common.buttons("save_changes")
-    : t.common.buttons("create");
-  const submitTextWhileLoading = isEdit
-    ? t.common.buttons("saving_changes")
-    : t.common.buttons("creating");
 
   const breadcrumbItems = [
     { title: t.common.navigation("dashboard"), link: "/portal" },
     { title: t.common.navigation("teams"), link: "/portal/teams" },
     ...(team
       ? [
-          {
-            title: `${team.name}`,
-            link: `/portal/teams/${obfuscate(team.id)}`,
-          },
+          { title: team.name, link: `/portal/teams/${obfuscate(team.id)}` },
           { title: t.common.buttons("edit"), link: "#" },
         ]
       : [{ title: t.common.buttons("add"), link: "#" }]),
@@ -149,100 +124,154 @@ export const TeamForm = ({ teamId }: { teamId: number | undefined }) => {
 
   if (loading) {
     return (
-      <div
-        className="py-4 flex justify-center items-center"
-        data-testid="team-form-loading"
-      >
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="flex flex-col gap-4" data-testid="team-form-loading">
+        <div className="h-4 w-64 animate-pulse rounded bg-muted" />
+        <Separator />
+        <div className="flex flex-col gap-4 max-w-3xl">
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-5 w-28" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* logo row skeleton */}
+              <div className="flex items-center gap-5 pb-2">
+                <Skeleton className="h-20 w-20 rounded-full shrink-0" />
+                <div className="space-y-2 flex-1">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-48" />
+                </div>
+              </div>
+              <Skeleton className="h-px w-full" />
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-9 w-full" />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4" data-testid="team-form-container">
+    <div className="flex flex-col gap-4" data-testid="team-form-container">
       <Breadcrumbs items={breadcrumbItems} />
-      <div className="flex items-center justify-between">
-        <Heading title={title} description={description} />
-      </div>
       <Separator />
-      <div
-        className="flex gap-4 py-4 flex-col md:flex-row"
-        data-testid="team-form-content"
-      >
-        <div>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                {selectedFile ? (
-                  <div data-testid="team-form-logo-cropper">
-                    <ImageCropper
-                      dialogOpen={isDialogOpen}
-                      setDialogOpen={setDialogOpen}
-                      selectedFile={selectedFile}
-                      setSelectedFile={setSelectedFile}
-                    />
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="flex flex-col gap-6"
+          data-testid="team-form"
+        >
+          <div className="flex flex-col gap-4 max-w-3xl">
+            {/* ── Details card (logo + fields together) ── */}
+            <Card data-testid="team-form-details-section">
+              <CardHeader className="border-b pb-4">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Layers className="h-4 w-4 text-muted-foreground" />
+                  {isEdit
+                    ? t.teams.form("edit_team_title", { teamName: team?.name })
+                    : t.teams.form("create_team_title")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-6 space-y-4">
+                {/* Logo row at the top */}
+                <div className="flex items-center gap-5 pb-2">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        {selectedFile ? (
+                          <div data-testid="team-form-logo-cropper">
+                            <ImageCropper
+                              dialogOpen={isDialogOpen}
+                              setDialogOpen={setDialogOpen}
+                              selectedFile={selectedFile}
+                              setSelectedFile={setSelectedFile}
+                            />
+                          </div>
+                        ) : (
+                          <div data-testid="team-form-logo-upload">
+                            <input {...getInputProps()} />
+                            <TeamAvatar
+                              {...getRootProps()}
+                              imageUrl={team?.logoUrl}
+                              size="w-20 h-20"
+                              className="cursor-pointer ring-2 ring-offset-2 ring-muted hover:ring-primary transition-all"
+                            />
+                          </div>
+                        )}
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{t.teams.common("upload_team_logo")}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <div>
+                    <p className="text-sm font-medium">
+                      {t.teams.common("upload_team_logo")}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {t.teams.form("logo_hint")}
+                    </p>
                   </div>
-                ) : (
-                  <div data-testid="team-form-logo-upload">
-                    <input {...getInputProps()} />
-                    <TeamAvatar
-                      {...getRootProps()}
-                      imageUrl={team?.logoUrl}
-                      size="w-36 h-36"
-                      className="cursor-pointer ring-offset-2 ring-2 ring-slate-200"
-                    />
-                  </div>
-                )}
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{t.teams.common("upload_team_logo")}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-        <Form {...form}>
-          <form
-            className="grid grid-cols-1 gap-4 w-md"
-            onSubmit={form.handleSubmit(onSubmit)}
-            data-testid="team-form"
+                </div>
+
+                <Separator />
+
+                <ExtInputField
+                  form={form}
+                  required
+                  fieldName="name"
+                  label={t.teams.form("name")}
+                  testId="team-form-name"
+                />
+                <ExtTextAreaField
+                  form={form}
+                  fieldName="slogan"
+                  label={t.teams.form("slogan")}
+                  testId="team-form-slogan"
+                />
+                <ExtTextAreaField
+                  form={form}
+                  fieldName="description"
+                  label={t.teams.form("description")}
+                  testId="team-form-description"
+                />
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* ── Sticky save bar ── */}
+          <div
+            className="sticky bottom-0 max-w-3xl flex items-center justify-end gap-3 rounded-xl border bg-background/80 px-4 py-3 shadow-sm backdrop-blur supports-backdrop-filter:bg-background/60"
+            data-testid="team-form-buttons"
           >
-            <ExtInputField
-              form={form}
-              required
-              fieldName="name"
-              label={t.teams.form("name")}
-              testId="team-form-name"
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => router.back()}
+              testId="team-form-discard"
+            >
+              {t.common.buttons("discard")}
+            </Button>
+            <SubmitButton
+              label={
+                isEdit
+                  ? t.common.buttons("save_changes")
+                  : t.common.buttons("create")
+              }
+              labelWhileLoading={
+                isEdit
+                  ? t.common.buttons("saving_changes")
+                  : t.common.buttons("creating")
+              }
+              testId="team-form-submit"
             />
-            <ExtTextAreaField
-              form={form}
-              fieldName="slogan"
-              label={t.teams.form("slogan")}
-              testId="team-form-slogan"
-            />
-            <ExtTextAreaField
-              form={form}
-              fieldName="description"
-              label={t.teams.form("description")}
-              testId="team-form-description"
-            />
-            <div className="md:col-span-2 flex flex-row gap-4">
-              <SubmitButton
-                label={submitText}
-                labelWhileLoading={submitTextWhileLoading}
-                testId="team-form-submit"
-              />
-              <Button
-                variant="secondary"
-                type="button"
-                onClick={() => router.back()}
-                testId="team-form-discard"
-              >
-                {t.common.buttons("discard")}
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </div>
+          </div>
+        </form>
+      </Form>
     </div>
   );
 };
