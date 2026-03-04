@@ -216,49 +216,46 @@ export const AuthorityView = ({ authorityId }: { authorityId: string }) => {
                     className="group flex flex-col transition-all hover:shadow-md hover:bg-muted/50"
                     data-testid={`authority-view-user-card-${user.id}`}
                   >
-                    <CardHeader className="flex flex-row items-start justify-between gap-2 pb-2">
-                      <div className="flex items-center gap-3">
-                        {/* Avatar with status dot */}
-                        <div
-                          className="relative shrink-0"
-                          data-testid={`authority-view-user-avatar-${user.id}`}
-                        >
-                          <UserAvatar
-                            imageUrl={user.imageUrl}
-                            size="w-12 h-12"
-                          />
-                          {user.status === "ACTIVE" ? (
-                            <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-background bg-green-500" />
-                          ) : (
-                            <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-background bg-yellow-400" />
-                          )}
-                        </div>
+                    <CardHeader className="flex flex-row items-start justify-between gap-3 pb-2">
+                      {/* Avatar with status dot */}
+                      <div
+                        className="relative shrink-0"
+                        data-testid={`authority-view-user-avatar-${user.id}`}
+                      >
+                        <UserAvatar imageUrl={user.imageUrl} size="w-10 h-10" />
+                        <span
+                          className={`absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-background ${
+                            user.status === "ACTIVE"
+                              ? "bg-green-500"
+                              : "bg-yellow-400"
+                          }`}
+                        />
+                      </div>
 
-                        {/* Name + title */}
-                        <div className="min-w-0">
-                          <CardTitle className="text-sm">
-                            <Link
-                              href={`/portal/users/${obfuscate(user.id)}`}
-                              className="hover:text-primary hover:underline underline-offset-4 transition-colors"
-                              data-testid={`authority-view-user-name-${user.id}`}
-                            >
-                              {user.firstName} {user.lastName}
-                            </Link>
-                          </CardTitle>
-                          {user.title && (
-                            <CardDescription
-                              className="truncate text-xs"
-                              data-testid={`authority-view-user-title-${user.id}`}
-                            >
-                              {user.title}
-                            </CardDescription>
-                          )}
-                          {user.status !== "ACTIVE" && (
-                            <span className="mt-0.5 inline-flex items-center rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
-                              {t.users.common("not_activated")}
-                            </span>
-                          )}
-                        </div>
+                      {/* Name + title + pending badge */}
+                      <div className="min-w-0 flex-1">
+                        <CardTitle className="text-sm leading-snug">
+                          <Link
+                            href={`/portal/users/${obfuscate(user.id)}`}
+                            className="hover:text-primary hover:underline underline-offset-4 transition-colors"
+                            data-testid={`authority-view-user-name-${user.id}`}
+                          >
+                            {user.firstName} {user.lastName}
+                          </Link>
+                        </CardTitle>
+                        {user.title && (
+                          <CardDescription
+                            className="truncate text-xs"
+                            data-testid={`authority-view-user-title-${user.id}`}
+                          >
+                            {user.title}
+                          </CardDescription>
+                        )}
+                        {user.status !== "ACTIVE" && (
+                          <span className="mt-0.5 inline-flex items-center rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
+                            {t.users.common("not_activated")}
+                          </span>
+                        )}
                       </div>
 
                       {/* Hover-reveal actions */}
@@ -301,14 +298,40 @@ export const AuthorityView = ({ authorityId }: { authorityId: string }) => {
                       )}
                     </CardHeader>
 
-                    <CardFooter className="border-t pt-3">
+                    {/* About snippet */}
+                    {user.about && (
+                      <CardContent className="py-0 pb-2">
+                        <p
+                          className="line-clamp-2 text-xs text-muted-foreground"
+                          data-testid={`authority-view-user-about-${user.id}`}
+                        >
+                          {user.about}
+                        </p>
+                      </CardContent>
+                    )}
+
+                    <CardFooter className="flex flex-col items-start gap-1 border-t pt-3">
                       <Link
                         href={`mailto:${user.email}`}
-                        className="truncate text-xs text-muted-foreground hover:text-primary hover:underline underline-offset-4 transition-colors"
+                        className="truncate text-xs text-muted-foreground hover:text-primary hover:underline underline-offset-4 transition-colors w-full"
                         data-testid={`authority-view-user-email-${user.id}`}
                       >
                         {user.email}
                       </Link>
+                      {(user.city || user.country || user.timezone) && (
+                        <p
+                          className="truncate text-xs text-muted-foreground/70 w-full"
+                          data-testid={`authority-view-user-location-${user.id}`}
+                        >
+                          {[user.city, user.state, user.country]
+                            .filter(Boolean)
+                            .join(", ")}
+                          {user.timezone &&
+                            (user.city || user.country
+                              ? ` · ${user.timezone}`
+                              : user.timezone)}
+                        </p>
+                      )}
                     </CardFooter>
                   </Card>
                 ))}
