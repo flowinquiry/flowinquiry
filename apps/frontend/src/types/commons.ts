@@ -45,7 +45,7 @@ export interface EntityValueDefinition {
   description?: string;
 }
 
-import * as z from "zod/v4";
+import { z } from "zod";
 
 export enum NotificationType {
   INFO = "INFO",

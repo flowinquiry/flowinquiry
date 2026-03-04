@@ -5,7 +5,7 @@ import { FileText, MapPin, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import * as z from "zod/v4";
+import { z } from "zod";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { CountrySelectField } from "@/components/shared/countries-select";

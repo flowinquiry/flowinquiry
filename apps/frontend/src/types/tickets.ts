@@ -1,4 +1,4 @@
-import * as z from "zod/v4";
+import { z } from "zod";
 
 export type TicketPriority = "Critical" | "High" | "Medium" | "Low" | "Trivial";
 
