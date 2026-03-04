@@ -137,7 +137,10 @@
       "assigned_to": "Assigned to",
       "priority_sort_ascending": "Sort by priority: Ascending",
       "priority_sort_descending": "Sort by priority: Descending",
-      "upload_team_logo": "Upload team logo"
+      "upload_team_logo": "Upload team logo",
+      "no_description": "No description provided.",
+      "member": "member",
+      "members": "members"
     },
     "roles": {
       "manager": "Manager",
@@ -463,6 +466,9 @@
       "authorities": "Authorities",
       "first_name": "First Name",
       "last_name": "Last Name",
+      "manager": "Manager",
+      "identity_section": "Identity",
+      "location_section": "Location",
       "updating": "Updating ...",
       "inviting": "Inviting ...",
       "create_user": "Create User",
