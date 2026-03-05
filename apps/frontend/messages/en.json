@@ -103,8 +103,11 @@
     },
     "my_tickets": {
       "title": "My tickets",
+      "description": "Track and manage tickets you have reported or been assigned to",
       "reported_tickets": "My reported tickets",
-      "assigned_tickets": "My assigned tickets"
+      "assigned_tickets": "My assigned tickets",
+      "reported": "Reported",
+      "assigned": "Assigned"
     },
     "nav": {
       "profile": "Profile",
@@ -390,7 +393,8 @@
           "end_date": "End date",
           "description": "Description",
           "description_place_holder": "Brief description of this iteration's goals",
-          "create_iteration": "Create iteration"
+          "create_iteration": "Create iteration",
+          "sprint_length_hint": "Sprint length: {days} days — dates are auto-calculated when you pick one end."
         }
       },
       "epic": {
@@ -439,12 +443,15 @@
         "sprint_length_description": "The default length of sprints in days",
         "default_priority": "Default Priority",
         "default_priority_description": "The default priority for new tickets",
+        "default_priority_placeholder": "Select default priority",
         "estimation_unit": "Estimation Unit",
         "estimation_unit_description": "The unit used for estimating work",
+        "estimation_unit_placeholder": "Select estimation unit",
         "story_points": "Story Points",
         "days": "Days",
         "enable_estimation": "Enable Estimation",
-        "enable_estimation_description": "Allow estimation of tickets in this project"
+        "enable_estimation_description": "Allow estimation of tickets in this project",
+        "loading": "Loading project settings..."
       }
     }
   },

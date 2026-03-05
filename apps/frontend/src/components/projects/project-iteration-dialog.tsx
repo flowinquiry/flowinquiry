@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { addDays, subDays } from "date-fns";
+import { Calendar, FileText, FolderGit2, XCircle } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
@@ -7,8 +8,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -42,8 +41,24 @@ interface ProjectIterationDialogProps {
   onSave?: (iteration: ProjectIterationDTO) => void;
   onCancel?: () => void;
   project: ProjectDTO;
-  iteration?: ProjectIterationDTO | null; // Optional iteration for edit mode
+  iteration?: ProjectIterationDTO | null;
 }
+
+/* ── Section header — left-accent, no hard divider line ── */
+const SectionHeader = ({
+  icon,
+  title,
+}: {
+  icon: React.ReactNode;
+  title: string;
+}) => (
+  <div className="flex items-center gap-2 mb-4 pl-2 border-l-2 border-primary/40">
+    <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      {icon}
+      {title}
+    </span>
+  </div>
+);
 
 export function ProjectIterationDialog({
   open,
@@ -57,14 +72,12 @@ export function ProjectIterationDialog({
   const [lastChangedField, setLastChangedField] = useState<
     "startDate" | "endDate" | null
   >(null);
-  const [isCalculating, setIsCalculating] = useState(false); // Flag to prevent infinite loops
+  const [isCalculating, setIsCalculating] = useState(false);
   const { setError } = useError();
   const t = useAppClientTranslations();
 
-  // Determine if we're in edit mode
   const isEditMode = !!iteration?.id;
 
-  // Initialize form with the ProjectIterationDTOSchema
   const form = useForm<ProjectIterationDTO>({
     resolver: zodResolver(ProjectIterationDTOSchema),
     defaultValues: {
@@ -79,7 +92,6 @@ export function ProjectIterationDialog({
     },
   });
 
-  // Reset form when dialog opens/closes or iteration changes
   useEffect(() => {
     if (open) {
       form.reset({
@@ -92,30 +104,18 @@ export function ProjectIterationDialog({
         endDate: iteration?.endDate,
         totalTickets: iteration?.totalTickets || 0,
       });
-
-      // Reset lastChangedField to avoid triggering calculations based on previous state
       setLastChangedField(null);
       setIsCalculating(false);
     }
   }, [open, iteration, project, form]);
 
-  // Watch for changes to startDate and endDate
-  const startDate = useWatch({
-    control: form.control,
-    name: "startDate",
-  });
+  const startDate = useWatch({ control: form.control, name: "startDate" });
+  const endDate = useWatch({ control: form.control, name: "endDate" });
 
-  const endDate = useWatch({
-    control: form.control,
-    name: "endDate",
-  });
-
-  // Track changes to startDate and endDate
   const [prevStartDate, setPrevStartDate] = useState(startDate);
   const [prevEndDate, setPrevEndDate] = useState(endDate);
 
   useEffect(() => {
-    // Only update if this is a user change, not a programmatic one
     if (
       !form.formState.isSubmitting &&
       !isCalculating &&
@@ -127,7 +127,6 @@ export function ProjectIterationDialog({
   }, [startDate, form.formState.isSubmitting, isCalculating, prevStartDate]);
 
   useEffect(() => {
-    // Only update if this is a user change, not a programmatic one
     if (
       !form.formState.isSubmitting &&
       !isCalculating &&
@@ -138,44 +137,36 @@ export function ProjectIterationDialog({
     setPrevEndDate(endDate);
   }, [endDate, form.formState.isSubmitting, isCalculating, prevEndDate]);
 
-  // Calculate endDate when startDate changes or calculate startDate when endDate changes
   useEffect(() => {
-    // Skip if project settings are not available or sprintLengthDays is not set or if we're already calculating
     if (!project?.projectSetting?.sprintLengthDays || isCalculating) return;
-
     const sprintLengthDays = project.projectSetting.sprintLengthDays;
 
-    // If startDate was changed and is valid, calculate endDate
     if (lastChangedField === "startDate" && startDate) {
-      setIsCalculating(true); // Set flag to prevent infinite loops
-
+      setIsCalculating(true);
       try {
-        const startDateObj = new Date(startDate);
-        const calculatedEndDate = addDays(startDateObj, sprintLengthDays - 1); // -1 because the start day is included
-
+        const calculatedEndDate = addDays(
+          new Date(startDate),
+          sprintLengthDays - 1,
+        );
         form.setValue("endDate", calculatedEndDate.toISOString(), {
           shouldValidate: true,
           shouldDirty: true,
         });
       } finally {
-        // Reset the flag immediately after the form value is set
         setIsCalculating(false);
       }
-    }
-    // If endDate was changed and is valid, calculate startDate
-    else if (lastChangedField === "endDate" && endDate) {
-      setIsCalculating(true); // Set flag to prevent infinite loops
-
+    } else if (lastChangedField === "endDate" && endDate) {
+      setIsCalculating(true);
       try {
-        const endDateObj = new Date(endDate);
-        const calculatedStartDate = subDays(endDateObj, sprintLengthDays - 1); // -1 because the end day is included
-
+        const calculatedStartDate = subDays(
+          new Date(endDate),
+          sprintLengthDays - 1,
+        );
         form.setValue("startDate", calculatedStartDate.toISOString(), {
           shouldValidate: true,
           shouldDirty: true,
         });
       } finally {
-        // Reset the flag immediately after the form value is set
         setIsCalculating(false);
       }
     }
@@ -184,21 +175,12 @@ export function ProjectIterationDialog({
   const handleSubmit = async (values: ProjectIterationDTO) => {
     setIsSubmitting(true);
     try {
-      let result: ProjectIterationDTO;
-
-      if (isEditMode && iteration?.id) {
-        // Update existing iteration
-        result = await updateProjectIteration(iteration.id, values, setError);
-      } else {
-        // Create new iteration
-        result = await createProjectIteration(values, setError);
-      }
-
+      const result =
+        isEditMode && iteration?.id
+          ? await updateProjectIteration(iteration.id, values, setError)
+          : await createProjectIteration(values, setError);
       onOpenChange(false);
-
-      if (onSave) {
-        onSave(result);
-      }
+      onSave?.(result);
     } finally {
       setIsSubmitting(false);
     }
@@ -207,10 +189,8 @@ export function ProjectIterationDialog({
   const handleClose = async () => {
     setIsSubmitting(true);
     try {
-      let result: ProjectIterationDTO;
-      result = await closeProjectIteration(iteration?.id!);
+      const result = await closeProjectIteration(iteration?.id!);
       onOpenChange(false);
-
       onSave?.(result);
     } finally {
       setIsSubmitting(false);
@@ -219,122 +199,167 @@ export function ProjectIterationDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-240" data-testid="iteration-dialog">
-        <DialogHeader>
-          <DialogTitle>
+      <DialogContent
+        className="sm:max-w-lg p-0 flex flex-col overflow-hidden max-h-[90vh]"
+        data-testid="iteration-dialog"
+      >
+        {/* ── Sticky header ── */}
+        <DialogHeader className="px-6 py-4 border-b shrink-0">
+          <DialogTitle className="flex items-center gap-2 text-base">
+            <FolderGit2 className="h-4 w-4 text-muted-foreground shrink-0" />
             {isEditMode
               ? t.teams.projects.iteration("edit_dialog_title")
               : t.teams.projects.iteration("create_dialog_title")}
           </DialogTitle>
-          <DialogDescription>
+          <p className="text-sm text-muted-foreground mt-0.5 pl-6">
             {isEditMode
               ? t.teams.projects.iteration("edit_dialog_description")
               : t.teams.projects.iteration("create_dialog_description")}
-          </DialogDescription>
+          </p>
         </DialogHeader>
 
+        {/* ── Form wraps body + footer ── */}
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-6"
+            className="flex flex-col flex-1 overflow-hidden min-h-0"
             data-testid="iteration-form"
           >
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    {t.teams.projects.iteration("form.name")}
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t.teams.projects.iteration(
-                        "form.name_place_holder",
+            {/* ── Scrollable body ── */}
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              <div className="flex flex-col gap-6">
+                {/* ── Basics ── */}
+                <div>
+                  <SectionHeader
+                    icon={<FileText className="h-4 w-4" />}
+                    title={t.teams.projects.iteration("form.name")}
+                  />
+                  <div className="flex flex-col gap-4">
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            {t.teams.projects.iteration("form.name")}
+                            <span className="text-destructive ml-1">*</span>
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder={t.teams.projects.iteration(
+                                "form.name_place_holder",
+                              )}
+                              {...field}
+                              data-testid="iteration-name-input"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
                       )}
-                      {...field}
-                      data-testid="iteration-name-input"
                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
-            <div className="grid grid-cols-2 gap-4">
-              <DatePickerField
-                form={form}
-                fieldName="startDate"
-                label={t.teams.projects.iteration("form.start_date")}
-                placeholder={t.common.misc("date_select_place_holder")}
-                testId="iteration-start-date"
-              />
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            {t.teams.projects.iteration("form.description")}
+                          </FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder={t.teams.projects.iteration(
+                                "form.description_place_holder",
+                              )}
+                              rows={3}
+                              className="resize-none"
+                              {...field}
+                              data-testid="iteration-description-textarea"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
 
-              <DatePickerField
-                form={form}
-                fieldName="endDate"
-                label={t.teams.projects.iteration("form.end_date")}
-                placeholder={t.common.misc("date_select_place_holder")}
-                testId="iteration-end-date"
-              />
+                {/* ── Dates ── */}
+                <div>
+                  <SectionHeader
+                    icon={<Calendar className="h-4 w-4" />}
+                    title={t.teams.projects.iteration("form.start_date")}
+                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <DatePickerField
+                      form={form}
+                      fieldName="startDate"
+                      label={t.teams.projects.iteration("form.start_date")}
+                      placeholder={t.common.misc("date_select_place_holder")}
+                      testId="iteration-start-date"
+                    />
+                    <DatePickerField
+                      form={form}
+                      fieldName="endDate"
+                      label={t.teams.projects.iteration("form.end_date")}
+                      placeholder={t.common.misc("date_select_place_holder")}
+                      testId="iteration-end-date"
+                    />
+                  </div>
+                  {project?.projectSetting?.sprintLengthDays && (
+                    <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <Calendar className="h-3 w-3 shrink-0" />
+                      {t.teams.projects.iteration("form.sprint_length_hint", {
+                        days: project.projectSetting.sprintLengthDays,
+                      })}
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
 
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    {t.teams.projects.iteration("form.description")}
-                  </FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder={t.teams.projects.iteration(
-                        "form.description_place_holder",
-                      )}
-                      {...field}
-                      rows={3}
-                      data-testid="iteration-description-textarea"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <DialogFooter>
+            {/* ── Sticky footer ── */}
+            <div className="flex items-center justify-between gap-3 border-t px-6 py-4 shrink-0">
+              {/* Close iteration — destructive-flavoured, left-aligned */}
               <Button
                 type="button"
-                variant="outline"
-                onClick={onCancel}
-                disabled={isSubmitting}
-                data-testid="iteration-cancel-button"
-              >
-                {t.common.buttons("cancel")}
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
+                variant="ghost"
+                size="sm"
                 onClick={handleClose}
                 disabled={iteration?.status !== "ACTIVE" || isSubmitting}
+                className="text-destructive hover:text-destructive hover:bg-destructive/10 gap-1.5"
                 data-testid="iteration-close-button"
               >
+                <XCircle className="h-4 w-4" />
                 {t.common.buttons("close")}
               </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                data-testid="iteration-submit-button"
-              >
-                {isSubmitting
-                  ? isEditMode
-                    ? t.common.buttons("saving")
-                    : t.common.buttons("creating")
-                  : isEditMode
-                    ? t.common.buttons("save_changes")
-                    : t.teams.projects.iteration("form.create_iteration")}
-              </Button>
-            </DialogFooter>
+
+              {/* Cancel + Submit — right-aligned */}
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onCancel}
+                  disabled={isSubmitting}
+                  data-testid="iteration-cancel-button"
+                >
+                  {t.common.buttons("cancel")}
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  data-testid="iteration-submit-button"
+                >
+                  {isSubmitting
+                    ? isEditMode
+                      ? t.common.buttons("saving")
+                      : t.common.buttons("creating")
+                    : isEditMode
+                      ? t.common.buttons("save_changes")
+                      : t.teams.projects.iteration("form.create_iteration")}
+                </Button>
+              </div>
+            </div>
           </form>
         </Form>
       </DialogContent>

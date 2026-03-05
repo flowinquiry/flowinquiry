@@ -43,7 +43,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
   TooltipContent,
@@ -71,12 +70,11 @@ const SectionHeader = ({
   icon: React.ReactNode;
   title: string;
 }) => (
-  <div className="flex items-center gap-2 mb-4">
-    <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+  <div className="flex items-center gap-2 mb-4 pl-2 border-l-2 border-primary/40">
+    <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
       {icon}
       {title}
-    </div>
-    <Separator className="flex-1" />
+    </span>
   </div>
 );
 
