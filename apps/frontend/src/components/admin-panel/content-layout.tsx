@@ -18,7 +18,7 @@ export function ContentLayout({
   useDefaultStyles = true, // Default to true to maintain backward compatibility
 }: ContentLayoutProps) {
   // Default styles that will be applied if useDefaultStyles is true
-  const defaultStyles = "container pt-8 pb-8 px-4 sm:px-8 bg-card";
+  const defaultStyles = "container pt-8 pb-8 px-4 sm:px-8";
 
   // Apply either default + custom styles, or just custom styles
   const containerClasses = useDefaultStyles

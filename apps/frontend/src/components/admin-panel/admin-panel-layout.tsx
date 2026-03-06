@@ -22,16 +22,16 @@ export default function AdminPanelLayout({
       <div
         className={cn(
           "flex flex-col w-full h-full transition-[margin-left] ease-in-out duration-300",
-          !settings.disabled && (!getOpenState() ? "lg:ml-[90px]" : "lg:ml-72"),
+          !settings.disabled && (!getOpenState() ? "lg:ml-22.5" : "lg:ml-72"),
         )}
       >
-        <main className="flex-1 relative bg-zinc-50 dark:bg-zinc-900">
+        <main className="flex-1 relative bg-muted/30 dark:bg-muted/10">
           <div className="absolute inset-0 overflow-y-auto">
             <div className="min-w-0 w-full">{children}</div>
           </div>
         </main>
 
-        <footer className="shrink-0">
+        <footer className="shrink-0 border-t border-border/60">
           <Footer />
         </footer>
       </div>
