@@ -1,12 +1,11 @@
 "use client";
 
 import { DropdownMenuArrow } from "@radix-ui/react-dropdown-menu";
-import { ChevronDown, Dot, LucideIcon } from "lucide-react";
+import { ChevronDown, LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
-import { Button } from "@/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
@@ -64,74 +63,63 @@ export function CollapseMenuButton({
       className="w-full"
     >
       <CollapsibleTrigger
-        className="[&[data-state=open]>div>div>svg]:rotate-180 mb-1"
+        className="[&[data-state=open]>div>svg.chevron]:rotate-180 w-full mb-0.5"
         asChild
       >
-        <Button
-          variant={!isSubmenuActive && active ? "default" : "ghost"}
-          className="w-full justify-start h-10"
+        <div
+          className={cn(
+            "flex items-center justify-between w-full px-3 h-10 rounded-md cursor-pointer transition-colors border-l-2",
+            isSubmenuActive || active
+              ? "bg-primary/10 border-primary text-primary font-medium"
+              : "border-transparent text-muted-foreground hover:bg-muted hover:text-foreground",
+          )}
         >
-          <div className="w-full items-center flex justify-between">
-            <div className="flex items-center">
-              <span className="mr-4">
-                <Icon size={18} />
-              </span>
-              <p
-                className={cn(
-                  "max-w-[150px] truncate",
-                  isOpen
-                    ? "translate-x-0 opacity-100"
-                    : "-translate-x-96 opacity-0",
-                )}
-              >
-                {label}
-              </p>
-            </div>
-            <div
+          <div className="flex items-center gap-3 min-w-0">
+            <Icon size={18} className="shrink-0" />
+            <p
               className={cn(
-                "whitespace-nowrap",
+                "text-sm max-w-37.5 truncate transition-all",
                 isOpen
-                  ? "translate-x-0 opacity-100"
-                  : "-translate-x-96 opacity-0",
+                  ? "opacity-100 translate-x-0"
+                  : "opacity-0 -translate-x-96",
               )}
             >
-              <ChevronDown
-                size={18}
-                className="transition-transform duration-200"
-              />
-            </div>
+              {label}
+            </p>
           </div>
-        </Button>
+          <ChevronDown
+            size={16}
+            className={cn(
+              "chevron shrink-0 transition-transform duration-200",
+              isOpen ? "opacity-100" : "opacity-0 -translate-x-96",
+            )}
+          />
+        </div>
       </CollapsibleTrigger>
+
       <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
-        {submenus.map(({ href, label, active }, index) => (
-          <Button
-            key={index}
-            variant={
-              (active === undefined && pathname.startsWith(href)) || active
-                ? "default"
-                : "ghost"
-            }
-            className="w-full justify-start h-10 mb-1"
-            asChild
-          >
-            <Link href={href}>
-              <span className="mr-4 ml-2">
-                <Dot size={18} />
-              </span>
-              <p
-                className={cn(
-                  "max-w-[170px] truncate",
-                  isOpen
-                    ? "translate-x-0 opacity-100"
-                    : "-translate-x-96 opacity-0",
-                )}
-              >
-                {label}
-              </p>
-            </Link>
-          </Button>
-        ))}
+        <ul className="mt-0.5 ml-4 flex flex-col gap-0.5 border-l-2 border-muted pl-3">
+          {submenus.map(({ href, label, active }, index) => {
+            const isActive =
+              (active === undefined && pathname.startsWith(href)) || active;
+            return (
+              <li key={index}>
+                <Link
+                  href={href}
+                  className={cn(
+                    "flex items-center gap-2 px-3 h-9 rounded-md text-sm transition-colors",
+                    isActive
+                      ? "bg-primary/10 text-primary font-medium"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  )}
+                >
+                  <span className="h-1.5 w-1.5 rounded-full shrink-0 bg-current opacity-60" />
+                  <p className="max-w-42.5 truncate">{label}</p>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
       </CollapsibleContent>
     </Collapsible>
   ) : (
@@ -140,12 +128,16 @@ export function CollapseMenuButton({
         <Tooltip delayDuration={100}>
           <TooltipTrigger asChild>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant={!isSubmenuActive && active ? "default" : "ghost"}
-                className="flex justify-center h-10 mb-1 px-3 w-auto"
+              <div
+                className={cn(
+                  "flex justify-center items-center h-10 w-auto px-3 mb-0.5 rounded-md cursor-pointer transition-colors border-l-2",
+                  isSubmenuActive || active
+                    ? "bg-primary/10 border-primary text-primary"
+                    : "border-transparent text-muted-foreground hover:bg-muted hover:text-foreground",
+                )}
               >
                 <Icon size={18} />
-              </Button>
+              </div>
             </DropdownMenuTrigger>
           </TooltipTrigger>
           <TooltipContent side="right" sideOffset={10} className="z-50">
@@ -153,31 +145,37 @@ export function CollapseMenuButton({
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
+
       <DropdownMenuContent
         side="right"
         sideOffset={5}
         align="start"
-        alignOffset={0}
-        className="z-40"
+        className="z-40 w-48 p-1"
       >
-        <DropdownMenuLabel className="max-w-[190px] truncate">
+        <DropdownMenuLabel className="px-2.5 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider max-w-47.5 truncate">
           {label}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {submenus.map(({ href, label, active }, index) => (
-          <DropdownMenuItem key={index} asChild>
-            <Link
-              className={`cursor-pointer ${
-                ((active === undefined && pathname.startsWith(href)) ||
-                  active) &&
-                "bg-primary text-primary-foreground"
-              }`}
-              href={href}
-            >
-              <p className="max-w-[180px] truncate">{label}</p>
-            </Link>
-          </DropdownMenuItem>
-        ))}
+        {submenus.map(({ href, label, active }, index) => {
+          const isActive =
+            (active === undefined && pathname.startsWith(href)) || active;
+          return (
+            <DropdownMenuItem key={index} asChild>
+              <Link
+                href={href}
+                className={cn(
+                  "flex items-center gap-2 px-2.5 py-2 rounded-md cursor-pointer text-sm transition-colors",
+                  isActive
+                    ? "bg-primary/10 text-primary font-medium"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <span className="h-1.5 w-1.5 rounded-full shrink-0 bg-current opacity-60" />
+                <p className="max-w-45 truncate">{label}</p>
+              </Link>
+            </DropdownMenuItem>
+          );
+        })}
         <DropdownMenuArrow className="fill-border" />
       </DropdownMenuContent>
     </DropdownMenu>
