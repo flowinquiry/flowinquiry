@@ -1,30 +1,27 @@
 "use client";
 
-import { BookText, CircleUserRound, Info, LogOut } from "lucide-react";
+import {
+  BookText,
+  CircleUserRound,
+  ExternalLink,
+  LogOut,
+  Sparkles,
+} from "lucide-react";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
 import AppLogo from "@/components/app-logo";
 import { UserAvatar } from "@/components/shared/avatar-display";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
   TooltipContent,
@@ -43,6 +40,7 @@ export function UserNav() {
     version: string;
     edition: string;
   } | null>(null);
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   useEffect(() => {
     getVersion().then((data) => {
@@ -50,8 +48,23 @@ export function UserNav() {
     });
   }, []);
 
+  const menuItems = [
+    {
+      icon: CircleUserRound,
+      label: t.header.nav("profile"),
+      href: "/portal/profile",
+    },
+    {
+      icon: BookText,
+      label: t.header.nav("user_guide"),
+      href: "https://docs.flowinquiry.io/user_guides/introduction",
+      target: "_blank",
+      external: true,
+    },
+  ];
+
   return (
-    <Dialog>
+    <Dialog open={aboutOpen} onOpenChange={setAboutOpen}>
       <DropdownMenu>
         <TooltipProvider disableHoverableContent>
           <Tooltip delayDuration={100}>
@@ -59,7 +72,7 @@ export function UserNav() {
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="outline"
-                  className="relative h-8 w-8 rounded-full"
+                  className="relative h-10 w-10 rounded-full p-0"
                 >
                   <UserAvatar
                     imageUrl={session?.user?.imageUrl}
@@ -74,88 +87,117 @@ export function UserNav() {
           </Tooltip>
         </TooltipProvider>
 
-        <DropdownMenuContent className="w-56" align="end" forceMount>
-          <DropdownMenuLabel className="font-normal">
-            <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">
+        <DropdownMenuContent
+          className="w-56 p-0 shadow-lg"
+          align="end"
+          forceMount
+        >
+          {/* User header */}
+          <div className="flex items-center gap-3 px-4 py-3">
+            <UserAvatar imageUrl={session?.user?.imageUrl} size="h-9 w-9" />
+            <div className="flex flex-col min-w-0">
+              <p className="text-sm font-semibold leading-none truncate">
                 {session?.user?.firstName} {session?.user?.lastName}
               </p>
-              <p className="text-xs leading-none text-muted-foreground">
+              <p className="text-xs text-muted-foreground leading-none mt-1 truncate">
                 {session?.user?.email}
               </p>
             </div>
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-            <DropdownMenuItem className="hover:cursor-pointer" asChild>
-              <Link href="/portal/profile" className="flex items-center">
-                <CircleUserRound className="w-4 h-4 mr-3 text-muted-foreground" />
-                {t.header.nav("profile")}
-              </Link>
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-          <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-            <DropdownMenuItem className="hover:cursor-pointer" asChild>
+          </div>
+
+          <Separator />
+
+          {/* Nav items */}
+          <div className="flex flex-col py-1 px-2">
+            {menuItems.map(({ icon: Icon, label, href, target, external }) => (
               <Link
-                href="https://docs.flowinquiry.io/user_guides/introduction"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center"
+                key={label}
+                href={href}
+                target={target}
+                rel={target === "_blank" ? "noopener noreferrer" : undefined}
+                className="flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors hover:bg-muted"
               >
-                <BookText className="w-4 h-4 mr-3 text-muted-foreground" />
-                {t.header.nav("user_guide")}
+                <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
+                <span className="text-sm flex-1">{label}</span>
+                {external && (
+                  <ExternalLink className="h-3 w-3 text-muted-foreground/50 shrink-0" />
+                )}
               </Link>
-            </DropdownMenuItem>
+            ))}
+
+            {/* About — opens dialog */}
             <DialogTrigger asChild>
-              <DropdownMenuItem className="hover:cursor-pointer">
-                <Info className="w-4 h-4 mr-3 text-muted-foreground" />
-                {t.header.nav("about")}
-              </DropdownMenuItem>
+              <div className="flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors hover:bg-muted">
+                <Sparkles className="h-4 w-4 text-muted-foreground shrink-0" />
+                <span className="text-sm flex-1">{t.header.nav("about")}</span>
+              </div>
             </DialogTrigger>
-          </DropdownMenuGroup>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            className="hover:cursor-pointer"
-            onClick={() => signOut({ redirectTo: BASE_URL, redirect: true })}
-          >
-            <LogOut className="w-4 h-4 mr-3 text-muted-foreground" />
-            {t.header.nav("logout")}
-          </DropdownMenuItem>
+          </div>
+
+          <Separator />
+
+          {/* Logout */}
+          <div className="py-1 px-2">
+            <div
+              className="flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors hover:bg-destructive/10"
+              onClick={() => signOut({ redirectTo: BASE_URL, redirect: true })}
+            >
+              <LogOut className="h-4 w-4 text-destructive shrink-0" />
+              <span className="text-sm text-destructive flex-1">
+                {t.header.nav("logout")}
+              </span>
+            </div>
+          </div>
         </DropdownMenuContent>
       </DropdownMenu>
-      <DialogContent>
-        <DialogHeader className="flex items-center space-x-4">
-          <div>
-            <AppLogo size={100} />
-          </div>
 
-          <div>
-            <DialogTitle className="text-2xl font-bold">
-              FlowInquiry {versionInfo?.edition} {versionInfo?.version}
-            </DialogTitle>
-            <DialogDescription className="text-gray-600 dark:text-gray-400">
-              {t.header.nav("intro")}
-            </DialogDescription>
+      {/* About Dialog */}
+      <DialogContent className="sm:max-w-md p-0 overflow-hidden">
+        {/* Gradient header */}
+        <div className="flex flex-col items-center gap-3 bg-linear-to-b from-primary/10 to-background px-6 pt-8 pb-6">
+          <div className="rounded-2xl bg-white dark:bg-gray-900 shadow-md p-3 ring-1 ring-black/5 dark:ring-white/10">
+            <AppLogo size={56} />
           </div>
-        </DialogHeader>
+          <div className="text-center">
+            <h2 className="text-xl font-bold">FlowInquiry</h2>
+            {versionInfo && (
+              <div className="flex items-center justify-center gap-2 mt-1.5">
+                <Badge variant="secondary" className="text-xs">
+                  {versionInfo.edition}
+                </Badge>
+                <Badge variant="outline" className="text-xs font-mono">
+                  v{versionInfo.version}
+                </Badge>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Description */}
+        <div className="px-6 py-4">
+          <p className="text-sm text-muted-foreground text-center leading-relaxed">
+            {t.header.nav("intro")}
+          </p>
+        </div>
+
+        <Separator />
 
         {/* Footer */}
-        <div className="mt-2 flex justify-between items-center border-t pt-2">
-          {/* Copyright and Year */}
-          <div className="text-sm text-gray-500 dark:text-gray-400">
+        <div className="flex items-center justify-between px-6 py-3">
+          <p className="text-xs text-muted-foreground">
             © {new Date().getFullYear()} FlowInquiry.{" "}
             {t.header.nav("copyright")}.
-          </div>
-
-          {/* Website Link */}
+          </p>
           <a
             href="https://www.flowinquiry.io"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm font-medium text-blue-600 hover:underline dark:text-blue-400"
+            className="flex items-center gap-1 text-xs font-medium text-primary hover:underline underline-offset-4 transition-colors"
           >
             flowinquiry.io
+            <ExternalLink className="h-3 w-3" />
           </a>
         </div>
       </DialogContent>
