@@ -98,6 +98,7 @@
   },
   "header": {
     "notifications": {
+      "title": "Notifications",
       "no_data": "You're all caught up!",
       "clear_all": "Clear all"
     },

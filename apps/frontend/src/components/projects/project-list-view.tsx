@@ -141,12 +141,11 @@ const ProjectListView = () => {
 
       <CardContent className="flex-1">
         {project.description ? (
-          <p
-            className="line-clamp-3 text-sm text-muted-foreground"
+          <div
+            className="line-clamp-3 text-sm text-muted-foreground prose prose-sm max-w-none dark:prose-invert **:my-0"
+            dangerouslySetInnerHTML={{ __html: project.description }}
             data-testid={`project-description-${project.id}`}
-          >
-            {project.description}
-          </p>
+          />
         ) : (
           <p className="text-sm italic text-muted-foreground/50">
             {t.teams.projects.list("no_description")}

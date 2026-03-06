@@ -6,6 +6,7 @@ import {
   ArrowUpCircle,
   Bell,
   BellDot,
+  CheckCheck,
   Clock,
   Timer,
   XCircle,
@@ -15,14 +16,15 @@ import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import TruncatedHtmlLabel from "@/components/shared/truncate-html-label";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
   TooltipContent,
@@ -151,27 +153,27 @@ const NotificationsDropdown = () => {
   const getNotificationIcon = (type: NotificationType) => {
     switch (type) {
       case NotificationType.INFO:
-        return <Bell className="text-blue-500 dark:text-blue-400 w-5 h-5" />;
+        return <Bell className="text-blue-500 dark:text-blue-400 w-4 h-4" />;
       case NotificationType.WARNING:
         return (
-          <AlertTriangle className="text-yellow-500 dark:text-yellow-400 w-5 h-5" />
+          <AlertTriangle className="text-yellow-500 dark:text-yellow-400 w-4 h-4" />
         );
       case NotificationType.ERROR:
-        return <XCircle className="text-red-500 dark:text-red-400 w-5 h-5" />;
+        return <XCircle className="text-red-500 dark:text-red-400 w-4 h-4" />;
       case NotificationType.SLA_BREACH:
         return (
-          <Clock className="text-orange-500 dark:text-orange-400 w-5 h-5" />
+          <Clock className="text-orange-500 dark:text-orange-400 w-4 h-4" />
         );
       case NotificationType.SLA_WARNING:
         return (
-          <Timer className="text-purple-500 dark:text-purple-400 w-5 h-5" />
+          <Timer className="text-purple-500 dark:text-purple-400 w-4 h-4" />
         );
       case NotificationType.ESCALATION_NOTICE:
         return (
-          <ArrowUpCircle className="text-green-500 dark:text-green-400 w-5 h-5" />
+          <ArrowUpCircle className="text-green-500 dark:text-green-400 w-4 h-4" />
         );
       default:
-        return <Bell className="text-gray-500 dark:text-gray-400 w-5 h-5" />;
+        return <Bell className="text-muted-foreground w-4 h-4" />;
     }
   };
 
@@ -194,22 +196,19 @@ const NotificationsDropdown = () => {
     }
   };
 
-  const getNotificationTypeBadgeColor = (type: NotificationType) => {
+  const getNotificationBadgeVariant = (
+    type: NotificationType,
+  ): "default" | "secondary" | "destructive" | "outline" => {
     switch (type) {
-      case NotificationType.INFO:
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
-      case NotificationType.WARNING:
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
       case NotificationType.ERROR:
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
       case NotificationType.SLA_BREACH:
-        return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300";
+        return "destructive";
+      case NotificationType.WARNING:
       case NotificationType.SLA_WARNING:
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300";
       case NotificationType.ESCALATION_NOTICE:
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+        return "secondary";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
+        return "outline";
     }
   };
 
@@ -226,74 +225,96 @@ const NotificationsDropdown = () => {
             <Bell className="h-5 w-5" />
           )}
           {notifications.length > 0 && (
-            <div className="absolute top-0 right-0 -mt-1 -mr-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white">
+            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] font-semibold text-destructive-foreground">
               {notifications.length}
-            </div>
+            </span>
           )}
         </Button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
         align="end"
-        className="z-999 w-80 md:w-96 p-0 shadow-lg border dark:border-gray-700"
+        className="z-999 w-80 md:w-96 p-0 shadow-lg"
       >
-        <div className="flex items-center justify-between px-4 py-3 border-b dark:border-gray-700">
-          <h3 className="font-semibold text-sm text-gray-800 dark:text-gray-200">
-            Notifications
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-2">
+            <Bell className="h-4 w-4 text-muted-foreground" />
+            <h3 className="font-semibold text-sm">
+              {t.header.notifications("title")}
+            </h3>
             {notifications.length > 0 && (
-              <span className="ml-2 text-xs bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full">
+              <Badge variant="destructive" className="h-5 px-1.5 text-xs">
                 {notifications.length}
-              </span>
+              </Badge>
             )}
-          </h3>
+          </div>
           {notifications.length > 0 && (
             <Button
               variant="ghost"
               size="sm"
               onClick={handleMarkAllRead}
-              className="text-xs h-8 hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="h-7 text-xs gap-1 text-muted-foreground hover:text-primary"
             >
+              <CheckCheck className="h-3.5 w-3.5" />
               {t.header.notifications("clear_all")}
             </Button>
           )}
         </div>
 
+        <Separator />
+
         {notifications.length > 0 ? (
-          <ScrollArea className="max-h-80 overflow-y-auto">
-            <AnimatePresence>
-              {notifications.map((item, index) => (
-                <motion.div
-                  key={index}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <DropdownMenuItem
-                    className="cursor-pointer p-0 focus:bg-transparent"
-                    onClick={() => handleNotificationClick(item.id, index)}
+          <ScrollArea className="max-h-105">
+            <div className="flex flex-col py-1 px-2">
+              <AnimatePresence>
+                {notifications.map((item, index) => (
+                  <motion.div
+                    key={item.id ?? index}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
                   >
-                    <div className="flex w-full p-3 hover:bg-gray-100 dark:hover:bg-gray-800 border-b dark:border-gray-700 last:border-0">
-                      <div className="mr-3 mt-1">
+                    <div
+                      className={`group flex w-full gap-3 px-3 py-2.5 rounded-md cursor-pointer border-l-2 transition-all ${
+                        !item.isRead
+                          ? "bg-primary/5 border-primary hover:bg-primary/10"
+                          : index % 2 === 0
+                            ? "bg-muted/30 border-transparent hover:bg-muted/50 hover:border-primary"
+                            : "border-transparent hover:bg-muted/40 hover:border-primary"
+                      }`}
+                      onClick={() => handleNotificationClick(item.id, index)}
+                    >
+                      {/* Icon */}
+                      <div className="mt-0.5 shrink-0">
                         {getNotificationIcon(item.type)}
                       </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span
-                            className={`text-xs px-2 py-0.5 rounded-full ${getNotificationTypeBadgeColor(item.type)}`}
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <Badge
+                            variant={getNotificationBadgeVariant(item.type)}
+                            className="h-4 px-1.5 text-[10px]"
                           >
                             {getNotificationTypeLabel(item.type)}
-                          </span>
+                          </Badge>
+                          {!item.isRead && (
+                            <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+                          )}
                           <Tooltip>
-                            <TooltipTrigger className="text-xs text-gray-500 dark:text-gray-400 ml-auto">
-                              {formatDateTimeDistanceToNow(
-                                new Date(item.createdAt),
-                              )}
+                            <TooltipTrigger asChild>
+                              <span className="ml-auto text-xs text-muted-foreground/70 cursor-default">
+                                {formatDateTimeDistanceToNow(
+                                  new Date(item.createdAt),
+                                )}
+                              </span>
                             </TooltipTrigger>
                             <TooltipContent side="left">
                               <p>{formatDateTime(new Date(item.createdAt))}</p>
                             </TooltipContent>
                           </Tooltip>
                         </div>
-                        <div className="text-sm text-gray-700 dark:text-gray-300">
+                        <div className="text-sm text-muted-foreground prose prose-sm max-w-none dark:prose-invert **:my-0">
                           <TruncatedHtmlLabel
                             htmlContent={item.content}
                             wordLimit={400}
@@ -301,15 +322,17 @@ const NotificationsDropdown = () => {
                         </div>
                       </div>
                     </div>
-                  </DropdownMenuItem>
-                </motion.div>
-              ))}
-            </AnimatePresence>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
           </ScrollArea>
         ) : (
-          <div className="flex flex-col items-center justify-center p-6 text-center">
-            <Bell className="text-gray-400 w-8 h-8 mb-2" />
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+          <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
+            <div className="rounded-full bg-muted p-3">
+              <Bell className="h-5 w-5 text-muted-foreground" />
+            </div>
+            <p className="text-sm text-muted-foreground">
               {t.header.notifications("no_data")}
             </p>
           </div>

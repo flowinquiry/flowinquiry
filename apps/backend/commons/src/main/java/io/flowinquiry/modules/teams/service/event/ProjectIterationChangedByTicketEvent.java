@@ -6,7 +6,7 @@ import org.springframework.context.ApplicationEvent;
 
 @Getter
 public class ProjectIterationChangedByTicketEvent extends ApplicationEvent {
-    private TicketDTO ticket;
+    private final TicketDTO ticket;
 
     public ProjectIterationChangedByTicketEvent(Object source, TicketDTO ticket) {
         super(source);
