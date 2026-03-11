@@ -1,12 +1,12 @@
 "use client";
 
-import { Ellipsis, Plus, Trash } from "lucide-react";
+import { Ellipsis, Mail, Plus, Trash, Users } from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
 import useSWR from "swr";
 
 import { Heading } from "@/components/heading";
-import { TeamAvatar, UserAvatar } from "@/components/shared/avatar-display";
+import { UserAvatar } from "@/components/shared/avatar-display";
 import LoadingPlaceHolder from "@/components/shared/loading-place-holder";
 import AddUserToTeamDialog from "@/components/teams/team-add-user-dialog";
 import TeamNavLayout from "@/components/teams/team-nav";
@@ -20,6 +20,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -57,7 +58,6 @@ const TeamUsersView = () => {
   const [notDeleteOnlyManagerDialogOpen, setNotDeleteOnlyManagerDialogOpen] =
     useState(false);
 
-  // SWR fetcher
   const {
     data: items = [],
     error,
@@ -68,7 +68,9 @@ const TeamUsersView = () => {
   );
 
   if (error) {
-    return <p className="text-red-500">Failed to load team members.</p>;
+    return (
+      <p className="text-destructive text-sm">Failed to load team members.</p>
+    );
   }
 
   const removeUserOutTeam = async (user: UserWithTeamRoleDTO) => {
@@ -82,10 +84,12 @@ const TeamUsersView = () => {
     }
 
     await deleteUserFromTeam(team.id!, user.id!, setError);
-    await mutate(); // Re-fetch the team members after deletion
+    await mutate();
   };
 
-  // Group users by role
+  const canManage =
+    PermissionUtils.canWrite(permissionLevel) || teamRole === "manager";
+
   const groupedUsers = items.reduce<Record<string, UserWithTeamRoleDTO[]>>(
     (groups, user) => {
       const role = user.teamRole || "unassigned";
@@ -96,7 +100,6 @@ const TeamUsersView = () => {
     {},
   );
 
-  // Define role order
   const roleOrder = ["manager", "member", "guest", "unassigned"];
 
   const breadcrumbItems = [
@@ -109,146 +112,156 @@ const TeamUsersView = () => {
   return (
     <BreadcrumbProvider items={breadcrumbItems}>
       <TeamNavLayout teamId={team.id!}>
-        <div
-          className="grid grid-cols-1 gap-4"
-          data-testid="team-users-container"
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Tooltip>
-                <TooltipTrigger>
-                  <TeamAvatar
-                    imageUrl={team.logoUrl}
-                    size="w-20 h-20"
-                    data-testid="team-avatar"
-                  />
-                </TooltipTrigger>
-                <TooltipContent className="max-w-xs whitespace-pre-wrap break-words">
-                  <div className="text-left">
-                    <p className="font-bold">{team.name}</p>
-                    <p className="text-sm ">
-                      {team.slogan ?? t.teams.common("default_slogan")}
-                    </p>
-                    {team.description && (
-                      <p className="text-sm ">{team.description}</p>
-                    )}
-                  </div>
-                </TooltipContent>
-              </Tooltip>
-              <Heading
-                title={t.teams.users("title", { count: items.length })}
-                description={t.teams.users("description")}
-              />
-            </div>
-            {(PermissionUtils.canWrite(permissionLevel) ||
-              teamRole === "manager") && (
+        <div className="flex flex-col gap-6" data-testid="team-users-container">
+          {/* ── Toolbar ── */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <Heading
+              title={t.teams.users("title", { count: items.length })}
+              description={t.teams.users("description")}
+            />
+            {canManage && (
               <div>
                 <Button
                   onClick={() => setOpen(true)}
                   data-testid="add-user-button"
                 >
-                  <Plus /> {t.teams.users("add_user")}
+                  <Plus className="mr-2 h-4 w-4" />
+                  {t.teams.users("add_user")}
                 </Button>
                 <AddUserToTeamDialog
                   open={open}
                   setOpen={setOpen}
                   teamEntity={team}
-                  onSaveSuccess={() => mutate()} // Trigger SWR re-fetch
+                  onSaveSuccess={() => mutate()}
                 />
               </div>
             )}
           </div>
 
+          {/* ── Content ── */}
           {isLoading ? (
             <LoadingPlaceHolder
               message={t.common.misc("loading_data")}
               data-testid="team-users-loading"
             />
+          ) : items.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed py-16 text-center">
+              <Users className="h-10 w-10 text-muted-foreground/50" />
+              <p className="text-sm text-muted-foreground">
+                {t.teams.users("no_members")}
+              </p>
+              {canManage && (
+                <Button
+                  onClick={() => setOpen(true)}
+                  className="mt-1"
+                  data-testid="add-user-button-empty"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  {t.teams.users("add_user")}
+                </Button>
+              )}
+            </div>
           ) : (
             roleOrder.map(
               (role) =>
                 groupedUsers[role] && (
-                  <div
-                    key={role}
-                    className="mb-6"
-                    data-testid={`team-users-role-${role}`}
-                  >
-                    <h2
-                      className="text-lg font-bold mb-4"
-                      data-testid={`team-users-role-title-${role}`}
-                    >
-                      {t.teams.roles(role)}
-                    </h2>
+                  <section key={role} data-testid={`team-users-role-${role}`}>
+                    {/* Role pill header */}
+                    <div className="flex items-center gap-2 mb-3">
+                      <span
+                        className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary"
+                        data-testid={`team-users-role-title-${role}`}
+                      >
+                        {t.teams.roles(role)}
+                        <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                          {groupedUsers[role].length}
+                        </span>
+                      </span>
+                    </div>
+
+                    {/* Members grid */}
                     <div
-                      className="flex flex-row flex-wrap gap-4 content-around"
+                      className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
                       data-testid={`team-users-role-list-${role}`}
                     >
                       {groupedUsers[role].map((user) => (
-                        <div
+                        <Card
                           key={user.id}
-                          className="w-md flex flex-row gap-4 border px-4 py-4 rounded-2xl relative"
+                          className="group flex flex-col transition-all hover:shadow-md hover:bg-muted/50"
                           data-testid={`team-user-card-${user.id}`}
                         >
-                          <div>
-                            <UserAvatar
-                              imageUrl={user.imageUrl}
-                              size="w-24 h-24"
-                              className="cursor-pointer"
+                          <CardHeader className="flex flex-row items-start justify-between gap-3 pb-2">
+                            {/* Avatar + status dot */}
+                            <div
+                              className="relative shrink-0"
                               data-testid={`team-user-avatar-${user.id}`}
-                            />
-                          </div>
-                          <div>
-                            <div className="text-xl">
-                              <Button variant="link" asChild className="px-0">
+                            >
+                              <UserAvatar
+                                imageUrl={user.imageUrl}
+                                size="w-10 h-10"
+                              />
+                              <span
+                                className={`absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-background ${
+                                  user.teamRole && user.teamRole !== "none"
+                                    ? "bg-green-500"
+                                    : "bg-yellow-400"
+                                }`}
+                              />
+                            </div>
+
+                            {/* Name + title */}
+                            <div className="min-w-0 flex-1">
+                              <CardTitle className="text-sm leading-snug">
                                 <Link
                                   href={`/portal/users/${obfuscate(user.id)}`}
+                                  className="hover:text-primary hover:underline underline-offset-4 transition-colors"
                                   data-testid={`team-user-name-link-${user.id}`}
                                 >
-                                  {user.firstName}, {user.lastName}
+                                  {user.firstName} {user.lastName}
                                 </Link>
-                              </Button>
+                              </CardTitle>
+                              {user.title && (
+                                <p
+                                  className="truncate text-xs text-muted-foreground mt-0.5"
+                                  data-testid={`team-user-title-${user.id}`}
+                                >
+                                  {user.title}
+                                </p>
+                              )}
                             </div>
-                            <div data-testid={`team-user-email-${user.id}`}>
-                              {t.users.form("email")}:{" "}
-                              <Button variant="link" className="px-0 py-0 h-0">
-                                <Link href={`mailto:${user.email}`}>
-                                  {user.email}
-                                </Link>
-                              </Button>
-                            </div>
-                            <div data-testid={`team-user-timezone-${user.id}`}>
-                              {t.users.form("timezone")}: {user.timezone}
-                            </div>
-                            <div data-testid={`team-user-title-${user.id}`}>
-                              {t.users.form("title")}: {user.title}
-                            </div>
-                          </div>
-                          {(PermissionUtils.canWrite(permissionLevel) ||
-                            teamRole === "manager") && (
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Ellipsis
-                                  className="cursor-pointer absolute top-2 right-2 text-gray-400"
-                                  data-testid={`team-user-actions-${user.id}`}
-                                />
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent className="w-56">
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <DropdownMenuItem
-                                      className="w-full flex items-center gap-2 cursor-pointer px-4 py-2"
-                                      onClick={() => removeUserOutTeam(user)}
-                                      data-testid={`team-user-remove-${user.id}`}
-                                    >
-                                      <TooltipTrigger className="w-full flex items-center gap-2">
-                                        <Trash className="w-4 h-4 shrink-0" />
-                                        <span className="flex-1 text-left">
+
+                            {/* Hover-reveal actions */}
+                            {canManage && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    data-testid={`team-user-actions-${user.id}`}
+                                  >
+                                    <Ellipsis className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                  align="end"
+                                  className="w-48"
+                                >
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <DropdownMenuItem
+                                          className="cursor-pointer text-destructive focus:text-destructive"
+                                          onClick={() =>
+                                            removeUserOutTeam(user)
+                                          }
+                                          data-testid={`team-user-remove-${user.id}`}
+                                        >
+                                          <Trash className="mr-2 h-4 w-4" />
                                           {t.teams.users("remove_user")}
-                                        </span>
+                                        </DropdownMenuItem>
                                       </TooltipTrigger>
-                                    </DropdownMenuItem>
-                                    <TooltipContent>
-                                      <p>
+                                      <TooltipContent side="left">
                                         <p>
                                           {t.teams.users.rich(
                                             "remove_user_from_team",
@@ -262,20 +275,41 @@ const TeamUsersView = () => {
                                             },
                                           )}
                                         </p>
-                                      </p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          )}
-                        </div>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
+                          </CardHeader>
+
+                          <CardFooter className="flex flex-col items-start gap-1 border-t pt-3">
+                            <Link
+                              href={`mailto:${user.email}`}
+                              className="flex items-center gap-1.5 truncate text-xs text-muted-foreground hover:text-primary hover:underline underline-offset-4 transition-colors w-full"
+                              data-testid={`team-user-email-${user.id}`}
+                            >
+                              <Mail className="h-3 w-3 shrink-0" />
+                              {user.email}
+                            </Link>
+                            {user.timezone && (
+                              <p
+                                className="text-xs text-muted-foreground/70 truncate w-full"
+                                data-testid={`team-user-timezone-${user.id}`}
+                              >
+                                {user.timezone}
+                              </p>
+                            )}
+                          </CardFooter>
+                        </Card>
                       ))}
                     </div>
-                  </div>
+                  </section>
                 ),
             )
           )}
+
+          {/* ── Cannot-remove-only-manager dialog ── */}
           <AlertDialog open={notDeleteOnlyManagerDialogOpen}>
             <AlertDialogContent data-testid="cannot-remove-manager-dialog">
               <AlertDialogHeader>

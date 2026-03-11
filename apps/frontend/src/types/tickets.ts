@@ -1,4 +1,4 @@
-import * as z from "zod/v4";
+import { z } from "zod";
 
 export type TicketPriority = "Critical" | "High" | "Medium" | "Low" | "Trivial";
 
@@ -19,7 +19,7 @@ export const TicketConversationHealthDTOSchema = z.object({
   totalMessages: z.number().optional(),
   totalQuestions: z.number().optional(),
   resolvedQuestions: z.number().optional(),
-  healthLevel: z.enum(TicketHealthLevel).optional(),
+  healthLevel: z.nativeEnum(TicketHealthLevel).optional(),
 });
 
 export const TicketDTOSchema = z.object({

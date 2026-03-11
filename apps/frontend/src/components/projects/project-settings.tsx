@@ -1,9 +1,11 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { CalendarDays, Zap } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
+import CollapsibleCard from "@/components/shared/collapsible-card";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -22,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { useAppClientTranslations } from "@/hooks/use-translations";
 import {
@@ -35,8 +38,23 @@ interface ProjectSettingsProps {
   projectId: number;
 }
 
-// Use the ProjectSettingDTOSchema from types/projects.ts
 type ProjectSettingFormValues = ProjectSettingDTO;
+
+/* ── Left-accent section header — no horizontal divider ── */
+const SectionHeader = ({
+  icon,
+  title,
+}: {
+  icon: React.ReactNode;
+  title: string;
+}) => (
+  <div className="flex items-center gap-2 mb-4 pl-2 border-l-2 border-primary/40">
+    <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      {icon}
+      {title}
+    </span>
+  </div>
+);
 
 export default function ProjectSettings({
   projectId,
@@ -47,7 +65,6 @@ export default function ProjectSettings({
     useState<ProjectSettingDTO | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch project settings
   useEffect(() => {
     const fetchProjectSettings = async () => {
       try {
@@ -58,26 +75,20 @@ export default function ProjectSettings({
         setLoading(false);
       }
     };
-
     fetchProjectSettings();
   }, [projectId, setError]);
 
-  // Initialize form with values from project settings or defaults
   const form = useForm<ProjectSettingFormValues>({
     resolver: zodResolver(ProjectSettingDTOSchema),
     defaultValues: {
-      projectId: projectId,
-      sprintLengthDays: projectSettings?.sprintLengthDays || 14,
-      defaultPriority: projectSettings?.defaultPriority || "Medium",
-      estimationUnit: projectSettings?.estimationUnit || "STORY_POINTS",
-      enableEstimation:
-        projectSettings?.enableEstimation !== undefined
-          ? projectSettings.enableEstimation
-          : true,
+      projectId,
+      sprintLengthDays: projectSettings?.sprintLengthDays ?? 14,
+      defaultPriority: projectSettings?.defaultPriority ?? "Medium",
+      estimationUnit: projectSettings?.estimationUnit ?? "STORY_POINTS",
+      enableEstimation: projectSettings?.enableEstimation ?? true,
     },
   });
 
-  // Update form values when projectSettings changes
   useEffect(() => {
     if (projectSettings) {
       form.reset({
@@ -90,16 +101,12 @@ export default function ProjectSettings({
     }
   }, [projectSettings, form]);
 
-  // Submit function
   const onSubmit = async (data: ProjectSettingFormValues) => {
     try {
       if (projectSettings) {
         const updatedSettings = await updateProjectSettings(
           projectId,
-          {
-            ...projectSettings,
-            ...data,
-          },
+          { ...projectSettings, ...data },
           setError,
         );
         setProjectSettings(updatedSettings);
@@ -109,156 +116,221 @@ export default function ProjectSettings({
     }
   };
 
-  return (
-    <div className="space-y-6" data-testid="project-settings-view">
-      {/* Project Settings Section */}
-      <div className="p-6 border rounded-lg bg-card">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">
-            {t.teams.projects.settings("title")}
-          </h2>
-        </div>
-        {loading ? (
-          <div className="flex justify-center items-center h-40">
-            <p>Loading project settings...</p>
-          </div>
-        ) : (
-          <Form {...form}>
-            <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Sprint Length Days */}
-                <FormField
-                  control={form.control}
-                  name="sprintLengthDays"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {t.teams.projects.settings("sprint_length")}
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(parseInt(e.target.value))
-                          }
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        {t.teams.projects.settings("sprint_length_description")}
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Default Priority */}
-                <FormField
-                  control={form.control}
-                  name="defaultPriority"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {t.teams.projects.settings("default_priority")}
-                      </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select default priority" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Critical">Critical</SelectItem>
-                          <SelectItem value="High">High</SelectItem>
-                          <SelectItem value="Medium">Medium</SelectItem>
-                          <SelectItem value="Low">Low</SelectItem>
-                          <SelectItem value="Trivial">Trivial</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormDescription>
-                        {t.teams.projects.settings(
-                          "default_priority_description",
-                        )}
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Estimation Unit */}
-                <FormField
-                  control={form.control}
-                  name="estimationUnit"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {t.teams.projects.settings("estimation_unit")}
-                      </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select estimation unit" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="STORY_POINTS">
-                            {t.teams.projects.settings("story_points")}
-                          </SelectItem>
-                          <SelectItem value="DAYS">
-                            {t.teams.projects.settings("days")}
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormDescription>
-                        {t.teams.projects.settings(
-                          "estimation_unit_description",
-                        )}
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Enable Estimation */}
-                <FormField
-                  control={form.control}
-                  name="enableEstimation"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">
-                          {t.teams.projects.settings("enable_estimation")}
-                        </FormLabel>
-                        <FormDescription>
-                          {t.teams.projects.settings(
-                            "enable_estimation_description",
-                          )}
-                        </FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="flex justify-end mt-6">
-                <Button type="submit">{t.common.buttons("save")}</Button>
-              </div>
-            </form>
-          </Form>
-        )}
+  /* ── Skeleton ── */
+  if (loading) {
+    return (
+      <div
+        className="flex flex-col gap-4"
+        data-testid="project-settings-loading"
+      >
+        <Skeleton className="h-9 w-full rounded-xl" />
+        <Skeleton className="h-48 w-full rounded-xl" />
       </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-4" data-testid="project-settings-view">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+          <div className="flex flex-col gap-4">
+            {/* ── Sprint & Scheduling ── */}
+            <CollapsibleCard
+              icon={<CalendarDays className="h-4 w-4 text-muted-foreground" />}
+              title={t.teams.projects.settings("sprint_length")}
+              data-testid="sprint-settings-card"
+            >
+              <FormField
+                control={form.control}
+                name="sprintLengthDays"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {t.teams.projects.settings("sprint_length")}
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min={1}
+                        className="max-w-35"
+                        {...field}
+                        onChange={(e) =>
+                          field.onChange(parseInt(e.target.value))
+                        }
+                        data-testid="sprint-length-input"
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      {t.teams.projects.settings("sprint_length_description")}
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CollapsibleCard>
+
+            {/* ── Tickets & Estimation ── */}
+            <CollapsibleCard
+              icon={<Zap className="h-4 w-4 text-muted-foreground" />}
+              title={t.teams.projects.settings("estimation_unit")}
+              data-testid="estimation-settings-card"
+            >
+              <div className="flex flex-col gap-6">
+                {/* Priority & Unit */}
+                <div>
+                  <SectionHeader
+                    icon={<Zap className="h-3.5 w-3.5" />}
+                    title={t.teams.projects.settings("default_priority")}
+                  />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="defaultPriority"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            {t.teams.projects.settings("default_priority")}
+                          </FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger data-testid="default-priority-select">
+                                <SelectValue
+                                  placeholder={t.teams.projects.settings(
+                                    "default_priority_placeholder",
+                                  )}
+                                />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {(
+                                [
+                                  "Critical",
+                                  "High",
+                                  "Medium",
+                                  "Low",
+                                  "Trivial",
+                                ] as const
+                              ).map((p) => (
+                                <SelectItem key={p} value={p}>
+                                  {t.teams.tickets.form.priorities(p)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormDescription>
+                            {t.teams.projects.settings(
+                              "default_priority_description",
+                            )}
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="estimationUnit"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            {t.teams.projects.settings("estimation_unit")}
+                          </FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger data-testid="estimation-unit-select">
+                                <SelectValue
+                                  placeholder={t.teams.projects.settings(
+                                    "estimation_unit_placeholder",
+                                  )}
+                                />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="STORY_POINTS">
+                                {t.teams.projects.settings("story_points")}
+                              </SelectItem>
+                              <SelectItem value="DAYS">
+                                {t.teams.projects.settings("days")}
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormDescription>
+                            {t.teams.projects.settings(
+                              "estimation_unit_description",
+                            )}
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                {/* Enable Estimation toggle */}
+                <div>
+                  <SectionHeader
+                    icon={<Zap className="h-3.5 w-3.5" />}
+                    title={t.teams.projects.settings("enable_estimation")}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="enableEstimation"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center justify-between rounded-lg border bg-muted/30 px-4 py-3 transition-colors hover:bg-muted/50">
+                        <div className="space-y-0.5 pr-4">
+                          <FormLabel className="text-sm font-medium cursor-pointer">
+                            {t.teams.projects.settings("enable_estimation")}
+                          </FormLabel>
+                          <FormDescription className="text-xs">
+                            {t.teams.projects.settings(
+                              "enable_estimation_description",
+                            )}
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            data-testid="enable-estimation-switch"
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+            </CollapsibleCard>
+          </div>
+
+          {/* ── Action bar ── */}
+          <div className="mt-4 flex items-center gap-3 border-t pt-4">
+            <Button
+              type="submit"
+              disabled={form.formState.isSubmitting || !form.formState.isDirty}
+              data-testid="project-settings-save"
+            >
+              {form.formState.isSubmitting
+                ? t.common.buttons("saving")
+                : t.common.buttons("save_changes")}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => form.reset()}
+              disabled={form.formState.isSubmitting || !form.formState.isDirty}
+              data-testid="project-settings-reset"
+            >
+              {t.common.buttons("discard")}
+            </Button>
+          </div>
+        </form>
+      </Form>
     </div>
   );
 }

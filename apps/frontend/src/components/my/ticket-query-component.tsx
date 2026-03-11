@@ -1,12 +1,13 @@
 "use client";
 
-import { Plus, Search, Trash } from "lucide-react";
+import { Plus, Search, Trash2 } from "lucide-react";
 import React, { useState } from "react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -17,6 +18,7 @@ import {
 import { Filter, Operator, QueryDTO } from "@/types/query";
 import { ticketChannels } from "@/types/tickets";
 
+/* ── Field definitions ── */
 const fieldDefinitions = [
   { name: "requestTitle", label: "Title", type: "text" },
   { name: "requestDescription", label: "Description", type: "text" },
@@ -27,7 +29,16 @@ const fieldDefinitions = [
     type: "select",
     options: [...ticketChannels],
   },
-];
+] as const;
+
+const operatorLabels: Record<Operator, string> = {
+  eq: "=",
+  lk: "contains",
+  gt: ">",
+  lt: "<",
+  in: "in",
+  ne: "≠",
+};
 
 const operatorMappings: Record<string, Operator[]> = {
   text: ["eq", "lk"],
@@ -45,54 +56,50 @@ const DynamicQueryBuilder = ({
   const [filters, setFilters] = useState<Filter[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const addFilter = () => {
-    setFilters([...filters, { field: "", operator: "eq", value: "" }]);
-  };
+  const addFilter = () =>
+    setFilters((prev) => [...prev, { field: "", operator: "eq", value: "" }]);
 
-  const removeFilter = (index: number) => {
-    setFilters(filters.filter((_, i) => i !== index));
-  };
+  const removeFilter = (index: number) =>
+    setFilters((prev) => prev.filter((_, i) => i !== index));
 
   const handleFieldChange = (index: number, value: string) => {
-    setFilters((prevFilters) => {
-      const updatedFilters = [...prevFilters];
+    setFilters((prev) => {
+      const next = [...prev];
       const fieldDef = fieldDefinitions.find((f) => f.name === value);
-      updatedFilters[index] = {
+      next[index] = {
         field: value,
         operator: fieldDef ? operatorMappings[fieldDef.type][0] : "eq",
         value: fieldDef?.type === "boolean" ? false : "",
       };
-      return updatedFilters;
+      return next;
     });
   };
 
-  const handleOperatorChange = (index: number, value: string) => {
-    setFilters((prevFilters) => {
-      const updatedFilters = [...prevFilters];
-      updatedFilters[index].operator = value as Operator;
-      return updatedFilters;
+  const handleOperatorChange = (index: number, value: string) =>
+    setFilters((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], operator: value as Operator };
+      return next;
     });
-  };
 
-  const handleValueChange = (index: number, value: string | boolean) => {
-    setFilters((prevFilters) => {
-      const updatedFilters = [...prevFilters];
-      updatedFilters[index].value = value;
-      return updatedFilters;
+  const handleValueChange = (index: number, value: string | boolean) =>
+    setFilters((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], value };
+      return next;
     });
-  };
 
   const validateQuery = () => {
-    for (const filter of filters) {
-      if (!filter.field) {
+    for (const f of filters) {
+      if (!f.field) {
         setError("Each filter must have a selected field.");
         return false;
       }
-      if (!filter.operator) {
+      if (!f.operator) {
         setError("Each filter must have a selected operator.");
         return false;
       }
-      if (filter.value === "" || filter.value === undefined) {
+      if (f.value === "" || f.value === undefined) {
         setError("Each filter must have a valid value.");
         return false;
       }
@@ -103,57 +110,50 @@ const DynamicQueryBuilder = ({
 
   const handleSearch = () => {
     if (!validateQuery()) return;
-
-    const query: QueryDTO = {
-      groups: [
-        {
-          logicalOperator: "AND",
-          filters,
-        },
-      ],
-    };
-
-    onSearch(query);
+    onSearch({ groups: [{ logicalOperator: "AND", filters }] });
   };
 
-  const renderInputField = (filter: Filter, index: number) => {
-    const fieldDefinition = fieldDefinitions.find(
-      (f) => f.name === filter.field,
-    );
-    if (!fieldDefinition) return null;
+  const renderValue = (filter: Filter, index: number) => {
+    const def = fieldDefinitions.find((f) => f.name === filter.field);
+    if (!def) return null;
 
-    switch (fieldDefinition.type) {
+    switch (def.type) {
       case "text":
-      case "number":
-      case "date":
         return (
           <Input
-            type={fieldDefinition.type}
-            className="w-[180px]"
+            type="text"
             placeholder="Value"
+            className="flex-1 min-w-0"
             value={filter.value as string}
             onChange={(e) => handleValueChange(index, e.target.value)}
           />
         );
       case "boolean":
         return (
-          <div className="w-[180px] flex justify-center">
+          <div className="flex items-center gap-2 flex-1">
             <Checkbox
+              id={`bool-${index}`}
               checked={filter.value === "true"}
               onCheckedChange={(checked) =>
                 handleValueChange(index, checked ? "true" : "false")
               }
             />
+            <Label htmlFor={`bool-${index}`} className="text-sm cursor-pointer">
+              {filter.value === "true" ? "Yes" : "No"}
+            </Label>
           </div>
         );
       case "select":
         return (
-          <Select onValueChange={(value) => handleValueChange(index, value)}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Select" />
+          <Select
+            onValueChange={(val) => handleValueChange(index, val)}
+            value={filter.value as string}
+          >
+            <SelectTrigger className="flex-1 min-w-0">
+              <SelectValue placeholder="Select…" />
             </SelectTrigger>
             <SelectContent>
-              {fieldDefinition.options?.map((option) => (
+              {(def as any).options?.map((option: string) => (
                 <SelectItem key={option} value={option}>
                   {option}
                 </SelectItem>
@@ -167,88 +167,118 @@ const DynamicQueryBuilder = ({
   };
 
   return (
-    <Card className="w-[500px] flex flex-col h-full">
-      <CardHeader>
-        <h2 className="text-lg font-semibold">Build Your Search Query</h2>
-        <p className="text-sm ">
-          Select fields, choose operators, and enter values to refine your
-          search.
+    <div className="flex flex-col gap-4">
+      {/* ── Active filters ── */}
+      {filters.length === 0 ? (
+        <p className="text-sm text-muted-foreground text-center py-4 rounded-lg border border-dashed border-muted-foreground/25">
+          No filters applied — all tickets shown.
         </p>
-      </CardHeader>
-      <CardContent className="p-4 flex flex-col space-y-4 h-full">
-        <div className="flex flex-col space-y-2 overflow-auto">
+      ) : (
+        <div className="flex flex-col gap-2">
           {filters.map((filter, index) => {
-            const currentField = fieldDefinitions.find(
-              (f) => f.name === filter.field,
-            );
-            const operators = currentField
-              ? operatorMappings[currentField.type]
-              : [];
+            const def = fieldDefinitions.find((f) => f.name === filter.field);
+            const operators = def ? operatorMappings[def.type] : [];
 
             return (
-              <div key={index} className="flex items-center space-x-2">
-                {/* Field Selection */}
-                <Select
-                  onValueChange={(value) => handleFieldChange(index, value)}
-                >
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Field" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {fieldDefinitions.map((field) => (
-                      <SelectItem key={field.name} value={field.name}>
-                        {field.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div
+                key={index}
+                className="flex flex-col gap-2 rounded-lg border bg-muted/30 p-3 hover:bg-muted/50 transition-colors"
+              >
+                {/* Row 1: field + operator */}
+                <div className="flex items-center gap-2">
+                  <Badge
+                    variant="outline"
+                    className="shrink-0 text-xs font-normal text-muted-foreground"
+                  >
+                    #{index + 1}
+                  </Badge>
 
-                <Select
-                  onValueChange={(value) => handleOperatorChange(index, value)}
-                  disabled={!filter.field}
-                >
-                  <SelectTrigger className="w-[100px]">
-                    <SelectValue placeholder="Op" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {operators.map((op) => (
-                      <SelectItem key={op} value={op}>
-                        {op}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <Select
+                    onValueChange={(v) => handleFieldChange(index, v)}
+                    value={filter.field || undefined}
+                  >
+                    <SelectTrigger className="flex-1 min-w-0 h-8 text-sm">
+                      <SelectValue placeholder="Select field…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {fieldDefinitions.map((f) => (
+                        <SelectItem key={f.name} value={f.name}>
+                          {f.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
 
-                {renderInputField(filter, index)}
+                  <Select
+                    onValueChange={(v) => handleOperatorChange(index, v)}
+                    value={filter.operator}
+                    disabled={!filter.field}
+                  >
+                    <SelectTrigger className="w-28 shrink-0 h-8 text-sm">
+                      <SelectValue placeholder="Op" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {operators.map((op) => (
+                        <SelectItem key={op} value={op}>
+                          {operatorLabels[op] ?? op}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
 
-                <Button
-                  variant="destructive"
-                  size="icon"
-                  onClick={() => removeFilter(index)}
-                >
-                  <Trash size={16} />
-                </Button>
+                  <button
+                    type="button"
+                    onClick={() => removeFilter(index)}
+                    className="shrink-0 rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                    aria-label="Remove filter"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+
+                {/* Row 2: value input */}
+                {filter.field && (
+                  <div className="flex items-center gap-2 pl-6">
+                    {renderValue(filter, index)}
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
+      )}
+
+      {/* ── Validation error ── */}
+      {error && (
+        <p className="text-xs text-destructive bg-destructive/10 rounded-md px-3 py-2">
+          {error}
+        </p>
+      )}
+
+      {/* ── Actions ── */}
+      <div className="flex items-center gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={addFilter}
+          className="gap-1.5"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          Add filter
+        </Button>
 
         <Button
-          variant="outline"
-          size="icon"
-          onClick={addFilter}
-          className="self-start"
+          type="button"
+          size="sm"
+          onClick={handleSearch}
+          className="gap-1.5 ml-auto"
         >
-          <Plus size={16} />
+          <Search className="h-3.5 w-3.5" />
+          Search
         </Button>
-
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-
-        <Button onClick={handleSearch} className="w-full mt-auto">
-          <Search size={16} className="mr-2" /> Search
-        </Button>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 

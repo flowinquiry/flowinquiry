@@ -39,6 +39,7 @@ const TicketCreationByDaySeriesChart = ({ teamId }: { teamId: number }) => {
 
     const predefinedRanges: Record<string, number> = {
       "7d": 7,
+      "14d": 14,
       "30d": 30,
       "90d": 90,
     };

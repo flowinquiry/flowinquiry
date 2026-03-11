@@ -1,21 +1,23 @@
 "use client";
 
-import { Loader } from "lucide-react";
+import { CalendarDays, FolderOpen, LayoutList, Users } from "lucide-react";
+import Link from "next/link";
 import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
 
 import { Heading } from "@/components/heading";
+import LoadingPlaceHolder from "@/components/shared/loading-place-holder";
 import PaginationExt from "@/components/shared/pagination-ext";
-import { Input } from "@/components/ui/input";
-import { Link } from "@/components/ui/link";
+import { Badge } from "@/components/ui/badge";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useAppClientTranslations } from "@/hooks/use-translations";
 import { findProjectsByUserId } from "@/lib/actions/project.action";
@@ -24,6 +26,7 @@ import { useError } from "@/providers/error-provider";
 import { ProjectDTO, ProjectStatus } from "@/types/projects";
 
 type ViewMode = "flat" | "grouped";
+const PAGE_SIZE = 12;
 
 const ProjectListView = () => {
   const t = useAppClientTranslations();
@@ -41,37 +44,26 @@ const ProjectListView = () => {
   const { setError } = useError();
 
   useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-    }, 300);
+    const handler = setTimeout(() => setDebouncedSearch(searchQuery), 300);
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
   const fetchProjects = async () => {
     if (!session?.user?.id) return;
-
     setLoading(true);
     try {
-      const userId = session.user.id;
-      const pageResult = await findProjectsByUserId(userId, setError);
-
-      // Filter projects based on status and search query
-      let filteredProjects = pageResult.content.filter(
-        (project) => project.status === statusFilter,
+      const pageResult = await findProjectsByUserId(session.user.id, setError);
+      let filtered = pageResult.content.filter(
+        (p) => p.status === statusFilter,
       );
-
       if (debouncedSearch.trim()) {
-        filteredProjects = filteredProjects.filter((project) =>
-          project.name.toLowerCase().includes(debouncedSearch.toLowerCase()),
+        filtered = filtered.filter((p) =>
+          p.name.toLowerCase().includes(debouncedSearch.toLowerCase()),
         );
       }
-
-      setProjects(filteredProjects);
-      setTotalElements(filteredProjects.length);
-
-      // Adjust pagination based on view mode
-      const itemsPerPage = viewMode === "flat" ? 1000 : 500;
-      setTotalPages(Math.ceil(filteredProjects.length / itemsPerPage));
+      setProjects(filtered);
+      setTotalElements(filtered.length);
+      setTotalPages(Math.ceil(filtered.length / PAGE_SIZE));
     } finally {
       setLoading(false);
     }
@@ -79,49 +71,159 @@ const ProjectListView = () => {
 
   useEffect(() => {
     fetchProjects();
-    // Reset to first page when view mode changes
-    if (currentPage !== 1) {
-      setCurrentPage(1);
-    }
+    setCurrentPage(1);
   }, [session, statusFilter, debouncedSearch, viewMode]);
+
+  const formatDate = (d?: string | null) =>
+    d ? new Date(d).toLocaleDateString() : null;
+
+  const pagedProjects = projects.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
+
+  /* ── grouped data ── */
+  const groupedByTeam = Object.entries(
+    projects.reduce(
+      (acc, p) => {
+        const key = p.teamId;
+        if (!acc[key])
+          acc[key] = { teamName: p.teamName ?? "Unknown", projects: [] };
+        acc[key].projects.push(p);
+        return acc;
+      },
+      {} as Record<number, { teamName: string; projects: ProjectDTO[] }>,
+    ),
+  ).sort(([, a], [, b]) => a.teamName.localeCompare(b.teamName));
+
+  /* ── shared card renderer ── */
+  const ProjectCard = ({ project }: { project: ProjectDTO }) => (
+    <Card
+      key={project.id}
+      className="group flex flex-col transition-all hover:shadow-md hover:bg-muted/50"
+      data-testid={`project-card-${project.id}`}
+    >
+      <CardHeader className="pb-2">
+        <div className="flex items-center gap-2 mb-1">
+          <Badge
+            variant={project.status === "Active" ? "default" : "secondary"}
+            data-testid={`project-status-${project.id}`}
+          >
+            {project.status}
+          </Badge>
+          <span
+            className="text-xs text-muted-foreground font-mono"
+            data-testid={`project-short-name-${project.id}`}
+          >
+            {project.shortName}
+          </span>
+        </div>
+        <CardTitle className="text-base leading-snug">
+          <Link
+            href={`/portal/teams/${obfuscate(project.teamId)}/projects/${project.shortName}`}
+            className="hover:text-primary hover:underline underline-offset-4 transition-colors"
+            data-testid={`project-name-link-${project.id}`}
+          >
+            {project.name}
+          </Link>
+        </CardTitle>
+        {project.teamName && viewMode === "flat" && (
+          <Link
+            href={`/portal/teams/${obfuscate(project.teamId)}`}
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors mt-0.5 w-fit"
+            data-testid={`project-team-link-${project.id}`}
+          >
+            <Users className="h-3 w-3" />
+            {project.teamName}
+          </Link>
+        )}
+      </CardHeader>
+
+      <CardContent className="flex-1">
+        {project.description ? (
+          <div
+            className="line-clamp-3 text-sm text-muted-foreground prose prose-sm max-w-none dark:prose-invert **:my-0"
+            dangerouslySetInnerHTML={{ __html: project.description }}
+            data-testid={`project-description-${project.id}`}
+          />
+        ) : (
+          <p className="text-sm italic text-muted-foreground/50">
+            {t.teams.projects.list("no_description")}
+          </p>
+        )}
+      </CardContent>
+
+      <CardFooter className="border-t pt-3 flex flex-wrap gap-x-4 gap-y-1">
+        {(project.startDate || project.endDate) && (
+          <div
+            className="flex items-center gap-1.5 text-xs text-muted-foreground"
+            data-testid={`project-dates-${project.id}`}
+          >
+            <CalendarDays className="h-3.5 w-3.5 shrink-0" />
+            <span>
+              {formatDate(project.startDate) ?? "—"}
+              {" → "}
+              {formatDate(project.endDate) ?? "—"}
+            </span>
+          </div>
+        )}
+        {project.createdAt && (
+          <div
+            className="flex items-center gap-1.5 text-xs text-muted-foreground"
+            data-testid={`project-created-at-${project.id}`}
+          >
+            <span>{t.teams.projects.form("created_at")}:</span>
+            <span>{formatDate(project.createdAt)}</span>
+          </div>
+        )}
+      </CardFooter>
+    </Card>
+  );
 
   return (
     <div
-      className="grid grid-cols-1 gap-4"
+      className="flex flex-col gap-4"
       data-testid="user-project-list-container"
     >
-      <div className="flex items-center justify-between">
+      {/* ── Toolbar ── */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Heading
           title={t.teams.projects.list("title", { totalElements })}
           description={t.teams.projects.list("description")}
         />
-        {/* View Mode Toggle */}
         <ToggleGroup
           type="single"
           value={viewMode}
-          onValueChange={(value) => {
-            if (value && (value === "flat" || value === "grouped")) {
-              setViewMode(value as ViewMode);
-            }
+          onValueChange={(v) => {
+            if (v === "flat" || v === "grouped") setViewMode(v as ViewMode);
           }}
+          className="shrink-0 rounded-lg border bg-muted p-1 gap-1"
           data-testid="project-view-mode-toggle"
         >
-          <ToggleGroupItem value="flat" data-testid="project-view-flat">
+          <ToggleGroupItem
+            value="flat"
+            className="rounded-md px-3 data-[state=on]:bg-background data-[state=on]:shadow-sm data-[state=on]:text-foreground text-muted-foreground"
+            data-testid="project-view-flat"
+          >
+            <LayoutList className="mr-1.5 h-4 w-4" />
             {t.teams.projects.list("flat_view")}
           </ToggleGroupItem>
           <ToggleGroupItem
             value="grouped"
+            className="rounded-md px-3 data-[state=on]:bg-background data-[state=on]:shadow-sm data-[state=on]:text-foreground text-muted-foreground"
             data-testid="project-view-grouped"
-            className="p-4"
           >
+            <Users className="mr-1.5 h-4 w-4" />
             {t.teams.projects.list("group_by_team")}
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
 
-      {/* Search & Status Filter Row */}
+      <Separator />
+
+      {/* ── Search & status filter ── */}
       <div
-        className="flex items-center gap-4 p-4 rounded-lg shadow-md border"
+        className="flex flex-col gap-2 sm:flex-row sm:items-center"
         data-testid="project-search-filter"
       >
         <Input
@@ -129,284 +231,108 @@ const ProjectListView = () => {
           placeholder={t.teams.projects.list("search_place_holder")}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="flex-1"
+          className="w-full sm:w-64"
           data-testid="project-search-input"
         />
         <ToggleGroup
           type="single"
           value={statusFilter}
-          onValueChange={(value) => {
-            if (value && (value === "Active" || value === "Closed")) {
-              setStatusFilter(value as ProjectStatus);
-            }
+          onValueChange={(v) => {
+            if (v === "Active" || v === "Closed")
+              setStatusFilter(v as ProjectStatus);
           }}
+          className="rounded-lg border bg-muted p-1 gap-1"
           data-testid="project-status-filter"
         >
-          <ToggleGroupItem value="Active" data-testid="project-status-active">
-            Active
+          <ToggleGroupItem
+            value="Active"
+            className="rounded-md px-3 data-[state=on]:bg-background data-[state=on]:shadow-sm data-[state=on]:text-foreground text-muted-foreground"
+            data-testid="project-status-active"
+          >
+            {t.teams.projects.list("status_active")}
           </ToggleGroupItem>
-          <ToggleGroupItem value="Closed" data-testid="project-status-closed">
-            Closed
+          <ToggleGroupItem
+            value="Closed"
+            className="rounded-md px-3 data-[state=on]:bg-background data-[state=on]:shadow-sm data-[state=on]:text-foreground text-muted-foreground"
+            data-testid="project-status-closed"
+          >
+            {t.teams.projects.list("status_closed")}
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
 
-      <div
-        className="pt-4 rounded-lg shadow-sm"
-        data-testid="project-table-container"
-      >
-        {loading ? (
-          <div
-            className="flex items-center justify-center p-6"
-            data-testid="project-loading"
-          >
-            <Loader className="w-6 h-6 animate-spin" />
-          </div>
-        ) : projects.length > 0 ? (
-          <>
-            {viewMode === "flat" ? (
-              // Flat View (Table)
-              <>
-                <Table data-testid="project-table">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>{t.teams.projects.form("name")}</TableHead>
-                      <TableHead>
-                        {t.teams.projects.form("short_name")}
-                      </TableHead>
-                      <TableHead>{t.teams.projects.form("status")}</TableHead>
-                      <TableHead>{t.teams.common("team")}</TableHead>
-                      <TableHead>
-                        {t.teams.projects.form("start_date")}
-                      </TableHead>
-                      <TableHead>{t.teams.projects.form("end_date")}</TableHead>
-                      <TableHead>
-                        {t.teams.projects.form("created_at")}
-                      </TableHead>
-                      <TableHead></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {projects
-                      .slice((currentPage - 1) * 10, currentPage * 10)
-                      .map((project) => (
-                        <TableRow
-                          key={project.id}
-                          data-testid={`project-row-${project.id}`}
-                        >
-                          <TableCell>
-                            <Link
-                              href={`/portal/teams/${obfuscate(project.teamId)}/projects/${project.shortName}`}
-                              className="hover:underline"
-                              data-testid={`project-name-link-${project.id}`}
-                            >
-                              {project.name}
-                            </Link>
-                          </TableCell>
-                          <TableCell
-                            data-testid={`project-short-name-${project.id}`}
-                          >
-                            {project.shortName}
-                          </TableCell>
-                          <TableCell>
-                            <span
-                              className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                project.status === "Active"
-                                  ? "bg-success/20 text-success"
-                                  : "bg-muted text-muted-foreground"
-                              }`}
-                              data-testid={`project-status-${project.id}`}
-                            >
-                              {project.status}
-                            </span>
-                          </TableCell>
-                          <TableCell data-testid={`project-team-${project.id}`}>
-                            <Link
-                              href={`/portal/teams/${obfuscate(project.teamId)}`}
-                              className="hover:underline"
-                              data-testid={`project-team-link-${project.id}`}
-                            >
-                              {project.teamName}
-                            </Link>
-                          </TableCell>
-                          <TableCell
-                            data-testid={`project-start-date-${project.id}`}
-                          >
-                            {project.startDate
-                              ? new Date(project.startDate).toLocaleDateString()
-                              : "N/A"}
-                          </TableCell>
-                          <TableCell
-                            data-testid={`project-end-date-${project.id}`}
-                          >
-                            {project.endDate
-                              ? new Date(project.endDate).toLocaleDateString()
-                              : "N/A"}
-                          </TableCell>
-                          <TableCell
-                            data-testid={`project-created-at-${project.id}`}
-                          >
-                            {project.createdAt
-                              ? new Date(project.createdAt).toLocaleDateString()
-                              : "N/A"}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                  </TableBody>
-                </Table>
-              </>
-            ) : (
-              // Grouped by Team View
-              <div
-                className="space-y-6"
-                data-testid="grouped-projects-container"
-              >
-                {Object.entries(
-                  projects.reduce(
-                    (acc, project) => {
-                      const teamId = project.teamId;
-                      const teamName = project.teamName || "Unknown Team";
-
-                      if (!acc[teamId]) {
-                        acc[teamId] = {
-                          teamName,
-                          projects: [],
-                        };
-                      }
-
-                      acc[teamId].projects.push(project);
-                      return acc;
-                    },
-                    {} as Record<
-                      number,
-                      { teamName: string; projects: ProjectDTO[] }
-                    >,
-                  ),
-                )
-                  .sort(([, a], [, b]) => a.teamName.localeCompare(b.teamName))
-                  .slice((currentPage - 1) * 5, currentPage * 5)
-                  .map(([teamId, { teamName, projects: teamProjects }]) => (
-                    <div
-                      key={teamId}
-                      className="mb-6"
-                      data-testid={`team-group-${teamId}`}
-                    >
-                      <div className="bg-muted p-3 rounded-t-lg flex items-center">
-                        <Link
-                          href={`/portal/teams/${obfuscate(Number(teamId))}`}
-                          className="text-lg font-medium hover:underline"
-                          data-testid={`team-name-link-${teamId}`}
-                        >
-                          {teamName} ({teamProjects.length})
-                        </Link>
-                      </div>
-                      <div className="border-x border-b rounded-b-lg">
-                        <Table data-testid={`team-projects-table-${teamId}`}>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>
-                                {t.teams.projects.form("name")}
-                              </TableHead>
-                              <TableHead>
-                                {t.teams.projects.form("short_name")}
-                              </TableHead>
-                              <TableHead>
-                                {t.teams.projects.form("status")}
-                              </TableHead>
-                              <TableHead>
-                                {t.teams.projects.form("start_date")}
-                              </TableHead>
-                              <TableHead>
-                                {t.teams.projects.form("end_date")}
-                              </TableHead>
-                              <TableHead>
-                                {t.teams.projects.form("created_at")}
-                              </TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {teamProjects.map((project) => (
-                              <TableRow
-                                key={project.id}
-                                className="hover:bg-accent/50"
-                                data-testid={`project-row-${project.id}`}
-                              >
-                                <TableCell>
-                                  <Link
-                                    href={`/portal/teams/${obfuscate(project.teamId)}/projects/${project.shortName}`}
-                                    className="font-medium hover:underline"
-                                    data-testid={`project-name-link-${project.id}`}
-                                  >
-                                    {project.name}
-                                  </Link>
-                                </TableCell>
-                                <TableCell
-                                  data-testid={`project-short-name-${project.id}`}
-                                >
-                                  {project.shortName}
-                                </TableCell>
-                                <TableCell>
-                                  <span
-                                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                      project.status === "Active"
-                                        ? "bg-success/20 text-success"
-                                        : "bg-muted text-muted-foreground"
-                                    }`}
-                                    data-testid={`project-status-${project.id}`}
-                                  >
-                                    {project.status}
-                                  </span>
-                                </TableCell>
-                                <TableCell
-                                  data-testid={`project-start-date-${project.id}`}
-                                >
-                                  {project.startDate
-                                    ? new Date(
-                                        project.startDate,
-                                      ).toLocaleDateString()
-                                    : "N/A"}
-                                </TableCell>
-                                <TableCell
-                                  data-testid={`project-end-date-${project.id}`}
-                                >
-                                  {project.endDate
-                                    ? new Date(
-                                        project.endDate,
-                                      ).toLocaleDateString()
-                                    : "N/A"}
-                                </TableCell>
-                                <TableCell
-                                  data-testid={`project-created-at-${project.id}`}
-                                >
-                                  {project.createdAt
-                                    ? new Date(
-                                        project.createdAt,
-                                      ).toLocaleDateString()
-                                    : "N/A"}
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            )}
-
-            <PaginationExt
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-              data-testid="project-pagination"
-            />
-          </>
-        ) : (
-          <p className=" text-center" data-testid="no-projects-message">
+      {/* ── Content ── */}
+      {loading ? (
+        <LoadingPlaceHolder
+          message={t.common.misc("loading_data")}
+          skeletonCount={6}
+          skeletonWidth="100%"
+          data-testid="project-loading"
+        />
+      ) : projects.length === 0 ? (
+        <div
+          className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed py-16 text-center"
+          data-testid="no-projects-message"
+        >
+          <FolderOpen className="h-10 w-10 text-muted-foreground/50" />
+          <p className="text-sm text-muted-foreground">
             {t.teams.projects.list("no_projects_found")}
           </p>
-        )}
-      </div>
+        </div>
+      ) : viewMode === "flat" ? (
+        <>
+          <div
+            className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
+            data-testid="project-grid"
+          >
+            {pagedProjects.map((project) => (
+              <ProjectCard key={project.id} project={project} />
+            ))}
+          </div>
+          <PaginationExt
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            data-testid="project-pagination"
+          />
+        </>
+      ) : (
+        /* ── Grouped view ── */
+        <div
+          className="flex flex-col gap-6"
+          data-testid="grouped-projects-container"
+        >
+          {groupedByTeam.map(
+            ([teamId, { teamName, projects: teamProjects }]) => (
+              <section key={teamId} data-testid={`team-group-${teamId}`}>
+                {/* Pill header */}
+                <div className="flex items-center gap-2 mb-3">
+                  <Link
+                    href={`/portal/teams/${obfuscate(Number(teamId))}`}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary hover:bg-primary/20 transition-colors"
+                    data-testid={`team-name-link-${teamId}`}
+                  >
+                    <Users className="h-3.5 w-3.5" />
+                    {teamName}
+                    <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                      {teamProjects.length}
+                    </span>
+                  </Link>
+                </div>
+
+                <div
+                  className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
+                  data-testid={`team-projects-grid-${teamId}`}
+                >
+                  {teamProjects.map((project) => (
+                    <ProjectCard key={project.id} project={project} />
+                  ))}
+                </div>
+              </section>
+            ),
+          )}
+        </div>
+      )}
     </div>
   );
 };

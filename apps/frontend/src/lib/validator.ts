@@ -1,7 +1,7 @@
 "use client";
 
 import { toast } from "sonner";
-import * as z from "zod/v4";
+import { z } from "zod";
 
 export const validateForm = <T>(
   formDataObject: T,

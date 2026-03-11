@@ -1,14 +1,15 @@
 "use client";
 
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { Bell, CheckCheck } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
 
+import CollapsibleCard from "@/components/shared/collapsible-card";
 import PaginationExt from "@/components/shared/pagination-ext";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Spinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   getUserNotifications,
   markNotificationsAsRead,
@@ -22,27 +23,24 @@ const UserNotifications = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [collapsed, setCollapsed] = useState(false); // State for collapsible content
   const { setError } = useError();
   const { data: session } = useSession();
   const userId = Number(session?.user?.id!);
   const componentT = useTranslations("dashboard.notifications");
-  const miscT = useTranslations("common.misc");
+
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   useEffect(() => {
-    async function fetchNotifications() {
-      setLoading(true);
-      getUserNotifications(userId, currentPage, 5, setError)
-        .then((data) => {
-          setNotifications(data.content);
-          setTotalPages(data.totalPages);
-        })
-        .finally(() => setLoading(false));
-    }
-    fetchNotifications();
+    setLoading(true);
+    getUserNotifications(userId, currentPage, 5, setError)
+      .then((data) => {
+        setNotifications(data.content);
+        setTotalPages(data.totalPages);
+      })
+      .finally(() => setLoading(false));
   }, [userId, currentPage]);
 
-  const handleMarkAsRead = async (notificationId: number) => {
+  const handleMarkAsRead = (notificationId: number) => {
     markNotificationsAsRead([notificationId], setError).finally(() => {
       setNotifications((prev) =>
         prev.map((n) => (n.id === notificationId ? { ...n, isRead: true } : n)),
@@ -51,84 +49,81 @@ const UserNotifications = () => {
   };
 
   return (
-    <Card>
-      {/* Header with Chevron Icon and Title */}
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="flex items-center p-0"
-          >
-            {collapsed ? (
-              <ChevronRight className="w-5 h-5" />
-            ) : (
-              <ChevronDown className="w-5 h-5" />
-            )}
-          </button>
-          <CardTitle>{componentT("title")}</CardTitle>
+    <CollapsibleCard
+      icon={<Bell className="h-4 w-4 text-muted-foreground" />}
+      title={componentT("title")}
+      headerAction={
+        unreadCount > 0 ? (
+          <Badge variant="destructive" className="h-5 px-1.5 text-xs">
+            {unreadCount}
+          </Badge>
+        ) : undefined
+      }
+    >
+      {loading ? (
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="space-y-1.5">
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-3 w-2/3" />
+              <Skeleton className="h-3 w-16" />
+            </div>
+          ))}
         </div>
-      </CardHeader>
-
-      {/* Collapsible Content */}
-      {!collapsed && (
-        <CardContent>
-          {loading ? (
-            <div className="flex justify-center items-center h-[150px]">
-              <Spinner className="h-8 w-8">
-                <span>{miscT("loading_data")}</span>
-              </Spinner>
-            </div>
-          ) : notifications && notifications.length > 0 ? (
-            <div className="space-y-2">
-              {notifications.map((notification, index) => (
-                <div
-                  key={notification.id}
-                  className={`py-4 px-4 rounded-md ${
-                    notification.isRead
-                      ? index % 2 === 0
-                        ? "bg-gray-50 dark:bg-gray-800"
-                        : "bg-white dark:bg-gray-900"
-                      : "bg-blue-100 dark:bg-blue-900"
-                  }`}
-                >
-                  <div
-                    className="prose max-w-none dark:prose-invert"
-                    dangerouslySetInnerHTML={{
-                      __html: notification.content!,
-                    }}
-                  />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                    Created at:{" "}
-                    {formatDateTimeDistanceToNow(
-                      new Date(notification.createdAt),
-                    )}
-                  </p>
+      ) : notifications.length === 0 ? (
+        <p className="text-sm text-muted-foreground py-6 text-center">
+          {componentT("no_data")}
+        </p>
+      ) : (
+        <div className="flex flex-col">
+          {notifications.map((notification, index) => (
+            <div
+              key={notification.id}
+              className={`py-2.5 px-2 rounded-md border-l-2 transition-all ${
+                !notification.isRead
+                  ? "bg-primary/5 hover:bg-primary/10 border-primary"
+                  : index % 2 === 0
+                    ? "bg-muted/30 border-transparent hover:bg-muted/50 hover:border-primary"
+                    : "border-transparent hover:bg-muted/40 hover:border-primary"
+              }`}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-start gap-2 min-w-0 flex-1">
                   {!notification.isRead && (
-                    <Button
-                      variant="link"
-                      className="px-0 h-0"
-                      onClick={() => handleMarkAsRead(notification.id!)}
-                    >
-                      {componentT("mark_as_read")}
-                    </Button>
+                    <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
                   )}
+                  <div
+                    className="prose prose-sm max-w-none dark:prose-invert text-muted-foreground"
+                    dangerouslySetInnerHTML={{ __html: notification.content! }}
+                  />
                 </div>
-              ))}
+                {!notification.isRead && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 shrink-0 text-muted-foreground hover:text-primary"
+                    onClick={() => handleMarkAsRead(notification.id!)}
+                    title={componentT("mark_as_read")}
+                  >
+                    <CheckCheck className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground/70 mt-1 ml-4">
+                {formatDateTimeDistanceToNow(new Date(notification.createdAt))}
+              </p>
             </div>
-          ) : (
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {componentT("no_data")}
-            </p>
-          )}
-          <PaginationExt
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={(page) => setCurrentPage(page)}
-            className="pt-2"
-          />
-        </CardContent>
+          ))}
+        </div>
       )}
-    </Card>
+
+      <PaginationExt
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={(page) => setCurrentPage(page)}
+        className="pt-2"
+      />
+    </CollapsibleCard>
   );
 };
 

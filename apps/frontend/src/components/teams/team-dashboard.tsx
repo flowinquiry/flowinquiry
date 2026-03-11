@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { Pencil } from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
 import useSWR from "swr";
@@ -60,73 +60,69 @@ const TeamDashboard = () => {
   return (
     <BreadcrumbProvider items={breadcrumbItems}>
       <TeamNavLayout teamId={team.id!}>
-        <div className="grid grid-cols-1 gap-4">
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Tooltip>
-                  <TooltipTrigger>
-                    <TeamAvatar imageUrl={team.logoUrl} size="w-20 h-20" />
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-xs whitespace-pre-wrap break-words">
-                    <div className="text-left">
-                      <p className="font-bold">{team.name}</p>
-                      <p className="text-sm ">
-                        {team.slogan ?? t.teams.common("default_slogan")}
-                      </p>
-                      {team.description && (
-                        <p className="text-sm ">{team.description}</p>
-                      )}
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-                <Heading
-                  title={t.teams.dashboard("title")}
-                  description={t.teams.dashboard("description")}
-                />
-              </div>
+        <div className="flex flex-col gap-4">
+          {/* ── Toolbar ── */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            {/* Left: avatar + heading */}
+            <div className="flex items-center gap-3 min-w-0">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="shrink-0 cursor-default">
+                    <TeamAvatar imageUrl={team.logoUrl} size="w-10 h-10" />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs" side="bottom">
+                  <p className="font-semibold">{team.name}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {team.slogan ?? t.teams.common("default_slogan")}
+                  </p>
+                  {team.description && (
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {team.description}
+                    </p>
+                  )}
+                </TooltipContent>
+              </Tooltip>
+              <Heading
+                title={t.teams.dashboard("title")}
+                description={t.teams.dashboard("description")}
+              />
+            </div>
+
+            {/* Right: time range + edit button */}
+            <div className="flex shrink-0 items-center gap-2">
+              <TimeRangeSelector />
               {PermissionUtils.canWrite(permissionLevel) && (
                 <Link
                   href={`/portal/teams/${obfuscate(team.id)}/edit`}
-                  className={cn(buttonVariants({ variant: "default" }))}
+                  className={cn(buttonVariants({ variant: "outline" }))}
                 >
-                  <Plus className="mr-2 h-4 w-4" />{" "}
+                  <Pencil className="mr-2 h-4 w-4" />
                   {t.teams.dashboard("edit_team")}
                 </Link>
               )}
-            </div>
-            <div className="flex items-start">
-              <TimeRangeSelector />
             </div>
           </div>
 
           <Separator />
 
-          <div className="space-y-8">
+          {/* ── Dashboard widgets ── */}
+          <div className="space-y-6">
             <TeamDashboardTopSection teamId={team.id!} />
+
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="flex flex-col">
-                <TicketCreationByDaySeriesChart teamId={team.id!} />
-              </div>
-              <div className="flex flex-col">
-                <RecentTeamActivities teamId={team.id!} />
-              </div>
+              <TicketCreationByDaySeriesChart teamId={team.id!} />
+              <RecentTeamActivities teamId={team.id!} />
             </div>
+
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-              <div className="flex flex-col">
-                <UnassignedTickets teamId={team.id!} />
-              </div>
-              <div className="flex flex-col">
-                <TeamOverdueTickets teamId={team.id!} />
-              </div>
+              <UnassignedTickets teamId={team.id!} />
+              <TeamOverdueTickets teamId={team.id!} />
             </div>
+
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="w-full h-full flex">
-                <TicketDistributionChart teamId={team.id!} />
-              </div>
-              <div className="w-full h-full flex">
-                <TicketPriorityPieChart teamId={team.id!} />
-              </div>
+              <TicketDistributionChart teamId={team.id!} />
+              <TicketPriorityPieChart teamId={team.id!} />
             </div>
           </div>
         </div>

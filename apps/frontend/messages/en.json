@@ -18,6 +18,8 @@
       "delete": "Delete",
       "add": "Add",
       "discard": "Discard",
+      "reset": "Reset",
+      "apply": "Apply",
       "close": "Close",
       "update": "Update",
       "invite": "Invite",
@@ -25,6 +27,7 @@
       "saving": "Saving ...",
       "remove": "Remove",
       "new": "New",
+      "view": "View",
       "go_back": "Go back",
       "loading": "Loading...",
       "add_comment": "Add comment",
@@ -38,6 +41,7 @@
       "no_results_found": "No results found",
       "no_data_available": "No data available",
       "loading_data": "Loading data ...",
+      "completed": "Completed",
       "fail_to_load_data": "Oops! We couldn’t load the data. Try refreshing the page",
       "zoom_in": "Zoom In",
       "zoom_out": "Zoom Out",
@@ -47,10 +51,16 @@
       "comments": "Comments",
       "add_comment": "Add a comment",
       "no_comments": "No comments available",
-      "attachment_place_holder": "Click or Drag to upload",
+      "attachment_place_holder": "Click or drag files here to upload",
+      "attachment_drop_hint": "Supports any file type",
+      "attachment_browse": "Browse files",
       "attachment_file_name": "File name",
       "attachment_type": "Type",
       "attachment_size": "Size",
+      "attachment_uploaded": "Uploaded",
+      "attachment_no_files": "No attachments yet.",
+      "download": "Download",
+      "delete": "Delete",
       "none": "None",
       "yes": "Yes",
       "no": "No"
@@ -88,13 +98,17 @@
   },
   "header": {
     "notifications": {
+      "title": "Notifications",
       "no_data": "You're all caught up!",
       "clear_all": "Clear all"
     },
     "my_tickets": {
       "title": "My tickets",
+      "description": "Track and manage tickets you have reported or been assigned to",
       "reported_tickets": "My reported tickets",
-      "assigned_tickets": "My assigned tickets"
+      "assigned_tickets": "My assigned tickets",
+      "reported": "Reported",
+      "assigned": "Assigned"
     },
     "nav": {
       "profile": "Profile",
@@ -136,7 +150,10 @@
       "assigned_to": "Assigned to",
       "priority_sort_ascending": "Sort by priority: Ascending",
       "priority_sort_descending": "Sort by priority: Descending",
-      "upload_team_logo": "Upload team logo"
+      "upload_team_logo": "Upload team logo",
+      "no_description": "No description provided.",
+      "member": "member",
+      "members": "members"
     },
     "roles": {
       "manager": "Manager",
@@ -148,6 +165,7 @@
       "name": "Name",
       "slogan": "Slogan",
       "description": "Description",
+      "logo_hint": "Click the avatar to upload a team logo. Supported formats: JPG, PNG, GIF (max 5 MB).",
       "create_team_title": "Create team",
       "create_team_description": "Add a new team",
       "edit_team_title": "Edit team {teamName}",
@@ -158,9 +176,13 @@
       "description": "Overview of your team's performance and activities. Monitor team tickets, progress, and key metrics at a glance",
       "edit_team": "Edit Team",
       "last_7_days": "Last 7 Days",
+      "last_14_days": "Last 14 Days",
       "last_30_days": "Last 30 Days",
       "last_90_days": "Last 90 Days",
       "custom_range": "Custom Range",
+      "back_to_presets": "Back",
+      "start_date": "Start date",
+      "end_date": "End date",
       "add_user_dialog": {
         "title1": "This team requires at least one manager",
         "description1": "This team currently has no managers. You must assign at least one manager before proceeding. Begin typing to search for users.",
@@ -335,6 +357,9 @@
         "search_place_holder": "Search projects...",
         "new_project": "New project",
         "no_projects_found": "No projects found",
+        "no_description": "No description provided.",
+        "status_active": "Active",
+        "status_closed": "Closed",
         "close_project": "Close project",
         "reopen_project": "Reopen project",
         "delete_project_dialog_title": "Confirm project deletion",
@@ -369,7 +394,8 @@
           "end_date": "End date",
           "description": "Description",
           "description_place_holder": "Brief description of this iteration's goals",
-          "create_iteration": "Create iteration"
+          "create_iteration": "Create iteration",
+          "sprint_length_hint": "Sprint length: {days} days — dates are auto-calculated when you pick one end."
         }
       },
       "epic": {
@@ -418,12 +444,15 @@
         "sprint_length_description": "The default length of sprints in days",
         "default_priority": "Default Priority",
         "default_priority_description": "The default priority for new tickets",
+        "default_priority_placeholder": "Select default priority",
         "estimation_unit": "Estimation Unit",
         "estimation_unit_description": "The unit used for estimating work",
+        "estimation_unit_placeholder": "Select estimation unit",
         "story_points": "Story Points",
         "days": "Days",
         "enable_estimation": "Enable Estimation",
-        "enable_estimation_description": "Allow estimation of tickets in this project"
+        "enable_estimation_description": "Allow estimation of tickets in this project",
+        "loading": "Loading project settings..."
       }
     }
   },
@@ -462,6 +491,9 @@
       "authorities": "Authorities",
       "first_name": "First Name",
       "last_name": "Last Name",
+      "manager": "Manager",
+      "identity_section": "Identity",
+      "location_section": "Location",
       "updating": "Updating ...",
       "inviting": "Inviting ...",
       "create_user": "Create User",
@@ -549,12 +581,16 @@
       "state_select_place_holder": "Select a state",
       "no_data": "No workflows found",
       "select_workflow": "Select workflow",
-      "search_workflow": "Search workflow..."
+      "search_workflow": "Search workflow...",
+      "global": "Global",
+      "no_description": "No description provided.",
+      "project_workflow": "Project workflow"
     },
     "list": {
       "title": "Workflows ({totalElements})",
       "description": "Centralize and manage all workflows effortlessly with clear visibility, ticket types, and descriptions at a glance.",
       "new_workflow": "New workflow",
+      "no_workflows": "No workflows found. Create one to get started.",
       "sort_a_z": "Sort workflow names A → Z",
       "sort_z_a": "Sort workflow names Z → A",
       "delete_workflow": "Delete workflow",
@@ -565,6 +601,13 @@
       "customize_workflow": "Customize workflow",
       "ticket_type_label": "Ticket type: {requestName}",
       "error_loading": "Error loading workflow detail"
+    },
+    "review": {
+      "state_transitions": "Transitions",
+      "no_transitions": "No transitions defined.",
+      "sla_hours": "{hours}h SLA",
+      "no_sla": "No SLA",
+      "escalates": "Escalates"
     },
     "add": {
       "title": "Create new workflow",

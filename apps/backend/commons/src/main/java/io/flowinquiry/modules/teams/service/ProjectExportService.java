@@ -32,6 +32,6 @@ public class ProjectExportService {
                     "projects.xlsx",
                     excelExporter.export(page.getContent(), "Projects", ProjectDTO.class));
         }
-        return null;
+        throw new IllegalArgumentException("Unsupported export type: " + exportType);
     }
 }

@@ -10,17 +10,8 @@ const Page = async (props: { params: Promise<{ userId: string | "new" }> }) => {
 
   const t = await getAppTranslations();
 
-  const breadcrumbItems = [
-    { title: t.common.navigation("dashboard"), link: "/portal" },
-    { title: t.common.navigation("users"), link: "/portal/users" },
-    { title: t.common.buttons("create"), link: "/portal/users/edit/new" },
-  ];
-
   return (
-    <SimpleContentView
-      title={t.common.navigation("users")}
-      breadcrumbItems={breadcrumbItems}
-    >
+    <SimpleContentView title={t.common.navigation("users")}>
       <UserForm userId={userId} />
     </SimpleContentView>
   );

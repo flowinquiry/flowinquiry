@@ -171,7 +171,7 @@ Using host IP address: 192.168.0.78
 ```
 
 3. Log in with the default administrator credentials:
-- **Username:** `admin@flowinquiry.io`
+- **Username:** `admin@example.com`
 - **Password:** `admin`
 
 ➡️ For **testing purposes**, it is safe to select **`n`** (no SSL) and run FlowInquiry over plain HTTP within your local network.  

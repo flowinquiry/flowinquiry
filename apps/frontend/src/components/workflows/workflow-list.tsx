@@ -1,6 +1,13 @@
 "use client";
 
-import { ArrowDownAZ, ArrowUpAZ, Ellipsis, Plus, Trash } from "lucide-react";
+import {
+  ArrowDownAZ,
+  ArrowUpAZ,
+  Ellipsis,
+  GitBranch,
+  Plus,
+  Trash,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
@@ -10,6 +17,13 @@ import LoadingPlaceholder from "@/components/shared/loading-place-holder";
 import PaginationExt from "@/components/shared/pagination-ext";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,7 +50,7 @@ import { cn } from "@/lib/utils";
 import { useError } from "@/providers/error-provider";
 import { QueryDTO } from "@/types/query";
 import { PermissionUtils } from "@/types/resources";
-import { WorkflowDTO } from "@/types/workflows";
+import { WorkflowDTO, WorkflowVisibility } from "@/types/workflows";
 
 const WorkflowsView = () => {
   const [items, setItems] = useState<Array<WorkflowDTO>>([]);
@@ -132,27 +146,53 @@ const WorkflowsView = () => {
     await fetchWorkflows();
   };
 
+  const visibilityConfig: Record<
+    WorkflowVisibility,
+    { label: string; className: string }
+  > = {
+    PUBLIC: {
+      label: "Public",
+      className:
+        "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+    },
+    PRIVATE: {
+      label: "Private",
+      className: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+    },
+    TEAM: {
+      label: "Team",
+      className:
+        "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+    },
+  };
+
   return (
-    <div className="grid grid-cols-1 gap-4">
-      <div className="flex flex-row justify-between">
+    <div className="flex flex-col gap-4">
+      {/* Toolbar */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <Heading
           title={t.workflows.list("title", { totalElements })}
           description={t.workflows.list("description")}
         />
-
-        <div className="flex space-x-4">
+        <div className="flex shrink-0 items-center gap-2">
           <Input
-            className="w-[18rem]"
+            className="w-48 lg:w-64"
             placeholder={t.workflows.common("search_workflow")}
-            onChange={(e) => {
-              handleSearchTeams(e.target.value);
-            }}
+            onChange={(e) => handleSearchTeams(e.target.value)}
             defaultValue={searchParams.get("name")?.toString()}
           />
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" onClick={toggleSortDirection}>
-                {sortDirection === "asc" ? <ArrowDownAZ /> : <ArrowUpAZ />}
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={toggleSortDirection}
+              >
+                {sortDirection === "asc" ? (
+                  <ArrowDownAZ className="h-4 w-4" />
+                ) : (
+                  <ArrowUpAZ className="h-4 w-4" />
+                )}
               </Button>
             </TooltipTrigger>
             <TooltipContent>
@@ -163,95 +203,136 @@ const WorkflowsView = () => {
           </Tooltip>
           {PermissionUtils.canWrite(permissionLevel) && (
             <Link
-              href={"/portal/settings/workflows/new"}
+              href="/portal/settings/workflows/new"
               className={cn(buttonVariants({ variant: "default" }))}
             >
-              <Plus className="mr-2 h-4 w-4" />{" "}
+              <Plus className="mr-2 h-4 w-4" />
               {t.workflows.list("new_workflow")}
             </Link>
           )}
         </div>
       </div>
+
       <Separator />
+
+      {/* Content */}
       {loading ? (
         <LoadingPlaceholder
           message={t.common.misc("loading_data")}
-          skeletonCount={3}
-          skeletonWidth="28rem"
+          skeletonCount={6}
+          skeletonWidth="100%"
         />
-      ) : (
-        <div className="flex flex-row flex-wrap gap-4 content-around">
-          {items?.map((workflow) => (
-            <div
-              key={workflow.id}
-              className="w-md flex flex-col gap-4 border px-4 py-4 rounded-2xl relative"
+      ) : items.length === 0 ? (
+        <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed py-16 text-center">
+          <GitBranch className="h-10 w-10 text-muted-foreground/50" />
+          <p className="text-sm text-muted-foreground">
+            No workflows found. Create one to get started.
+          </p>
+          {PermissionUtils.canWrite(permissionLevel) && (
+            <Link
+              href="/portal/settings/workflows/new"
+              className={cn(buttonVariants({ variant: "default" }), "mt-1")}
             >
-              {/* Ribbon for visibility */}
-              {workflow.visibility === "PUBLIC" && (
-                <div className="absolute bottom-0 right-0 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-br-2xl rounded-tl-md shadow-md border">
-                  PUBLIC
-                </div>
-              )}
-              {workflow.visibility === "PRIVATE" && (
-                <div className="absolute bottom-0 right-0 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-br-2xl rounded-tl-md shadow-md border">
-                  PRIVATE
-                </div>
-              )}
-              {workflow.visibility === "TEAM" && (
-                <div className="absolute bottom-0 right-0 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-br-2xl rounded-tl-md shadow-md border">
-                  TEAM
-                </div>
-              )}
+              <Plus className="mr-2 h-4 w-4" />
+              {t.workflows.list("new_workflow")}
+            </Link>
+          )}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {items.map((workflow) => {
+            const vis = workflow.visibility as WorkflowVisibility | undefined;
+            const visConfig = vis ? visibilityConfig[vis] : null;
 
-              <div>
-                <Link
-                  href={`${getWorkflowViewRoute(workflow)}`}
-                  className={cn(
-                    buttonVariants({ variant: "link" }),
-                    "w-full text-left block px-0",
+            return (
+              <Card
+                key={workflow.id}
+                className="group flex flex-col transition-shadow hover:shadow-md"
+              >
+                <CardHeader className="flex flex-row items-start justify-between gap-2 pb-2">
+                  <CardTitle className="text-base leading-snug">
+                    <Link
+                      href={getWorkflowViewRoute(workflow)}
+                      className="hover:text-primary hover:underline underline-offset-4 transition-colors line-clamp-2"
+                    >
+                      {workflow.name}
+                    </Link>
+                  </CardTitle>
+
+                  {PermissionUtils.canWrite(permissionLevel) &&
+                    !workflow.useForProject && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <Ellipsis className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <DropdownMenuItem
+                                  className="cursor-pointer text-destructive focus:text-destructive"
+                                  onClick={() =>
+                                    deleteWorkflowOutOfWorkspace(workflow)
+                                  }
+                                >
+                                  <Trash className="mr-2 h-4 w-4" />
+                                  Delete workflow
+                                </DropdownMenuItem>
+                              </TooltipTrigger>
+                              <TooltipContent side="left">
+                                <p>
+                                  Remove workflow &ldquo;{workflow.name}&rdquo;
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                </CardHeader>
+
+                <CardContent className="flex-1">
+                  {workflow.description ? (
+                    <p className="line-clamp-3 text-sm text-muted-foreground">
+                      {workflow.description}
+                    </p>
+                  ) : (
+                    <p className="text-sm italic text-muted-foreground/50">
+                      No description provided.
+                    </p>
                   )}
-                >
-                  {workflow.name}
-                </Link>
-              </div>
-              <div className="text-sm">
-                Ticket type:{" "}
-                <Badge variant="secondary">{workflow.requestName}</Badge>
-              </div>
-              <div className="text-sm">{workflow.description}</div>
-              {PermissionUtils.canWrite(permissionLevel) &&
-                !workflow.useForProject && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Ellipsis className="cursor-pointer absolute top-2 right-2" />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56">
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <DropdownMenuItem
-                              className="cursor-pointer"
-                              onClick={() =>
-                                deleteWorkflowOutOfWorkspace(workflow)
-                              }
-                            >
-                              <Trash /> Delete workflow
-                            </DropdownMenuItem>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>
-                              This action will remove workflow {workflow.name}
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
-            </div>
-          ))}
+                </CardContent>
+
+                <CardFooter className="flex items-center justify-between gap-2 pt-3 border-t">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <span>Ticket type:</span>
+                    <Badge variant="secondary" className="text-xs">
+                      {workflow.requestName}
+                    </Badge>
+                  </div>
+                  {visConfig && (
+                    <span
+                      className={cn(
+                        "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
+                        visConfig.className,
+                      )}
+                    >
+                      {visConfig.label}
+                    </span>
+                  )}
+                </CardFooter>
+              </Card>
+            );
+          })}
         </div>
       )}
+
       <PaginationExt
         currentPage={currentPage}
         totalPages={totalPages}

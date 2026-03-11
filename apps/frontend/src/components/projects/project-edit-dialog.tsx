@@ -2,16 +2,22 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
-import { InfoIcon } from "lucide-react";
+import {
+  Calendar,
+  FileText,
+  FolderOpen,
+  InfoIcon,
+  Settings2,
+} from "lucide-react";
 import React, { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
-import * as z from "zod/v4";
+import { z } from "zod";
 
 import RichTextEditor from "@/components/shared/rich-text-editor";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogPortal,
   DialogTitle,
@@ -29,6 +35,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -55,6 +62,21 @@ type ProjectDialogProps = {
   project?: ProjectDTO | null;
   onSaveSuccess: () => void;
 };
+
+const SectionHeader = ({
+  icon,
+  title,
+}: {
+  icon: React.ReactNode;
+  title: string;
+}) => (
+  <div className="flex items-center gap-2 mb-4 pl-2 border-l-2 border-primary/40">
+    <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      {icon}
+      {title}
+    </span>
+  </div>
+);
 
 const ProjectEditDialog: React.FC<ProjectDialogProps> = ({
   open,
@@ -83,27 +105,27 @@ const ProjectEditDialog: React.FC<ProjectDialogProps> = ({
   // Populate form when editing an existing project
   useEffect(() => {
     if (open) {
-      if (project) {
-        form.reset({
-          teamId: teamEntity.id!,
-          name: project.name || "",
-          description: project.description || "",
-          shortName: project.shortName || "",
-          status: project.status || "Active",
-          startDate: project.startDate || undefined,
-          endDate: project.endDate || undefined,
-        });
-      } else {
-        form.reset({
-          teamId: teamEntity.id!,
-          name: "",
-          description: "",
-          shortName: "",
-          status: "Active",
-          startDate: undefined,
-          endDate: undefined,
-        });
-      }
+      form.reset(
+        project
+          ? {
+              teamId: teamEntity.id!,
+              name: project.name || "",
+              description: project.description || "",
+              shortName: project.shortName || "",
+              status: project.status || "Active",
+              startDate: project.startDate || undefined,
+              endDate: project.endDate || undefined,
+            }
+          : {
+              teamId: teamEntity.id!,
+              name: "",
+              description: "",
+              shortName: "",
+              status: "Active",
+              startDate: undefined,
+              endDate: undefined,
+            },
+      );
       editorMountedRef.current = true;
     }
   }, [project, teamEntity.id, open, form]);
@@ -114,7 +136,6 @@ const ProjectEditDialog: React.FC<ProjectDialogProps> = ({
     } else {
       await createProject(data, setError);
     }
-
     setOpen(false);
     onSaveSuccess();
   };
@@ -130,12 +151,14 @@ const ProjectEditDialog: React.FC<ProjectDialogProps> = ({
     setOpen(newOpen);
   };
 
+  const isEdit = !!project;
+
   return (
     <TooltipProvider>
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogPortal>
           <DialogContent
-            className="sm:max-w-4xl max-h-[90vh] p-4 sm:p-6 flex flex-col overflow-y-auto"
+            className="sm:max-w-3xl max-h-[90vh] p-0 flex flex-col overflow-hidden"
             onPointerDownOutside={(e) => {
               // Prevent closing when clicking inside editor dropdowns that may be rendered in a portal
               if (
@@ -155,175 +178,202 @@ const ProjectEditDialog: React.FC<ProjectDialogProps> = ({
               }
             }}
           >
-            <DialogHeader>
-              <DialogTitle>
-                {project
+            {/* ── Header ── */}
+            <DialogHeader className="px-6 py-4 border-b shrink-0">
+              <DialogTitle className="flex items-center gap-2 text-base">
+                <FolderOpen className="h-4 w-4 text-muted-foreground shrink-0" />
+                {isEdit
                   ? t.teams.projects.new_dialog("edit_project")
                   : t.teams.projects.new_dialog("new_project")}
               </DialogTitle>
-              <DialogDescription>
-                {project
+              <p className="text-sm text-muted-foreground mt-0.5 pl-6">
+                {isEdit
                   ? t.teams.projects.new_dialog("edit_project_description")
                   : t.teams.projects.new_dialog("new_project_description")}
-              </DialogDescription>
+              </p>
             </DialogHeader>
+
+            {/* ── Scrollable body + footer wrapped in one form ── */}
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
-                className="flex flex-col flex-1"
+                className="flex flex-col flex-1 overflow-hidden min-h-0"
               >
-                <div className="flex-1 overflow-y-auto space-y-6">
-                  {/* Grid layout for form fields */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    {/* Name Field - Spans full width */}
-                    <div className="col-span-1 sm:col-span-2">
-                      <ExtInputField
-                        form={form}
-                        fieldName="name"
-                        label={t.teams.projects.form("name")}
-                        required
+                <div className="flex-1 overflow-y-auto px-6 py-5">
+                  <div className="flex flex-col gap-6">
+                    {/* ── Basics section ── */}
+                    <div>
+                      <SectionHeader
+                        icon={<FileText className="h-4 w-4" />}
+                        title={t.teams.projects.form("name")}
                       />
-                    </div>
-
-                    {/* Description Field - Spans full width */}
-                    <div className="col-span-1 sm:col-span-2">
-                      <FormField
-                        control={form.control}
-                        name="description"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>
-                              {t.teams.projects.form("description")}{" "}
-                              <span className="text-destructive">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              {editorMountedRef.current && (
-                                <RichTextEditor
-                                  value={field.value}
-                                  onChange={field.onChange}
-                                  // This ensures the editor doesn't lose focus unexpectedly
-                                  onBlur={() => {
-                                    // Don't trigger form blur immediately
-                                  }}
-                                  // Ensure editor is properly mounted for each dialog instance
-                                  key={`editor-${open ? "open" : "closed"}-${project?.id || "new"}`}
-                                />
-                              )}
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <div className="col-span-1">
-                      <FormField
-                        control={form.control}
-                        name="shortName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="flex items-center gap-2 pt-2">
-                              {t.teams.projects.form("short_name")}
-                              <span className="text-destructive">*</span>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <InfoIcon className="h-4 w-4 text-muted-foreground cursor-help" />
-                                </TooltipTrigger>
-                                <TooltipPrimitive.Portal>
-                                  <TooltipContent
-                                    side="top"
-                                    align="center"
-                                    className="z-9999"
-                                    sideOffset={5}
-                                    avoidCollisions={true}
-                                    collisionPadding={8}
-                                    sticky="always"
-                                  >
-                                    <p>
-                                      {t.teams.projects.form(
-                                        "short_name_tooltip",
-                                      )}
-                                    </p>
-                                  </TooltipContent>
-                                </TooltipPrimitive.Portal>
-                              </Tooltip>
-                            </FormLabel>
-                            <FormControl>
-                              <input
-                                {...field}
-                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                placeholder={t.teams.projects.form(
-                                  "short_name_placeholder",
-                                )}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <div className="col-span-1">
-                      <FormField
-                        control={form.control}
-                        name="status"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>
-                              {t.teams.projects.form("status")}{" "}
-                              <span className="text-destructive">*</span>
-                            </FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                              value={field.value}
-                            >
+                      <div className="flex flex-col gap-4">
+                        <ExtInputField
+                          form={form}
+                          fieldName="name"
+                          label={t.teams.projects.form("name")}
+                          required
+                        />
+                        <FormField
+                          control={form.control}
+                          name="description"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>
+                                {t.teams.projects.form("description")}
+                                <span className="text-destructive ml-1">*</span>
+                              </FormLabel>
                               <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
+                                {editorMountedRef.current && (
+                                  <RichTextEditor
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    onBlur={() => {}}
+                                    key={`editor-${open ? "open" : "closed"}-${project?.id || "new"}`}
+                                  />
+                                )}
                               </FormControl>
-                              <SelectContent>
-                                <SelectItem value="Active">Active</SelectItem>
-                                <SelectItem value="Closed">Closed</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                     </div>
 
-                    <div className="col-span-1">
-                      <DatePickerField
-                        form={form}
-                        fieldName="startDate"
-                        label={t.teams.projects.form("start_date")}
-                        placeholder={t.common.misc("date_select_place_holder")}
-                        testId="project-edit-start-date"
+                    {/* ── Settings section ── */}
+                    <div>
+                      <SectionHeader
+                        icon={<Settings2 className="h-4 w-4" />}
+                        title={t.teams.projects.form("status")}
                       />
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        {/* Short name */}
+                        <FormField
+                          control={form.control}
+                          name="shortName"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="flex items-center gap-1.5">
+                                {t.teams.projects.form("short_name")}
+                                <span className="text-destructive">*</span>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <InfoIcon className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                                  </TooltipTrigger>
+                                  <TooltipPrimitive.Portal>
+                                    <TooltipContent
+                                      side="top"
+                                      align="center"
+                                      className="z-9999 max-w-xs"
+                                      sideOffset={5}
+                                      avoidCollisions
+                                      collisionPadding={8}
+                                      sticky="always"
+                                    >
+                                      <p>
+                                        {t.teams.projects.form(
+                                          "short_name_tooltip",
+                                        )}
+                                      </p>
+                                    </TooltipContent>
+                                  </TooltipPrimitive.Portal>
+                                </Tooltip>
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  placeholder={t.teams.projects.form(
+                                    "short_name_placeholder",
+                                  )}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Status */}
+                        <FormField
+                          control={form.control}
+                          name="status"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>
+                                {t.teams.projects.form("status")}
+                                <span className="text-destructive ml-1">*</span>
+                              </FormLabel>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="Active">
+                                    {t.teams.projects.list("status_active")}
+                                  </SelectItem>
+                                  <SelectItem value="Closed">
+                                    {t.teams.projects.list("status_closed")}
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                     </div>
-                    <div className="col-span-1">
-                      <DatePickerField
-                        form={form}
-                        fieldName="endDate"
-                        label={t.teams.projects.form("end_date")}
-                        placeholder={t.common.misc("date_select_place_holder")}
-                        testId="project-edit-end-date"
+
+                    {/* ── Dates section ── */}
+                    <div>
+                      <SectionHeader
+                        icon={<Calendar className="h-4 w-4" />}
+                        title={t.teams.projects.form("start_date")}
                       />
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <DatePickerField
+                          form={form}
+                          fieldName="startDate"
+                          label={t.teams.projects.form("start_date")}
+                          placeholder={t.common.misc(
+                            "date_select_place_holder",
+                          )}
+                          testId="project-edit-start-date"
+                        />
+                        <DatePickerField
+                          form={form}
+                          fieldName="endDate"
+                          label={t.teams.projects.form("end_date")}
+                          placeholder={t.common.misc(
+                            "date_select_place_holder",
+                          )}
+                          testId="project-edit-end-date"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="pt-4">
+                {/* ── Footer action bar ── */}
+                <div className="flex items-center gap-3 border-t px-6 py-4 shrink-0">
                   <SubmitButton
                     label={
-                      project
+                      isEdit
                         ? t.common.buttons("save_changes")
                         : t.common.buttons("save")
                     }
                     labelWhileLoading={t.common.buttons("saving")}
                   />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => handleOpenChange(false)}
+                  >
+                    {t.common.buttons("cancel")}
+                  </Button>
                 </div>
               </form>
             </Form>

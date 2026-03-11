@@ -4,7 +4,12 @@ import io.flowinquiry.modules.teams.ExportException;
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Field;
 import java.util.List;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Component;
 
@@ -58,14 +63,11 @@ public class ExcelExporter {
     }
 
     private void setCellValue(Cell cell, Object value) {
-        if (value == null) {
-            cell.setBlank();
-        } else if (value instanceof Number num) {
-            cell.setCellValue(num.doubleValue());
-        } else if (value instanceof Boolean bool) {
-            cell.setCellValue(bool);
-        } else {
-            cell.setCellValue(value.toString());
+        switch (value) {
+            case null -> cell.setBlank();
+            case Number num -> cell.setCellValue(num.doubleValue());
+            case Boolean bool -> cell.setCellValue(bool);
+            default -> cell.setCellValue(value.toString());
         }
     }
 }

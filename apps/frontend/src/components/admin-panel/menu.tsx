@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 import { CollapseMenuButton } from "@/components/admin-panel/collapse-menu-button";
-import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Tooltip,
@@ -31,20 +30,21 @@ export function Menu({ isOpen }: MenuProps) {
 
   return (
     <ScrollArea>
-      <nav className="mt-8 h-full w-full">
-        <ul className="flex flex-col items-start space-y-1 px-2 max-h-[calc(100vh-48px-36px)] lg:max-h-[calc(100vh-32px-40px)]">
+      <nav className="mt-4 h-full w-full">
+        <ul className="flex flex-col items-start space-y-0.5 px-2 max-h-[calc(100vh-48px-36px)] lg:max-h-[calc(100vh-32px-40px)]">
           {menuList.map(({ groupLabel, menus }, index) => (
-            <li className={cn("w-full", groupLabel ? "pt-5" : "")} key={index}>
+            <li className={cn("w-full", groupLabel ? "pt-4" : "")} key={index}>
+              {/* Group label */}
               {(isOpen && groupLabel) || isOpen === undefined ? (
-                <p className="text-sm font-medium text-muted-foreground px-4 pb-2 max-w-[248px] truncate">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60 px-3 pb-1.5 max-w-62 truncate">
                   {groupLabel}
                 </p>
               ) : !isOpen && groupLabel ? (
                 <TooltipProvider>
                   <Tooltip delayDuration={100}>
                     <TooltipTrigger className="w-full">
-                      <div className="w-full flex justify-center items-center">
-                        <Ellipsis className="h-5 w-5" />
+                      <div className="w-full flex justify-center items-center py-1">
+                        <Ellipsis className="h-4 w-4 text-muted-foreground/50" />
                       </div>
                     </TooltipTrigger>
                     <TooltipContent
@@ -57,54 +57,49 @@ export function Menu({ isOpen }: MenuProps) {
                   </Tooltip>
                 </TooltipProvider>
               ) : (
-                <p className="pb-2"></p>
+                <p className="pb-1" />
               )}
+
+              {/* Menu items */}
               {menus.map(
-                ({ href, label, icon: Icon, active, submenus }, index) =>
-                  !submenus || submenus.length === 0 ? (
+                ({ href, label, icon: Icon, active, submenus }, index) => {
+                  const isActive =
+                    (active === undefined &&
+                      (href === "/portal"
+                        ? pathname === "/portal" ||
+                          pathname === "/portal/dashboard"
+                        : pathname.startsWith(href))) ||
+                    active;
+
+                  return !submenus || submenus.length === 0 ? (
                     <div className="w-full" key={index}>
                       <TooltipProvider disableHoverableContent>
                         <Tooltip delayDuration={100}>
                           <TooltipTrigger asChild>
-                            <Button
-                              variant={
-                                (active === undefined &&
-                                  (href === "/portal"
-                                    ? pathname === "/portal" ||
-                                      pathname === "/portal/dashboard"
-                                    : pathname.startsWith(href))) ||
-                                active
-                                  ? "default"
-                                  : "ghost"
-                              }
+                            <Link
+                              href={href}
                               className={cn(
-                                "h-10 mb-1",
+                                "flex items-center rounded-md transition-colors mb-0.5",
+                                "border-l-2",
                                 isOpen === false
-                                  ? "justify-center"
-                                  : "w-full justify-start",
+                                  ? "justify-center px-3 h-10 w-auto border-transparent hover:bg-muted"
+                                  : "w-full px-3 h-10",
+                                isActive
+                                  ? "bg-primary/10 border-primary text-primary font-medium"
+                                  : "border-transparent text-muted-foreground hover:bg-muted hover:text-foreground",
                               )}
-                              asChild
                             >
-                              <Link
-                                href={href}
-                                className={cn(
-                                  isOpen === false
-                                    ? "flex justify-center w-auto px-3"
-                                    : "w-full",
-                                )}
+                              <span
+                                className={cn(isOpen === false ? "" : "mr-3")}
                               >
-                                <span
-                                  className={cn(isOpen === false ? "" : "mr-4")}
-                                >
-                                  <Icon size={18} />
-                                </span>
-                                {isOpen !== false && (
-                                  <p className="max-w-[200px] truncate">
-                                    {label}
-                                  </p>
-                                )}
-                              </Link>
-                            </Button>
+                                <Icon size={18} />
+                              </span>
+                              {isOpen !== false && (
+                                <p className="max-w-50 truncate text-sm">
+                                  {label}
+                                </p>
+                              )}
+                            </Link>
                           </TooltipTrigger>
                           {isOpen === false && (
                             <TooltipContent
@@ -135,7 +130,8 @@ export function Menu({ isOpen }: MenuProps) {
                         isOpen={isOpen}
                       />
                     </div>
-                  ),
+                  );
+                },
               )}
             </li>
           ))}

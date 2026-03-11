@@ -8,6 +8,7 @@ import {
   Plus,
   RotateCw,
   Trash,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -19,6 +20,12 @@ import { UserAvatar } from "@/components/shared/avatar-display";
 import LoadingPlaceholder from "@/components/shared/loading-place-holder";
 import PaginationExt from "@/components/shared/pagination-ext";
 import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -168,31 +175,34 @@ export const UserList = () => {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4">
-      <div className="flex flex-row justify-between">
+    <div className="flex flex-col gap-4">
+      {/* Toolbar */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <Heading
           title={t.users.list("title", { totalElements })}
           description={t.users.list("description")}
         />
-
-        <div className="flex space-x-4">
+        <div className="flex shrink-0 items-center gap-2">
           <Input
-            className="w-[18rem]"
+            className="w-48 lg:w-64"
             placeholder={t.users.list("search_place_holder")}
-            onChange={(e) => {
-              handleSearchTeams(e.target.value);
-            }}
+            onChange={(e) => handleSearchTeams(e.target.value)}
             defaultValue={searchParams.get("name")?.toString()}
             testId="user-list-search"
           />
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                variant="ghost"
+                variant="outline"
+                size="icon"
                 onClick={toggleSortDirection}
                 testId="user-list-sort"
               >
-                {sortDirection === "asc" ? <ArrowDownAZ /> : <ArrowUpAZ />}
+                {sortDirection === "asc" ? (
+                  <ArrowDownAZ className="h-4 w-4" />
+                ) : (
+                  <ArrowUpAZ className="h-4 w-4" />
+                )}
               </Button>
             </TooltipTrigger>
             <TooltipContent>
@@ -203,131 +213,182 @@ export const UserList = () => {
           </Tooltip>
           {PermissionUtils.canWrite(permissionLevel) && (
             <Link
-              href={"/portal/users/new/edit"}
+              href="/portal/users/new/edit"
               className={cn(buttonVariants({ variant: "default" }))}
               data-testid="user-list-new-user"
             >
-              <Plus className="mr-2 h-4 w-4" /> {t.users.list("invite_user")}
+              <Plus className="mr-2 h-4 w-4" />
+              {t.users.list("invite_user")}
             </Link>
           )}
           <Button
             onClick={() => setIsOrgChartOpen(true)}
             testId="user-list-org-chart"
           >
-            <Network />
+            <Network className="mr-2 h-4 w-4" />
             {t.users.common("org_chart")}
           </Button>
         </div>
       </div>
+
       <Separator />
+
+      {/* Content */}
       {loading ? (
         <div data-testid="user-list-loading">
           <LoadingPlaceholder
             message={t.common.misc("loading_data")}
-            skeletonCount={3}
-            skeletonWidth="28rem"
+            skeletonCount={6}
+            skeletonWidth="100%"
           />
         </div>
+      ) : items.length === 0 ? (
+        <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed py-16 text-center">
+          <Users className="h-10 w-10 text-muted-foreground/50" />
+          <p className="text-sm text-muted-foreground">
+            No users found. Invite someone to get started.
+          </p>
+          {PermissionUtils.canWrite(permissionLevel) && (
+            <Link
+              href="/portal/users/new/edit"
+              className={cn(buttonVariants({ variant: "default" }), "mt-1")}
+              data-testid="user-list-new-user-empty"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              {t.users.list("invite_user")}
+            </Link>
+          )}
+        </div>
       ) : (
-        <div className="flex flex-row flex-wrap gap-4 content-around">
-          {items?.map((user) => (
-            <div
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {items.map((user) => (
+            <Card
               key={user.id}
-              className="relative w-md flex flex-row gap-4 border px-4 py-4 rounded-2xl bg-white dark:bg-gray-800"
+              className="group flex flex-col transition-all hover:shadow-md hover:bg-muted/50"
               data-testid={`user-list-card-${user.id}`}
             >
-              {PermissionUtils.canAccess(permissionLevel) && (
-                <div className="absolute top-2 right-2">
+              <CardHeader className="flex flex-row items-start gap-4 pb-3">
+                {/* Avatar with status indicator */}
+                <div
+                  className="relative shrink-0"
+                  data-testid={`user-list-avatar-${user.id}`}
+                >
+                  <UserAvatar imageUrl={user.imageUrl} size="w-14 h-14" />
+                  {user.status === "ACTIVE" ? (
+                    <span
+                      className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-background bg-green-500"
+                      title="Active"
+                    />
+                  ) : (
+                    <span
+                      className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-background bg-yellow-400"
+                      title="Pending"
+                    />
+                  )}
+                </div>
+
+                {/* Name + title */}
+                <div className="min-w-0 flex-1">
+                  <div
+                    className="text-base font-semibold leading-tight"
+                    data-testid={`user-list-name-${user.id}`}
+                  >
+                    <Link
+                      href={`/portal/users/${obfuscate(user.id)}`}
+                      className="hover:text-primary hover:underline underline-offset-4 transition-colors"
+                    >
+                      {user.firstName} {user.lastName}
+                    </Link>
+                  </div>
+                  {user.title && (
+                    <p
+                      className="mt-0.5 truncate text-xs text-muted-foreground"
+                      data-testid={`user-list-title-${user.id}`}
+                    >
+                      {user.title}
+                    </p>
+                  )}
+                  {user.status === "PENDING" && (
+                    <span className="mt-1 inline-flex items-center rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
+                      {t.users.common("not_activated")}
+                    </span>
+                  )}
+                </div>
+
+                {/* Actions menu — fade in on hover */}
+                {PermissionUtils.canAccess(permissionLevel) && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Ellipsis className="cursor-pointer text-gray-400" />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Ellipsis className="h-4 w-4" />
+                      </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56">
-                      {user.status == "PENDING" && (
+                    <DropdownMenuContent align="end" className="w-52">
+                      {user.status === "PENDING" && (
                         <DropdownMenuItem
                           className="cursor-pointer"
                           onClick={() => onResendActivationEmail(user)}
                           data-testid={`user-list-resend-activation-${user.id}`}
                         >
-                          <RotateCw />
+                          <RotateCw className="mr-2 h-4 w-4" />
                           {t.users.list("resend_activation_email")}
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuItem
-                        className="cursor-pointer"
+                        className="cursor-pointer text-destructive focus:text-destructive"
                         onClick={() => onDeleteUser(user)}
                         data-testid={`user-list-delete-${user.id}`}
                       >
-                        <Trash />
+                        <Trash className="mr-2 h-4 w-4" />
                         {t.common.buttons("delete")}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                </div>
-              )}
+                )}
+              </CardHeader>
 
-              <div
-                className="relative w-24 h-24"
-                data-testid={`user-list-avatar-${user.id}`}
-              >
-                <UserAvatar imageUrl={user.imageUrl} size="w-24 h-24" />
-                {user.status !== "ACTIVE" && (
-                  <div
-                    className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center"
-                    data-testid={`user-list-inactive-${user.id}`}
+              <CardContent className="flex flex-col gap-1.5 text-sm text-muted-foreground pb-3">
+                <div
+                  className="flex items-center gap-1 truncate"
+                  data-testid={`user-list-email-${user.id}`}
+                >
+                  <span className="shrink-0">{t.users.form("email")}:</span>
+                  <Link
+                    href={`mailto:${user.email}`}
+                    className="truncate hover:text-primary hover:underline underline-offset-4 transition-colors"
                   >
-                    <span className="text-white text-xs font-bold">
-                      {t.users.common("not_activated")}
-                    </span>
+                    {user.email}
+                  </Link>
+                </div>
+                {user.timezone && (
+                  <div
+                    className="truncate"
+                    data-testid={`user-list-timezone-${user.id}`}
+                  >
+                    {t.users.form("timezone")}: {user.timezone}
                   </div>
                 )}
-              </div>
+              </CardContent>
 
-              {/* User Info */}
-              <div className="grid grid-cols-1">
-                <div
-                  className="text-2xl"
-                  data-testid={`user-list-name-${user.id}`}
-                >
-                  <Button
-                    variant="link"
-                    className="px-0"
-                    testId={`user-list-name-button-${user.id}`}
-                  >
-                    <Link href={`/portal/users/${obfuscate(user.id)}`}>
-                      {user.firstName}, {user.lastName}
-                    </Link>
-                  </Button>
-                </div>
-                <div data-testid={`user-list-email-${user.id}`}>
-                  {t.users.form("email")}:{" "}
-                  <Button
-                    variant="link"
-                    className="px-0 py-0 h-0"
-                    testId={`user-list-email-button-${user.id}`}
-                  >
-                    <Link href={`mailto:${user.email}`}>{user.email}</Link>
-                  </Button>
-                </div>
-                <div data-testid={`user-list-title-${user.id}`}>
-                  {t.users.form("title")}: {user.title}
-                </div>
-                <div data-testid={`user-list-timezone-${user.id}`}>
-                  {t.users.form("timezone")}: {user.timezone}
-                </div>
-                <div data-testid={`user-list-last-login-${user.id}`}>
+              <CardFooter className="border-t pt-3 text-xs text-muted-foreground">
+                <span data-testid={`user-list-last-login-${user.id}`}>
                   {t.users.form("last_login_time")}:{" "}
                   {user.lastLoginTime
                     ? safeFormatDistanceToNow(user.lastLoginTime, {
                         addSuffix: true,
                       })
                     : t.users.common("no_recent_login")}
-                </div>
-              </div>
-            </div>
+                </span>
+              </CardFooter>
+            </Card>
           ))}
         </div>
       )}
+
       <div data-testid="user-list-pagination">
         <PaginationExt
           currentPage={currentPage}
@@ -338,7 +399,7 @@ export const UserList = () => {
 
       <div data-testid="user-list-org-chart-dialog">
         <OrgChartDialog
-          userId={undefined} // Pass undefined to load the top-level org chart
+          userId={undefined}
           isOpen={isOrgChartOpen}
           onClose={() => setIsOrgChartOpen(false)}
         />

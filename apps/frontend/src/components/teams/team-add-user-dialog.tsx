@@ -1,15 +1,18 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { UserPlus, Users } from "lucide-react";
 import React from "react";
 import { useForm } from "react-hook-form";
-import * as z from "zod/v4";
+import { z } from "zod";
 
 import TeamRoleSelectField from "@/components/teams/team-role-select";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -82,65 +85,98 @@ const AddUserToTeamDialog: React.FC<AddUserToTeamDialogProps> = ({
   return (
     <Dialog open={open} onOpenChange={setOpen} data-testid="add-user-dialog">
       <DialogContent
-        className="sm:max-w-[425px]"
+        className="sm:max-w-115 gap-0 p-0 overflow-hidden"
         data-testid="add-user-dialog-content"
       >
-        <DialogHeader>
-          <DialogTitle data-testid="add-user-dialog-title">
-            {forceManagerAssignment
-              ? t.teams.dashboard("add_user_dialog.title1")
-              : t.teams.dashboard("add_user_dialog.title2", {
-                  teamName: teamEntity.name,
-                })}
-          </DialogTitle>
-          <DialogDescription data-testid="add-user-dialog-description">
-            {forceManagerAssignment
-              ? t.teams.dashboard("add_user_dialog.description1")
-              : t.teams.dashboard("add_user_dialog.description2")}
-          </DialogDescription>
+        {/* Header with muted background */}
+        <DialogHeader className="px-6 py-5 bg-muted/40 border-b">
+          <div className="flex items-center gap-4">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary ring-4 ring-primary/5">
+              {forceManagerAssignment ? (
+                <Users className="h-5 w-5" />
+              ) : (
+                <UserPlus className="h-5 w-5" />
+              )}
+            </div>
+            <div className="space-y-1 min-w-0">
+              <DialogTitle
+                className="text-base font-semibold leading-none"
+                data-testid="add-user-dialog-title"
+              >
+                {forceManagerAssignment
+                  ? t.teams.dashboard("add_user_dialog.title1")
+                  : t.teams.dashboard("add_user_dialog.title2", {
+                      teamName: teamEntity.name,
+                    })}
+              </DialogTitle>
+              <DialogDescription
+                className="text-xs text-muted-foreground"
+                data-testid="add-user-dialog-description"
+              >
+                {forceManagerAssignment
+                  ? t.teams.dashboard("add_user_dialog.description1")
+                  : t.teams.dashboard("add_user_dialog.description2")}
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
+
+        {/* Form body */}
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-6"
             data-testid="add-user-form"
           >
-            <FormField
-              control={form.control}
-              name="users"
-              render={({ field }) => (
-                <FormItem data-testid="users-form-item">
-                  <FormLabel>
-                    {t.teams.dashboard("add_user_dialog.users")}
-                  </FormLabel>
-                  <FormControl>
-                    <MultipleSelector
-                      {...field}
-                      onSearch={searchUsers}
-                      placeholder={t.teams.dashboard(
-                        "add_user_dialog.user_select_place_holder",
-                      )}
-                      emptyIndicator={
-                        <p
-                          className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400"
-                          data-testid="no-results-indicator"
-                        >
-                          {t.common.misc("no_results_found")}
-                        </p>
-                      }
-                      data-testid="users-selector"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <TeamRoleSelectField />
-            <SubmitButton
-              label={t.common.buttons("save")}
-              labelWhileLoading={t.common.buttons("saving")}
-              data-testid="submit-button"
-            />
+            <div className="px-6 py-5 space-y-5">
+              <FormField
+                control={form.control}
+                name="users"
+                render={({ field }) => (
+                  <FormItem data-testid="users-form-item">
+                    <FormLabel className="text-sm font-medium">
+                      {t.teams.dashboard("add_user_dialog.users")}
+                    </FormLabel>
+                    <FormControl>
+                      <MultipleSelector
+                        {...field}
+                        onSearch={searchUsers}
+                        placeholder={t.teams.dashboard(
+                          "add_user_dialog.user_select_place_holder",
+                        )}
+                        emptyIndicator={
+                          <p
+                            className="text-center text-sm leading-10 text-muted-foreground"
+                            data-testid="no-results-indicator"
+                          >
+                            {t.common.misc("no_results_found")}
+                          </p>
+                        }
+                        data-testid="users-selector"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <TeamRoleSelectField />
+            </div>
+
+            {/* Footer */}
+            <DialogFooter className="px-6 py-4 bg-muted/30 border-t gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+              >
+                {t.common.buttons("cancel")}
+              </Button>
+              <SubmitButton
+                label={t.common.buttons("save")}
+                labelWhileLoading={t.common.buttons("saving")}
+                data-testid="submit-button"
+              />
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>

@@ -2,12 +2,16 @@
 
 import {
   AlertCircle,
+  Calendar,
   CheckCircle,
   Clock,
   Eye,
   FileText,
+  MessageSquare,
   Paperclip,
+  Pencil,
   User,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
@@ -15,6 +19,7 @@ import { Controller, FormProvider, useForm } from "react-hook-form";
 
 import AttachmentView from "@/components/shared/attachment-view";
 import { UserAvatar } from "@/components/shared/avatar-display";
+import CollapsibleCard from "@/components/shared/collapsible-card";
 import CommentsView from "@/components/shared/comments-view";
 import EntityWatchers from "@/components/shared/entity-watchers";
 import RichTextEditor from "@/components/shared/rich-text-editor";
@@ -45,8 +50,34 @@ import { updateTicket } from "@/lib/actions/tickets.action";
 import { obfuscate } from "@/lib/endecode";
 import { cn, getSpecifiedColor } from "@/lib/utils";
 import { useError } from "@/providers/error-provider";
-import { TicketDTO } from "@/types/tickets";
+import { TicketDTO, TicketHealthLevel } from "@/types/tickets";
 
+/* ── tiny meta-field helper ── */
+const MetaLabel = ({ children }: { children: React.ReactNode }) => (
+  <p className="text-xs text-muted-foreground mb-1">{children}</p>
+);
+
+/* ── inline save/cancel bar ── */
+const InlineActions = ({
+  onSave,
+  onCancel,
+  t,
+}: {
+  onSave: () => void;
+  onCancel: () => void;
+  t: ReturnType<typeof useAppClientTranslations>;
+}) => (
+  <div className="flex justify-end gap-2 mt-2">
+    <Button type="button" variant="ghost" size="sm" onClick={onSave}>
+      {t.common.buttons("save")}
+    </Button>
+    <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
+      {t.common.buttons("cancel")}
+    </Button>
+  </div>
+);
+
+/* ── editable section wrapper ── */
 const EditableSection = ({
   children,
   onEdit,
@@ -56,47 +87,55 @@ const EditableSection = ({
   onEdit: () => void;
   editableClassName?: string;
 }) => {
-  const [isHovered, setIsHovered] = useState(false);
   const t = useAppClientTranslations();
-
-  const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    onEdit();
-  };
-
   return (
     <div
       className={cn(
-        "group relative",
-        isHovered
-          ? "border border-dashed border-gray-500 rounded-lg bg-gray-50 dark:bg-gray-800"
-          : "",
+        "group relative rounded-md border border-transparent cursor-pointer",
+        "hover:border-dashed hover:border-muted-foreground/40 hover:bg-muted/30",
+        "transition-colors",
         editableClassName,
       )}
-      onClick={handleClick}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onEdit();
+      }}
     >
       <TooltipProvider delayDuration={300}>
         <Tooltip>
           <TooltipTrigger className="absolute inset-0 z-10 cursor-pointer" />
-          <TooltipContent side="bottom">
-            <p>{t.teams.tickets.detail("click_to_edit")}</p>
+          <TooltipContent side="bottom" className="flex items-center gap-1.5">
+            <Pencil className="h-3 w-3" />
+            {t.teams.tickets.detail("click_to_edit")}
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
-      {children}
+      <div className="px-1 py-0.5">{children}</div>
     </div>
   );
 };
 
+/* ── types ── */
 type TicketDetailsProps = {
   open: boolean;
   onClose: () => void;
   initialTicket: TicketDTO;
 };
 
+interface TicketDTOWithStringDates extends Omit<
+  TicketDTO,
+  "estimatedCompletionDate"
+> {
+  estimatedCompletionDate?: string | null;
+}
+
+const formatDateForInput = (dateString: string | null | undefined): string => {
+  if (!dateString) return "";
+  return dateString.split("T")[0];
+};
+
+/* ══════════════════════════════════════════════════════════════ */
 const TicketDetailSheet: React.FC<TicketDetailsProps> = ({
   open,
   onClose,
@@ -104,7 +143,6 @@ const TicketDetailSheet: React.FC<TicketDetailsProps> = ({
 }) => {
   const [ticket, setTicket] = useState<TicketDTO>(initialTicket);
   const workflowColor = getSpecifiedColor(initialTicket.workflowRequestName!);
-  const [submitting, setSubmitting] = useState<boolean>(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [isEditingStatus, setIsEditingStatus] = useState(false);
@@ -112,6 +150,7 @@ const TicketDetailSheet: React.FC<TicketDetailsProps> = ({
   const [isEditingChannel, setIsEditingChannel] = useState(false);
   const [isEditingCompletionDate, setIsEditingCompletionDate] = useState(false);
   const [isEditingAssignment, setIsEditingAssignment] = useState(false);
+
   const { setError } = useError();
   const t = useAppClientTranslations();
 
@@ -120,19 +159,13 @@ const TicketDetailSheet: React.FC<TicketDetailsProps> = ({
   });
 
   const onSubmit = async (formData: TicketDTOWithStringDates) => {
-    setSubmitting(true);
     try {
-      // Convert to TicketDTO for the backend
       const data = {
         ...formData,
-        // Handle date conversions if needed
         estimatedCompletionDate: formData.estimatedCompletionDate,
       } as unknown as TicketDTO;
-
       const updatedRequest = await updateTicket(ticket.id!, data, setError);
-
       setTicket(updatedRequest);
-
       setIsEditingTitle(false);
       setIsEditingDescription(false);
       setIsEditingStatus(false);
@@ -141,39 +174,26 @@ const TicketDetailSheet: React.FC<TicketDetailsProps> = ({
       setIsEditingCompletionDate(false);
     } catch (err) {
       console.error("Failed to update request", err);
-    } finally {
-      setSubmitting(false);
     }
   };
 
-  interface TicketDTOWithStringDates extends Omit<
-    TicketDTO,
-    "estimatedCompletionDate"
-  > {
-    estimatedCompletionDate?: string | null;
-  }
-
-  const formatDateForInput = (
-    dateString: string | null | undefined,
-  ): string => {
-    if (!dateString) return "";
-    return dateString.split("T")[0];
+  const saveAndClose = (closeFn: () => void) => {
+    form.handleSubmit(onSubmit)();
+    closeFn();
   };
 
-  // Determine request status
+  /* ── status icon ── */
   const currentDate = new Date();
   const estimatedCompletionDate = initialTicket.estimatedCompletionDate
     ? new Date(initialTicket.estimatedCompletionDate)
     : null;
 
-  const getRequestStatusIcon = () => {
-    if (initialTicket.isCompleted) {
-      return <CheckCircle className="w-5 h-5 text-green-500" />;
-    }
-    if (estimatedCompletionDate && estimatedCompletionDate < currentDate) {
-      return <AlertCircle className="w-5 h-5 text-red-500" />;
-    }
-    return <Clock className="w-5 h-5 text-blue-500" />;
+  const StatusIcon = () => {
+    if (initialTicket.isCompleted)
+      return <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />;
+    if (estimatedCompletionDate && estimatedCompletionDate < currentDate)
+      return <AlertCircle className="h-4 w-4 text-destructive shrink-0" />;
+    return <Clock className="h-4 w-4 text-blue-500 shrink-0" />;
   };
 
   return (
@@ -184,21 +204,20 @@ const TicketDetailSheet: React.FC<TicketDetailsProps> = ({
         data-testid="ticket-detail-sheet"
       >
         <SheetContent
-          className="w-full sm:max-w-[70rem] h-full"
+          className="w-full sm:max-w-6xl p-0 flex flex-col h-full"
           data-testid="ticket-detail-sheet-content"
         >
-          <ScrollArea
-            className="h-full px-4"
-            data-testid="ticket-detail-scroll-area"
+          {/* ── Sticky header ── */}
+          <SheetHeader
+            className="px-6 py-4 border-b shrink-0"
+            data-testid="ticket-detail-header"
           >
-            <SheetHeader className="mb-6" data-testid="ticket-detail-header">
-              <SheetTitle data-testid="ticket-detail-title">
-                <div
-                  className="flex items-center gap-4 mb-2"
-                  data-testid="ticket-workflow-container"
-                >
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex flex-col gap-1.5 min-w-0 flex-1">
+                {/* Badge row */}
+                <div className="flex flex-wrap items-center gap-1.5">
                   <span
-                    className="inline-block px-2 py-1 text-xs font-semibold rounded-md"
+                    className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold"
                     style={{
                       backgroundColor: workflowColor.background,
                       color: workflowColor.text,
@@ -207,11 +226,26 @@ const TicketDetailSheet: React.FC<TicketDetailsProps> = ({
                   >
                     {initialTicket.workflowRequestName}
                   </span>
+                  <Badge
+                    variant={
+                      initialTicket.isCompleted ? "secondary" : "default"
+                    }
+                    className="rounded-full text-xs font-normal"
+                    data-testid="ticket-state-badge"
+                  >
+                    {ticket.currentStateName ?? initialTicket.currentStateName}
+                  </Badge>
+                  <TicketPriorityDisplay
+                    priority={ticket.priority ?? initialTicket.priority}
+                  />
+                </div>
 
+                {/* Title */}
+                <SheetTitle className="p-0" data-testid="ticket-detail-title">
                   {isEditingTitle ? (
                     <form
                       onSubmit={form.handleSubmit(onSubmit)}
-                      className="flex items-center gap-2 grow"
+                      className="flex items-center gap-2"
                       data-testid="edit-title-form"
                     >
                       <Controller
@@ -220,610 +254,445 @@ const TicketDetailSheet: React.FC<TicketDetailsProps> = ({
                         render={({ field }) => (
                           <Input
                             {...field}
-                            className="text-xl"
-                            placeholder="Enter ticket title"
+                            className="text-lg font-semibold"
                             autoFocus
                             data-testid="title-input"
                           />
                         )}
                       />
-                      <div
-                        className="flex gap-2"
-                        data-testid="title-edit-buttons"
-                      >
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            form.handleSubmit(onSubmit)();
-                            setIsEditingTitle(false);
-                          }}
-                          data-testid="save-title-button"
-                        >
-                          {t.common.buttons("save")}
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setIsEditingTitle(false)}
-                          data-testid="cancel-title-button"
-                        >
-                          Cancel
-                        </Button>
-                      </div>
+                      <InlineActions
+                        onSave={() =>
+                          saveAndClose(() => setIsEditingTitle(false))
+                        }
+                        onCancel={() => setIsEditingTitle(false)}
+                        t={t}
+                      />
                     </form>
                   ) : (
-                    <div className="grow" data-testid="ticket-title-container">
-                      <Button
-                        variant="link"
-                        className={`px-0 text-xl grow text-left ${initialTicket.isCompleted ? "line-through" : ""}`}
+                    <div
+                      className="flex items-center gap-2 group/title"
+                      data-testid="ticket-title-container"
+                    >
+                      <Link
+                        href={`/portal/teams/${obfuscate(ticket.teamId)}/tickets/${obfuscate(ticket.id)}`}
+                        className={cn(
+                          "text-xl font-bold leading-tight hover:text-primary hover:underline underline-offset-4 transition-colors",
+                          initialTicket.isCompleted &&
+                            "line-through text-muted-foreground",
+                        )}
+                        data-testid="ticket-title-link"
+                      >
+                        {ticket.requestTitle ?? initialTicket.requestTitle}
+                      </Link>
+                      <button
                         onClick={(e) => {
-                          // Allow the link navigation to proceed (don't call preventDefault)
-                        }}
-                        onDoubleClick={(e) => {
                           e.preventDefault();
                           setIsEditingTitle(true);
                         }}
-                        data-testid="ticket-title-button"
+                        className="opacity-0 group-hover/title:opacity-100 rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
+                        aria-label="Edit title"
                       >
-                        <Link
-                          href={`/portal/teams/${obfuscate(ticket.teamId)}/tickets/${obfuscate(
-                            ticket.id,
-                          )}`}
-                          className="break-words whitespace-normal text-left"
-                          data-testid="ticket-title-link"
-                        >
-                          {ticket.requestTitle || initialTicket.requestTitle}
-                        </Link>
-                      </Button>
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
                     </div>
                   )}
-                </div>
+                </SheetTitle>
 
+                {/* Health */}
                 {initialTicket.conversationHealth?.healthLevel && (
                   <TicketHealthLevelDisplay
-                    currentLevel={initialTicket.conversationHealth.healthLevel}
+                    currentLevel={
+                      initialTicket.conversationHealth
+                        .healthLevel as TicketHealthLevel
+                    }
                     data-testid="ticket-health-level"
                   />
                 )}
-              </SheetTitle>
-            </SheetHeader>
+              </div>
 
-            <div
-              className="grid grid-cols-1 md:grid-cols-3 gap-6"
-              data-testid="ticket-detail-grid"
-            >
-              <div
-                className="md:col-span-2 space-y-6"
-                data-testid="ticket-main-content"
+              {/* Close button */}
+              <button
+                onClick={onClose}
+                className="shrink-0 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors mt-0.5"
+                aria-label="Close"
               >
-                <div
-                  className={cn(
-                    "p-4 rounded-lg border",
-                    "bg-white dark:bg-gray-900",
-                    "border-gray-200 dark:border-gray-700",
-                  )}
-                  data-testid="ticket-description-section"
-                >
-                  <div
-                    className="flex items-center gap-3 mb-3"
-                    data-testid="description-header"
-                  >
-                    <FileText className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-                    <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                      {t.teams.tickets.form.base("description")}
-                    </h3>
-                  </div>
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </SheetHeader>
 
-                  {isEditingDescription ? (
-                    <div
-                      className="relative z-50"
-                      onClick={(e) => {
-                        // Prevent the click from bubbling up and potentially closing the editor
-                        e.stopPropagation();
-                      }}
-                      data-testid="description-editor-container"
-                    >
-                      <RichTextEditor
-                        key="description-editor"
-                        value={ticket.requestDescription}
-                        onChange={(content: string) => {
-                          form.setValue("requestDescription", content, {
-                            shouldValidate: false,
-                            shouldDirty: true,
-                          });
-                        }}
-                        onBlur={() => {
-                          form.handleSubmit(onSubmit)();
-                          setIsEditingDescription(false);
-                        }}
-                        data-testid="description-rich-editor"
-                      />
-                    </div>
-                  ) : (
-                    <EditableSection
-                      onEdit={() => setIsEditingDescription(true)}
-                      data-testid="description-editable-section"
-                    >
+          {/* ── Scrollable body ── */}
+          <ScrollArea
+            className="flex-1 min-h-0"
+            data-testid="ticket-detail-scroll-area"
+          >
+            <div className="px-6 py-5">
+              <div
+                className="grid grid-cols-1 gap-4 lg:grid-cols-3"
+                data-testid="ticket-detail-grid"
+              >
+                {/* ── Left 2/3 ── */}
+                <div
+                  className="flex flex-col gap-4 lg:col-span-2"
+                  data-testid="ticket-main-content"
+                >
+                  {/* Description */}
+                  <CollapsibleCard
+                    icon={
+                      <FileText className="h-4 w-4 text-muted-foreground" />
+                    }
+                    title={t.teams.tickets.form.base("description")}
+                    data-testid="ticket-description-section"
+                  >
+                    {isEditingDescription ? (
                       <div
-                        className="prose dark:prose-invert max-w-none"
-                        dangerouslySetInnerHTML={{
-                          __html: ticket.requestDescription!,
-                        }}
-                        data-testid="description-content"
-                      />
-                    </EditableSection>
-                  )}
+                        className="relative z-50"
+                        onClick={(e) => e.stopPropagation()}
+                        data-testid="description-editor-container"
+                      >
+                        <RichTextEditor
+                          key="description-editor"
+                          value={ticket.requestDescription}
+                          onChange={(content: string) => {
+                            form.setValue("requestDescription", content, {
+                              shouldValidate: false,
+                              shouldDirty: true,
+                            });
+                          }}
+                          onBlur={() => {
+                            form.handleSubmit(onSubmit)();
+                            setIsEditingDescription(false);
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <EditableSection
+                        onEdit={() => setIsEditingDescription(true)}
+                        data-testid="description-editable-section"
+                      >
+                        <div
+                          className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground"
+                          dangerouslySetInnerHTML={{
+                            __html: ticket.requestDescription!,
+                          }}
+                          data-testid="description-content"
+                        />
+                      </EditableSection>
+                    )}
+                  </CollapsibleCard>
+
+                  {/* Comments */}
+                  <CollapsibleCard
+                    icon={
+                      <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                    }
+                    title={t.teams.tickets.detail("comments")}
+                    data-testid="comments-section"
+                  >
+                    <CommentsView entityType="Ticket" entityId={ticket.id!} />
+                  </CollapsibleCard>
                 </div>
 
+                {/* ── Right 1/3 — mirrors ticket-detail-view ── */}
                 <div
-                  className={cn(
-                    "p-4 rounded-lg border",
-                    "bg-white dark:bg-gray-900",
-                    "border-gray-200 dark:border-gray-700",
-                  )}
-                  data-testid="ticket-state-priority-section"
+                  className="flex flex-col gap-4"
+                  data-testid="ticket-sidebar"
                 >
-                  <div
-                    className="flex items-center gap-3 mb-3"
-                    data-testid="state-priority-header"
+                  {/* People */}
+                  <CollapsibleCard
+                    icon={<User className="h-4 w-4 text-muted-foreground" />}
+                    title={t.teams.tickets.detail("people")}
+                    data-testid="people-assignment-section"
                   >
-                    <div data-testid="request-status-icon">
-                      {getRequestStatusIcon()}
+                    <div className="space-y-4">
+                      {/* Requester */}
+                      <div data-testid="requester-container">
+                        <MetaLabel>
+                          {t.teams.tickets.form.base("requester")}
+                        </MetaLabel>
+                        <div className="flex items-center gap-2">
+                          <UserAvatar
+                            imageUrl={ticket.requestUserImageUrl}
+                            size="w-6 h-6"
+                          />
+                          <Link
+                            href={`/portal/users/${obfuscate(ticket.requestUserId)}`}
+                            className="text-sm hover:text-primary hover:underline underline-offset-4 transition-colors"
+                          >
+                            {ticket.requestUserName}
+                          </Link>
+                        </div>
+                      </div>
+
+                      {/* Assignee */}
+                      <div data-testid="assignee-container">
+                        <MetaLabel>
+                          {t.teams.tickets.form.base("assignee")}
+                        </MetaLabel>
+                        {isEditingAssignment ? (
+                          <div
+                            onClick={(e) => e.stopPropagation()}
+                            data-testid="assignment-edit-container"
+                          >
+                            <TeamUserSelectField
+                              form={form}
+                              fieldName="assignUserId"
+                              label=""
+                              teamId={ticket.teamId!}
+                            />
+                            <InlineActions
+                              onSave={() =>
+                                saveAndClose(() =>
+                                  setIsEditingAssignment(false),
+                                )
+                              }
+                              onCancel={() => setIsEditingAssignment(false)}
+                              t={t}
+                            />
+                          </div>
+                        ) : (
+                          <EditableSection
+                            onEdit={() => setIsEditingAssignment(true)}
+                          >
+                            <div className="flex items-center gap-2">
+                              {(ticket.assignUserId ??
+                              initialTicket.assignUserId) ? (
+                                <>
+                                  <UserAvatar
+                                    imageUrl={
+                                      ticket.assignUserImageUrl ??
+                                      initialTicket.assignUserImageUrl
+                                    }
+                                    size="w-6 h-6"
+                                  />
+                                  <Link
+                                    href={`/portal/users/${obfuscate(ticket.assignUserId ?? initialTicket.assignUserId!)}`}
+                                    className="text-sm hover:text-primary hover:underline underline-offset-4 transition-colors"
+                                  >
+                                    {ticket.assignUserName ??
+                                      initialTicket.assignUserName}
+                                  </Link>
+                                </>
+                              ) : (
+                                <span className="text-sm text-muted-foreground italic">
+                                  {t.teams.tickets.detail("unassigned")}
+                                </span>
+                              )}
+                            </div>
+                          </EditableSection>
+                        )}
+                      </div>
                     </div>
-                    <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                      {t.teams.tickets.detail("state_priority")}
-                    </h3>
-                  </div>
-                  <div
-                    className="grid grid-cols-2 gap-4"
-                    data-testid="state-priority-grid"
+                  </CollapsibleCard>
+
+                  {/* Details — state, priority, channel */}
+                  <CollapsibleCard
+                    icon={<StatusIcon />}
+                    title={t.teams.tickets.detail("ticker_detail")}
+                    data-testid="ticket-details-card"
                   >
-                    <div data-testid="state-container">
-                      <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">
-                        {t.teams.tickets.form.base("state")}
-                      </span>
-                      {isEditingStatus ? (
-                        <div
-                          onClick={(e) => e.stopPropagation()}
-                          className="py-2"
-                          data-testid="state-edit-container"
-                        >
-                          <div className="w-[16rem]">
+                    <div className="space-y-4">
+                      {/* State */}
+                      <div data-testid="state-container">
+                        <MetaLabel>
+                          {t.teams.tickets.form.base("state")}
+                        </MetaLabel>
+                        {isEditingStatus ? (
+                          <div
+                            onClick={(e) => e.stopPropagation()}
+                            data-testid="state-edit-container"
+                          >
                             <WorkflowStateSelectField
                               form={form}
                               name="currentStateId"
                               label=""
                               workflowId={initialTicket.workflowId!}
                               workflowStateId={initialTicket.currentStateId!}
-                              includeSelf={true}
+                              includeSelf
                               required={false}
-                              data-testid="state-select-field"
+                            />
+                            <InlineActions
+                              onSave={() =>
+                                saveAndClose(() => setIsEditingStatus(false))
+                              }
+                              onCancel={() => setIsEditingStatus(false)}
+                              t={t}
                             />
                           </div>
-                          <div
-                            className="flex justify-end gap-2 mt-2"
-                            data-testid="state-edit-buttons"
+                        ) : (
+                          <EditableSection
+                            onEdit={() => setIsEditingStatus(true)}
                           >
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                form.handleSubmit(onSubmit)();
-                                setIsEditingStatus(false);
-                              }}
-                              data-testid="save-state-button"
-                            >
-                              {t.common.buttons("save")}
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setIsEditingStatus(false)}
-                              data-testid="cancel-state-button"
-                            >
-                              {t.common.buttons("cancel")}
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <EditableSection
-                          onEdit={() => setIsEditingStatus(true)}
-                          data-testid="state-editable-section"
-                        >
-                          <Badge variant="outline" data-testid="state-badge">
-                            {ticket.currentStateName ||
-                              initialTicket.currentStateName}
-                          </Badge>
-                        </EditableSection>
-                      )}
-                    </div>
+                            <Badge variant="outline" className="font-normal">
+                              {ticket.currentStateName ??
+                                initialTicket.currentStateName}
+                            </Badge>
+                          </EditableSection>
+                        )}
+                      </div>
 
-                    <div data-testid="priority-container">
-                      <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">
-                        Priority
-                      </span>
-                      {isEditingPriority ? (
-                        <div
-                          onClick={(e) => e.stopPropagation()}
-                          className="py-2"
-                          data-testid="priority-edit-container"
-                        >
-                          <Controller
-                            name="priority"
-                            control={form.control}
-                            render={({ field }) => (
-                              <TicketPrioritySelect
-                                value={field.value as any}
-                                onChange={(value) => {
-                                  field.onChange(value);
-                                }}
-                                data-testid="priority-select"
-                              />
-                            )}
-                          />
+                      {/* Priority */}
+                      <div data-testid="priority-container">
+                        <MetaLabel>
+                          {t.teams.tickets.form.base("priority")}
+                        </MetaLabel>
+                        {isEditingPriority ? (
                           <div
-                            className="flex justify-end gap-2 mt-2"
-                            data-testid="priority-edit-buttons"
+                            onClick={(e) => e.stopPropagation()}
+                            data-testid="priority-edit-container"
                           >
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                form.handleSubmit(onSubmit)();
-                                setIsEditingPriority(false);
-                              }}
-                              data-testid="save-priority-button"
-                            >
-                              Save
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setIsEditingPriority(false)}
-                              data-testid="cancel-priority-button"
-                            >
-                              {t.common.buttons("cancel")}
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <EditableSection
-                          onEdit={() => setIsEditingPriority(true)}
-                          data-testid="priority-editable-section"
-                        >
-                          <TicketPriorityDisplay
-                            priority={ticket.priority || initialTicket.priority}
-                            data-testid="priority-display"
-                          />
-                        </EditableSection>
-                      )}
-                    </div>
-
-                    {/* Channel - Editable */}
-                    <div data-testid="channel-container">
-                      <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">
-                        Channel
-                      </span>
-                      {isEditingChannel ? (
-                        <div
-                          onClick={(e) => e.stopPropagation()}
-                          className="py-2"
-                          data-testid="channel-edit-container"
-                        >
-                          <div className="w-[16rem]">
-                            <TicketChannelSelectField
-                              form={form}
-                              data-testid="channel-select-field"
+                            <Controller
+                              name="priority"
+                              control={form.control}
+                              render={({ field }) => (
+                                <TicketPrioritySelect
+                                  value={field.value as any}
+                                  onChange={field.onChange}
+                                />
+                              )}
+                            />
+                            <InlineActions
+                              onSave={() =>
+                                saveAndClose(() => setIsEditingPriority(false))
+                              }
+                              onCancel={() => setIsEditingPriority(false)}
+                              t={t}
                             />
                           </div>
+                        ) : (
+                          <EditableSection
+                            onEdit={() => setIsEditingPriority(true)}
+                          >
+                            <TicketPriorityDisplay
+                              priority={
+                                ticket.priority ?? initialTicket.priority
+                              }
+                            />
+                          </EditableSection>
+                        )}
+                      </div>
+
+                      {/* Channel */}
+                      <div data-testid="channel-container">
+                        <MetaLabel>
+                          {t.teams.tickets.form.base("channel")}
+                        </MetaLabel>
+                        {isEditingChannel ? (
                           <div
-                            className="flex justify-end gap-2 mt-2"
-                            data-testid="channel-edit-buttons"
+                            onClick={(e) => e.stopPropagation()}
+                            data-testid="channel-edit-container"
                           >
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                form.handleSubmit(onSubmit)();
-                                setIsEditingChannel(false);
-                              }}
-                              data-testid="save-channel-button"
-                            >
-                              {t.common.buttons("save")}
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setIsEditingChannel(false)}
-                              data-testid="cancel-channel-button"
-                            >
-                              {t.common.buttons("cancel")}
-                            </Button>
+                            <TicketChannelSelectField form={form} />
+                            <InlineActions
+                              onSave={() =>
+                                saveAndClose(() => setIsEditingChannel(false))
+                              }
+                              onCancel={() => setIsEditingChannel(false)}
+                              t={t}
+                            />
                           </div>
-                        </div>
-                      ) : (
-                        <EditableSection
-                          onEdit={() => setIsEditingChannel(true)}
-                          data-testid="channel-editable-section"
-                        >
-                          <Badge variant="outline" data-testid="channel-badge">
-                            {ticket?.channel
-                              ? t.teams.tickets.form.channels(ticket.channel)
-                              : initialTicket?.channel
-                                ? t.teams.tickets.form.channels(
-                                    initialTicket.channel,
-                                  )
-                                : t.teams.tickets.form.channels("internal")}
-                          </Badge>
-                        </EditableSection>
-                      )}
-                    </div>
-
-                    {/* Target Completion - Editable */}
-                    <div data-testid="completion-date-container">
-                      <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">
-                        {t.teams.tickets.form.base("target_completion_date")}
-                      </span>
-                      {isEditingCompletionDate ? (
-                        <div
-                          onClick={(e) => e.stopPropagation()}
-                          className="py-2"
-                          data-testid="completion-date-edit-container"
-                        >
-                          <Controller
-                            name="estimatedCompletionDate"
-                            control={form.control}
-                            render={({ field }) => (
-                              <Input
-                                type="date"
-                                value={formatDateForInput(field.value)}
-                                onChange={(e) => {
-                                  const value = e.target.value || null;
-                                  field.onChange(value);
-                                }}
-                                className="w-full"
-                                autoFocus
-                                onBlur={() => {
-                                  form.handleSubmit(onSubmit)();
-                                  setIsEditingCompletionDate(false);
-                                }}
-                                data-testid="completion-date-input"
-                              />
-                            )}
-                          />
-                        </div>
-                      ) : (
-                        <EditableSection
-                          onEdit={() => setIsEditingCompletionDate(true)}
-                          data-testid="completion-date-editable-section"
-                        >
-                          <p
-                            className="text-sm p-1"
-                            data-testid="completion-date-display"
+                        ) : (
+                          <EditableSection
+                            onEdit={() => setIsEditingChannel(true)}
                           >
-                            {ticket.estimatedCompletionDate
-                              ? new Date(
-                                  ticket.estimatedCompletionDate,
-                                ).toLocaleDateString()
-                              : "N/A"}
-                          </p>
-                        </EditableSection>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  className={cn(
-                    "p-4 rounded-lg border",
-                    "bg-white dark:bg-gray-900",
-                    "border-gray-200 dark:border-gray-700",
-                  )}
-                  data-testid="attachments-section"
-                >
-                  <div
-                    className="flex items-center gap-3 mb-3"
-                    data-testid="attachments-header"
-                  >
-                    <Paperclip className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-                    <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                      {t.teams.tickets.detail("attachments")}
-                    </h3>
-                  </div>
-                  <AttachmentView
-                    entityType="Ticket"
-                    entityId={ticket.id!}
-                    data-testid="attachment-view"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-6" data-testid="ticket-sidebar">
-                <div
-                  className={cn(
-                    "p-4 rounded-lg border",
-                    "bg-white dark:bg-gray-900",
-                    "border-gray-200 dark:border-gray-700",
-                  )}
-                  data-testid="people-assignment-section"
-                >
-                  <div
-                    className="flex items-center gap-3 mb-3"
-                    data-testid="people-assignment-header"
-                  >
-                    <User className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-                    <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                      {t.teams.tickets.detail("people_assignment")}
-                    </h3>
-                  </div>
-                  <div
-                    className="space-y-4"
-                    data-testid="people-assignment-content"
-                  >
-                    <div data-testid="requester-container">
-                      <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">
-                        {t.teams.tickets.form.base("requester")}
-                      </span>
-                      <div
-                        className="flex items-center gap-2"
-                        data-testid="requester-info"
-                      >
-                        <UserAvatar
-                          imageUrl={ticket.requestUserImageUrl}
-                          size="w-8 h-8"
-                          data-testid="requester-avatar"
-                        />
-                        <Link
-                          href={`/portal/users/${obfuscate(ticket.requestUserId)}`}
-                          className="text-sm hover:underline"
-                          data-testid="requester-link"
-                        >
-                          {ticket.requestUserName}
-                        </Link>
+                            <Badge variant="outline" className="font-normal">
+                              {ticket?.channel
+                                ? t.teams.tickets.form.channels(ticket.channel)
+                                : initialTicket?.channel
+                                  ? t.teams.tickets.form.channels(
+                                      initialTicket.channel,
+                                    )
+                                  : t.teams.tickets.form.channels("internal")}
+                            </Badge>
+                          </EditableSection>
+                        )}
                       </div>
                     </div>
+                  </CollapsibleCard>
 
-                    <div data-testid="assignee-container">
-                      <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">
-                        {t.teams.tickets.form.base("assignee")}
-                      </span>
-                      {isEditingAssignment ? (
-                        <div
-                          onClick={(e) => e.stopPropagation()}
-                          className="py-2"
-                          data-testid="assignment-edit-container"
-                        >
-                          <TeamUserSelectField
-                            form={form}
-                            fieldName="assignUserId"
-                            label=""
-                            teamId={ticket.teamId!}
-                            data-testid="assignee-select-field"
-                          />
+                  {/* Dates */}
+                  <CollapsibleCard
+                    icon={
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                    }
+                    title={t.teams.tickets.detail("important_dates")}
+                    data-testid="ticket-dates-card"
+                  >
+                    <div className="space-y-4">
+                      {/* Target completion date */}
+                      <div data-testid="completion-date-container">
+                        <MetaLabel>
+                          {t.teams.tickets.form.base("target_completion_date")}
+                        </MetaLabel>
+                        {isEditingCompletionDate ? (
                           <div
-                            className="flex justify-end gap-2 mt-2"
-                            data-testid="assignment-edit-buttons"
+                            onClick={(e) => e.stopPropagation()}
+                            data-testid="completion-date-edit-container"
                           >
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                form.handleSubmit(onSubmit)();
-                                setIsEditingAssignment(false);
-                              }}
-                              data-testid="save-assignment-button"
-                            >
-                              {t.common.buttons("save")}
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setIsEditingAssignment(false)}
-                              data-testid="cancel-assignment-button"
-                            >
-                              {t.common.buttons("cancel")}
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <EditableSection
-                          onEdit={() => setIsEditingAssignment(true)}
-                          data-testid="assignment-editable-section"
-                        >
-                          <div
-                            className="flex items-center gap-2"
-                            data-testid="assignee-info"
-                          >
-                            {ticket.assignUserId ||
-                            initialTicket.assignUserId ? (
-                              <>
-                                <UserAvatar
-                                  imageUrl={
-                                    ticket.assignUserImageUrl ||
-                                    initialTicket.assignUserImageUrl
+                            <Controller
+                              name="estimatedCompletionDate"
+                              control={form.control}
+                              render={({ field }) => (
+                                <Input
+                                  type="date"
+                                  value={formatDateForInput(field.value)}
+                                  onChange={(e) =>
+                                    field.onChange(e.target.value || null)
                                   }
-                                  size="w-8 h-8"
-                                  data-testid="assignee-avatar"
+                                  autoFocus
+                                  onBlur={() => {
+                                    form.handleSubmit(onSubmit)();
+                                    setIsEditingCompletionDate(false);
+                                  }}
                                 />
-                                <Link
-                                  href={`/portal/users/${obfuscate(ticket.assignUserId || initialTicket.assignUserId!)}`}
-                                  className="text-sm hover:underline"
-                                  data-testid="assignee-link"
-                                >
-                                  {ticket.assignUserName ||
-                                    initialTicket.assignUserName}
-                                </Link>
-                              </>
-                            ) : (
-                              <span
-                                className="text-sm text-gray-500"
-                                data-testid="unassigned-message"
-                              >
-                                {t.teams.tickets.detail("unassigned")}
-                              </span>
-                            )}
+                              )}
+                            />
                           </div>
-                        </EditableSection>
-                      )}
+                        ) : (
+                          <EditableSection
+                            onEdit={() => setIsEditingCompletionDate(true)}
+                          >
+                            <div className="flex items-center gap-1.5 text-sm">
+                              <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                              <span>
+                                {ticket.estimatedCompletionDate ? (
+                                  new Date(
+                                    ticket.estimatedCompletionDate,
+                                  ).toLocaleDateString()
+                                ) : (
+                                  <span className="text-muted-foreground/70 italic">
+                                    {t.teams.tickets.detail("not_set")}
+                                  </span>
+                                )}
+                              </span>
+                            </div>
+                          </EditableSection>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  </CollapsibleCard>
 
-                {/* Watchers Section */}
-                <div
-                  className={cn(
-                    "p-4 rounded-lg border",
-                    "bg-white dark:bg-gray-900",
-                    "border-gray-200 dark:border-gray-700",
-                  )}
-                  data-testid="watchers-section"
-                >
-                  <div
-                    className="flex items-center gap-3 mb-3"
-                    data-testid="watchers-header"
+                  {/* Attachments — collapsed by default */}
+                  <CollapsibleCard
+                    icon={
+                      <Paperclip className="h-4 w-4 text-muted-foreground" />
+                    }
+                    title={t.teams.tickets.detail("attachments")}
+                    defaultOpen={false}
+                    data-testid="attachments-section"
                   >
-                    <Eye className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-                    <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                      {t.teams.tickets.detail("watchers")}
-                    </h3>
-                  </div>
-                  <EntityWatchers
-                    entityType="Ticket"
-                    entityId={ticket.id!}
-                    data-testid="entity-watchers"
-                  />
-                </div>
-              </div>
-              <div
-                className="md:col-span-3 mt-2"
-                data-testid="comments-container"
-              >
-                <div className="space-y-3" data-testid="comments-section">
-                  <div
-                    className="flex items-center gap-3"
-                    data-testid="comments-header"
+                    <AttachmentView entityType="Ticket" entityId={ticket.id!} />
+                  </CollapsibleCard>
+
+                  {/* Watchers — collapsed by default */}
+                  <CollapsibleCard
+                    icon={<Eye className="h-4 w-4 text-muted-foreground" />}
+                    title={t.teams.tickets.detail("watchers")}
+                    defaultOpen={false}
+                    data-testid="watchers-section"
                   >
-                    <User className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-                    <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                      {t.teams.tickets.detail("comments")}
-                    </h3>
-                  </div>
-                  <CommentsView
-                    entityType="Ticket"
-                    entityId={ticket.id!}
-                    data-testid="comments-view"
-                  />
+                    <EntityWatchers entityType="Ticket" entityId={ticket.id!} />
+                  </CollapsibleCard>
                 </div>
               </div>
             </div>

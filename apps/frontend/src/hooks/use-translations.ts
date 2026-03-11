@@ -77,6 +77,7 @@ export function useAppClientTranslations() {
       common: useTranslations("workflows.common"),
       detail: useTranslations("workflows.detail"),
       list: useTranslations("workflows.list"),
+      review: useTranslations("workflows.review"),
     },
     login: {
       form: useTranslations("login.form"),

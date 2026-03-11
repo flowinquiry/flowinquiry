@@ -1,4 +1,4 @@
-import * as z from "zod/v4";
+import { z } from "zod";
 
 export type Operator = "gt" | "lt" | "eq" | "ne" | "in" | "lk";
 

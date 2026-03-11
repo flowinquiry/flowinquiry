@@ -6,7 +6,7 @@ import org.springframework.context.ApplicationEvent;
 
 @Getter
 public class ProjectEpicChangedByTicketEvent extends ApplicationEvent {
-    private TicketDTO ticket;
+    private final TicketDTO ticket;
 
     public ProjectEpicChangedByTicketEvent(Object source, TicketDTO ticket) {
         super(source);
