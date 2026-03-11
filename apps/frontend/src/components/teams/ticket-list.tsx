@@ -26,7 +26,7 @@ import {
 import { useAppClientTranslations } from "@/hooks/use-translations";
 import { obfuscate } from "@/lib/endecode";
 import { cn, getSpecifiedColor } from "@/lib/utils";
-import { TicketDTO } from "@/types/tickets";
+import { TicketDTO, TicketHealthLevel } from "@/types/tickets";
 
 interface TicketListProps {
   tickets: TicketDTO[];
@@ -198,7 +198,10 @@ const TicketList = ({ tickets, instantView = true }: TicketListProps) => {
                   data-testid={`ticket-health-${request.id}`}
                 >
                   <TicketHealthLevelDisplay
-                    currentLevel={request.conversationHealth.healthLevel}
+                    currentLevel={
+                      request.conversationHealth
+                        .healthLevel as TicketHealthLevel
+                    }
                   />
                 </div>
               )}

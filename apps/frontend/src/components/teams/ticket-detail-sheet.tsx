@@ -50,7 +50,7 @@ import { updateTicket } from "@/lib/actions/tickets.action";
 import { obfuscate } from "@/lib/endecode";
 import { cn, getSpecifiedColor } from "@/lib/utils";
 import { useError } from "@/providers/error-provider";
-import { TicketDTO } from "@/types/tickets";
+import { TicketDTO, TicketHealthLevel } from "@/types/tickets";
 
 /* ── tiny meta-field helper ── */
 const MetaLabel = ({ children }: { children: React.ReactNode }) => (
@@ -301,7 +301,10 @@ const TicketDetailSheet: React.FC<TicketDetailsProps> = ({
                 {/* Health */}
                 {initialTicket.conversationHealth?.healthLevel && (
                   <TicketHealthLevelDisplay
-                    currentLevel={initialTicket.conversationHealth.healthLevel}
+                    currentLevel={
+                      initialTicket.conversationHealth
+                        .healthLevel as TicketHealthLevel
+                    }
                     data-testid="ticket-health-level"
                   />
                 )}

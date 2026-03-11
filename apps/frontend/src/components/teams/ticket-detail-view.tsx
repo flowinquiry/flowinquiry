@@ -61,7 +61,7 @@ import { BreadcrumbProvider } from "@/providers/breadcrumb-provider";
 import { useError } from "@/providers/error-provider";
 import { useUserTeamRole } from "@/providers/user-team-role-provider";
 import { PermissionUtils } from "@/types/resources";
-import { TicketDTO } from "@/types/tickets";
+import { TicketDTO, TicketHealthLevel } from "@/types/tickets";
 import { WorkflowStateDTO } from "@/types/workflows";
 
 import WorkflowReviewDialog from "../workflows/workflow-review-dialog";
@@ -443,7 +443,9 @@ const TicketDetailView = ({ ticketId }: { ticketId: number }) => {
           {/* ── Health indicator ── */}
           {ticket.conversationHealth?.healthLevel && (
             <TicketHealthLevelDisplay
-              currentLevel={ticket.conversationHealth.healthLevel}
+              currentLevel={
+                ticket.conversationHealth.healthLevel as TicketHealthLevel
+              }
               data-testid="ticket-health-level"
             />
           )}
