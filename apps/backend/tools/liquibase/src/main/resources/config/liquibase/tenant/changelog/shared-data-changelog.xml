@@ -67,7 +67,6 @@
 			usePreparedStatements="true">
 			<column name="user_id" type="numeric" />
 			<column name="authority_name" type="string" />
-			<column name="tenant_id" type="uuid" />
 		</loadData>
 	</changeSet>
 
