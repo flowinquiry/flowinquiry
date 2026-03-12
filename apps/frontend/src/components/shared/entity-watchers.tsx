@@ -1,5 +1,7 @@
 "use client";
 
+import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import React, { useEffect, useRef, useState } from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -41,6 +43,9 @@ const EntityWatchers = ({ entityType, entityId }: EntityWatchersProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const permissionLevel = usePagePermission();
   const teamRole = useUserTeamRole().role;
+  const { data: session } = useSession();
+  const tDetail = useTranslations("teams.tickets.detail");
+  const currentUserId = session?.user?.id?.toString();
 
   // ✅ Define write permissions
   const canWrite =
@@ -223,7 +228,12 @@ const EntityWatchers = ({ entityType, entityId }: EntityWatchersProps) => {
                         {watcher.label.slice(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="truncate">{watcher.label}</span>
+                    <span className="truncate">
+                      {watcher.label}
+                      {watcher.value === currentUserId && (
+                        <span className="ml-1 opacity-75">{tDetail("me")}</span>
+                      )}
+                    </span>
                   </Badge>
                 ))
               ) : (

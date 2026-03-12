@@ -35,7 +35,9 @@ const operatorLabels: Record<Operator, string> = {
   eq: "=",
   lk: "contains",
   gt: ">",
+  gte: "≥",
   lt: "<",
+  lte: "≤",
   in: "in",
   ne: "≠",
 };

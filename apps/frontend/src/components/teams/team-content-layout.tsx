@@ -24,6 +24,7 @@ const SEGMENT_TO_NAV_KEY: Record<string, string> = {
   tickets: "tickets",
   projects: "projects",
   workflows: "workflows",
+  reports: "reports",
 };
 
 export function TeamContentLayout({ children }: { children: React.ReactNode }) {

@@ -51,7 +51,7 @@ const StateColumn: React.FC<ColumnProps> = ({
   return (
     <motion.div
       ref={setNodeRef}
-      className={`flex flex-col grow min-w-72 max-w-xs rounded-xl border transition-colors ${columnColor} ${
+      className={`flex flex-col h-full shrink-0 w-96 rounded-xl border transition-colors ${columnColor} ${
         isOver ? "ring-2 ring-primary/40 bg-primary/5" : ""
       }`}
       initial={{ opacity: 0, y: 16 }}

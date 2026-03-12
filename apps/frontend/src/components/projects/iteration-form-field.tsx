@@ -28,6 +28,7 @@ interface IterationFormFieldProps {
   description?: string;
   required?: boolean;
   testId?: string;
+  hideLabel?: boolean;
 }
 
 export function IterationFormField({
@@ -38,6 +39,7 @@ export function IterationFormField({
   description,
   required = false,
   testId,
+  hideLabel = false,
 }: IterationFormFieldProps) {
   const t = useAppClientTranslations();
   const [iterations, setIterations] = useState<ProjectIterationDTO[]>([]);
@@ -70,10 +72,12 @@ export function IterationFormField({
       name={name}
       render={({ field }) => (
         <FormItem>
-          <FormLabel>
-            {label}
-            {required && <span className="text-destructive"> *</span>}
-          </FormLabel>
+          {!hideLabel && (
+            <FormLabel>
+              {label}
+              {required && <span className="text-destructive"> *</span>}
+            </FormLabel>
+          )}
           <FormControl>
             <Select
               disabled={loading || (iterations.length === 0 && required)}

@@ -212,6 +212,59 @@
       "overdue_tickets": {
         "title": "Tickets en retard ({totalTickets})",
         "no_data": "Aucun ticket en retard trouvé"
+      },
+      "channel_distribution": {
+        "title": "Tickets par canal",
+        "no_data": "Aucune donnée de canal disponible"
+      }
+    },
+    "reports": {
+      "title": "Rapports",
+      "description": "Explorez les graphiques et les analyses de votre équipe. Cliquez sur une carte pour ouvrir le rapport complet ou parcourez les rapports à venir.",
+      "search_placeholder": "Rechercher des rapports…",
+      "categories_heading": "Catégories",
+      "categories": {
+        "all": "Tous les rapports",
+        "tickets": "Tickets",
+        "projects": "Projets",
+        "members": "Membres",
+        "custom": "Personnalisé"
+      },
+      "status": {
+        "available": "Disponible",
+        "upcoming": "À venir"
+      },
+      "upcoming_label": "Disponible dans une prochaine version",
+      "upcoming_not_available": "Ce rapport n'est pas encore disponible",
+      "open_report": "Ouvrir le rapport",
+      "viewing": "Affichage",
+      "no_reports": "Aucun rapport ne correspond à votre recherche.",
+      "all_reports": "Tous les rapports",
+      "chart_types": {
+        "pie": "Graphique circulaire",
+        "bar": "Graphique en barres",
+        "line": "Graphique linéaire",
+        "table": "Tableau",
+        "funnel": "Graphique en entonnoir",
+        "heatmap": "Carte de chaleur"
+      },
+      "filters": {
+        "heading": "Filtres",
+        "reset": "Réinitialiser",
+        "status": {
+          "label": "Statut",
+          "open": "Ouvert",
+          "closed": "Fermé",
+          "all": "Tous"
+        },
+        "assignee": {
+          "label": "Assigné",
+          "all": "Tous les membres"
+        },
+        "priority": {
+          "label": "Priorité",
+          "clear": "Effacer la sélection"
+        }
       }
     },
     "list": {
@@ -257,6 +310,7 @@
         "not_completed": "Non complété",
         "attachments": "Pièces jointes",
         "watchers": "Observateurs",
+        "me": "(Moi)",
         "comments": "Commentaires",
         "changes_history": "Historique des modifications",
         "timeline": "Chronologie",
@@ -351,7 +405,8 @@
         "kanban": "Tableau Kanban",
         "settings": "Paramètres",
         "flat_view": "Vue plate",
-        "group_by_team": "Grouper par équipe"
+        "group_by_team": "Grouper par équipe",
+        "reports": "Rapports"
       },
       "view": {
         "add_new_task_to_state": "Ajouter une nouvelle tâche à {stateName}",
@@ -368,7 +423,31 @@
         "all_epics": "Tous les épiques",
         "no_epics_found": "Aucun épique trouvé",
         "add_new_epic": "Ajouter un nouvel épique",
-        "edit_epic": "Modifier l'épique"
+        "edit_epic": "Modifier l'épique",
+        "assignee": "Assigné",
+        "all_members": "Tous les membres",
+        "unassigned": "Non assigné",
+        "board": "Tableau",
+        "view_kanban": "Kanban",
+        "view_epic": "Épique",
+        "view_iteration": "Itération",
+        "no_epic": "Sans épique",
+        "no_iteration": "Sans itération",
+        "iteration_status_in_progress": "En cours",
+        "iteration_status_planned": "Planifiée",
+        "iteration_status_completed": "Terminée",
+        "iteration_status_not_scheduled": "Non planifiée",
+        "iteration_status_closed": "Fermée",
+        "tasks_done": "terminées",
+        "no_tasks": "Aucune tâche",
+        "no_tasks_in_epics": "Aucune tâche ne correspond aux filtres actuels",
+        "stat_total": "Total",
+        "stat_in_progress": "En cours",
+        "stat_done": "Terminé",
+        "actions": "Actions",
+        "add_task": "Ajouter une tâche",
+        "show_closed_iterations": "Afficher les fermées",
+        "hide_closed_iterations": "Masquer les fermées"
       },
       "iteration": {
         "create_dialog_title": "Créer une nouvelle itération",

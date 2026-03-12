@@ -8,6 +8,7 @@ import TimeRangeSelector from "@/components/shared/time-range-selector";
 import AddUserToTeamDialog from "@/components/teams/team-add-user-dialog";
 import TeamDashboardTopSection from "@/components/teams/team-dashboard-kpis";
 import RecentTeamActivities from "@/components/teams/team-dashboard-recent-activities";
+import TicketChannelPieChart from "@/components/teams/team-tickets-channel-chart";
 import TicketDistributionChart from "@/components/teams/team-tickets-distribution-chart";
 import TicketPriorityPieChart from "@/components/teams/team-tickets-priority-chart";
 import UnassignedTickets from "@/components/teams/team-tickets-unassigned";
@@ -72,9 +73,10 @@ const TeamDashboard = () => {
             <TeamOverdueTickets teamId={team.id!} />
           </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             <TicketDistributionChart teamId={team.id!} />
             <TicketPriorityPieChart teamId={team.id!} />
+            <TicketChannelPieChart teamId={team.id!} />
           </div>
         </div>
       </div>

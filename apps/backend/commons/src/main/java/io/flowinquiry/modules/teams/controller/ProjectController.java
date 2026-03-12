@@ -249,8 +249,15 @@ public class ProjectController {
     @GetMapping("/{projectId}/iterations")
     public List<ProjectIterationDTO> getProjectIterations(
             @Parameter(description = "ID of the project", required = true) @PathVariable
-                    Long projectId) {
-        return projectIterationService.findByProjectId(projectId);
+                    Long projectId,
+            @Parameter(description = "Exclude closed iterations", required = false)
+                    @org.springframework.web.bind.annotation.RequestParam(
+                            value = "excludeClosed",
+                            defaultValue = "false")
+                    boolean excludeClosed) {
+        return excludeClosed
+                ? projectIterationService.findActiveByProjectId(projectId)
+                : projectIterationService.findByProjectId(projectId);
     }
 
     @Operation(

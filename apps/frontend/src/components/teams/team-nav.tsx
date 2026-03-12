@@ -3,6 +3,7 @@
 import {
   Activity,
   ArrowRightCircleIcon,
+  BarChart2,
   FolderKanban,
   Shuffle,
   Users,
@@ -43,6 +44,11 @@ const TeamNavLayout = ({ teamId }: { teamId: number }) => {
       href: `/portal/teams/${obfuscate(teamId)}/workflows`,
       label: t.common.navigation("workflows"),
       icon: Shuffle,
+    },
+    {
+      href: `/portal/teams/${obfuscate(teamId)}/reports`,
+      label: t.common.navigation("reports"),
+      icon: BarChart2,
     },
   ];
 

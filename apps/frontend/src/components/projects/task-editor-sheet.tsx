@@ -162,12 +162,12 @@ const TaskEditorSheet = ({
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetContent
-        side="right"
-        className="w-full sm:max-w-[70rem] h-full px-4 overflow-hidden"
+        side="bottom-right"
+        className="w-full sm:w-240 px-0 overflow-hidden"
         data-testid="task-editor-sheet"
       >
-        <div className="flex flex-col h-full max-h-screen">
-          <div className="p-6 border-b">
+        <div className="flex flex-col min-h-0 flex-1">
+          <div className="px-6 pt-6 pb-4 border-b shrink-0">
             <SheetHeader>
               <SheetTitle>
                 {t.teams.projects.view("add_new_task_to_state", {
@@ -180,20 +180,11 @@ const TaskEditorSheet = ({
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
-              className="flex flex-col h-full"
+              className="flex flex-col min-h-0 flex-1"
               data-testid="task-editor-form"
             >
-              {/* Scrollable form content - fixed height calculations */}
-              <div
-                className="flex-1 overflow-y-auto p-6 pb-6"
-                style={{
-                  maxHeight:
-                    "calc(100vh - 11rem)" /* Adjusted to account for header and footer */,
-                  overflowY: "auto",
-                  display:
-                    "block" /* Ensures the content takes the full width */,
-                }}
-              >
+              {/* Scrollable body — grows with content, scrolls when it hits the viewport top */}
+              <div className="flex-1 overflow-y-auto px-6 py-6">
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     {/* ✅ Title Field */}
@@ -349,7 +340,7 @@ const TaskEditorSheet = ({
               </div>
 
               {/* Fixed footer with buttons */}
-              <div className="p-6 mt-auto border-t flex gap-4 sticky bottom-0 bg-background z-10">
+              <div className="px-6 py-4 border-t shrink-0 flex gap-4 bg-background">
                 <SubmitButton
                   label={t.common.buttons("save")}
                   labelWhileLoading={t.common.buttons("saving")}

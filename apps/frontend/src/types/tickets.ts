@@ -2,6 +2,14 @@ import { z } from "zod";
 
 export type TicketPriority = "Critical" | "High" | "Medium" | "Low" | "Trivial";
 
+export const ticketPriorities: TicketPriority[] = [
+  "Critical",
+  "High",
+  "Medium",
+  "Low",
+  "Trivial",
+];
+
 // Define the TicketHealthLevel enum
 export enum TicketHealthLevel {
   Excellent = "Excellent",

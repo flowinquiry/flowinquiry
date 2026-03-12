@@ -112,7 +112,7 @@ export function ProjectEpicDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="sm:max-w-lg p-0 flex flex-col overflow-hidden max-h-[90vh]"
+        className="sm:max-w-3xl p-0 flex flex-col overflow-hidden max-h-[90vh]"
         data-testid="epic-dialog"
       >
         {/* ── Sticky header ── */}
@@ -202,7 +202,7 @@ export function ProjectEpicDialog({
                     icon={<Calendar className="h-4 w-4" />}
                     title={t.teams.projects.epic("form.start_date")}
                   />
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-4">
                     <DatePickerField
                       form={form}
                       fieldName="startDate"

@@ -78,7 +78,8 @@
       "members": "Members",
       "organizations": "Organizations",
       "mail": "Mail",
-      "my_tickets": "My tickets"
+      "my_tickets": "My tickets",
+      "reports": "Reports"
     },
     "permission": {
       "ACCESS": "Access",
@@ -236,6 +237,59 @@
       "overdue_tickets": {
         "title": "Overdue Tickets ({totalTickets})",
         "no_data": "No overdue tickets found"
+      },
+      "channel_distribution": {
+        "title": "Tickets by Channel",
+        "no_data": "No channel data available"
+      }
+    },
+    "reports": {
+      "title": "Reports",
+      "description": "Explore charts and analytics for your team. Click any card to open the full report or browse upcoming reports coming in a future release.",
+      "search_placeholder": "Search reports…",
+      "categories_heading": "Categories",
+      "categories": {
+        "all": "All Reports",
+        "tickets": "Tickets",
+        "projects": "Projects",
+        "members": "Members",
+        "custom": "Custom"
+      },
+      "status": {
+        "available": "Available",
+        "upcoming": "Upcoming"
+      },
+      "upcoming_label": "Coming in an upcoming release",
+      "upcoming_not_available": "This report is not available yet",
+      "open_report": "Open report",
+      "viewing": "Viewing",
+      "no_reports": "No reports match your search.",
+      "all_reports": "All Reports",
+      "chart_types": {
+        "pie": "Pie chart",
+        "bar": "Bar chart",
+        "line": "Line chart",
+        "table": "Table",
+        "funnel": "Funnel chart",
+        "heatmap": "Heatmap"
+      },
+      "filters": {
+        "heading": "Filters",
+        "reset": "Reset",
+        "status": {
+          "label": "Status",
+          "open": "Open",
+          "closed": "Closed",
+          "all": "All"
+        },
+        "assignee": {
+          "label": "Assignee",
+          "all": "All members"
+        },
+        "priority": {
+          "label": "Priority",
+          "clear": "Clear selection"
+        }
       }
     },
     "list": {
@@ -281,6 +335,7 @@
         "not_completed": "Not completed",
         "attachments": "Attachments",
         "watchers": "Watchers",
+        "me": "(Me)",
         "comments": "Comments",
         "changes_history": "Changes history",
         "timeline": "Timeline",
@@ -367,7 +422,8 @@
         "kanban": "Kanban Board",
         "settings": "Settings",
         "flat_view": "Flat View",
-        "group_by_team": "Group by Team"
+        "group_by_team": "Group by Team",
+        "reports": "Reports"
       },
       "form": {
         "name": "Name",
@@ -430,7 +486,31 @@
         "all_epics": "All Epics",
         "no_epics_found": "No epics found",
         "add_new_epic": "Add new epic",
-        "edit_epic": "Edit epic"
+        "edit_epic": "Edit epic",
+        "assignee": "Assignee",
+        "all_members": "All Members",
+        "unassigned": "Unassigned",
+        "board": "Board",
+        "view_kanban": "Kanban",
+        "view_epic": "Epic",
+        "view_iteration": "Iteration",
+        "no_epic": "No Epic",
+        "no_iteration": "No Iteration",
+        "iteration_status_in_progress": "In Progress",
+        "iteration_status_planned": "Planned",
+        "iteration_status_completed": "Completed",
+        "iteration_status_not_scheduled": "Not Scheduled",
+        "iteration_status_closed": "Closed",
+        "tasks_done": "done",
+        "no_tasks": "No tasks",
+        "no_tasks_in_epics": "No tasks match the current filters",
+        "stat_total": "Total",
+        "stat_in_progress": "In Progress",
+        "stat_done": "Done",
+        "actions": "Actions",
+        "add_task": "Add task",
+        "show_closed_iterations": "Show closed",
+        "hide_closed_iterations": "Hide closed"
       },
       "new_dialog": {
         "new_project": "New project",

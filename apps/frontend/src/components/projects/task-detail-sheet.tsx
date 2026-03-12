@@ -1,7 +1,18 @@
 "use client";
 
 import { formatDistanceToNow } from "date-fns";
-import { Edit2, MessageSquarePlus } from "lucide-react";
+import {
+  AlertCircle,
+  Calendar,
+  CheckCircle,
+  Clock,
+  Eye,
+  FileText,
+  MessageSquare,
+  Paperclip,
+  Pencil,
+  User,
+} from "lucide-react";
 import Link from "next/link";
 import React, { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -11,23 +22,17 @@ import { IterationFormField } from "@/components/projects/iteration-form-field";
 import AttachmentView from "@/components/shared/attachment-view";
 import AuditLogView from "@/components/shared/audit-log-view";
 import { UserAvatar } from "@/components/shared/avatar-display";
+import CollapsibleCard from "@/components/shared/collapsible-card";
 import CommentsView from "@/components/shared/comments-view";
 import EntityWatchers from "@/components/shared/entity-watchers";
 import RichTextEditor from "@/components/shared/rich-text-editor";
 import TeamUserSelect from "@/components/teams/team-user-select";
+import { TicketPriorityDisplay } from "@/components/teams/ticket-priority-display";
 import TicketTimelineHistory from "@/components/teams/ticket-timeline-history";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
   SheetContent,
@@ -43,13 +48,77 @@ import {
 } from "@/components/ui/tooltip";
 import WorkflowStateSelect from "@/components/workflows/workflow-state-select";
 import { useAppClientTranslations } from "@/hooks/use-translations";
-import {
-  PRIORITIES_ORDERED,
-  PRIORITY_CONFIG,
-} from "@/lib/constants/ticket-priorities";
+import { PRIORITIES_ORDERED } from "@/lib/constants/ticket-priorities";
 import { obfuscate } from "@/lib/endecode";
+import { cn } from "@/lib/utils";
 import { UserWithTeamRoleDTO } from "@/types/teams";
 import { TicketDTO, TicketPriority } from "@/types/tickets";
+
+/* ── tiny meta-field helper ── */
+const MetaLabel = ({ children }: { children: React.ReactNode }) => (
+  <p className="text-xs text-muted-foreground mb-1">{children}</p>
+);
+
+/* ── inline save/cancel bar ── */
+const InlineActions = ({
+  onSave,
+  onCancel,
+  isSaving,
+  t,
+}: {
+  onSave: () => void;
+  onCancel: () => void;
+  isSaving?: boolean;
+  t: ReturnType<typeof useAppClientTranslations>;
+}) => (
+  <div className="flex justify-end gap-2 mt-2">
+    <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
+      {t.common.buttons("cancel")}
+    </Button>
+    <Button type="button" size="sm" onClick={onSave} disabled={isSaving}>
+      {isSaving ? t.common.buttons("saving") : t.common.buttons("save")}
+    </Button>
+  </div>
+);
+
+/* ── editable section wrapper ── */
+const EditableSection = ({
+  children,
+  onEdit,
+  canEdit = true,
+}: {
+  children: React.ReactNode;
+  onEdit: () => void;
+  canEdit?: boolean;
+}) => {
+  const t = useAppClientTranslations();
+  if (!canEdit) return <div className="px-1 py-0.5">{children}</div>;
+  return (
+    <div
+      className={cn(
+        "group relative rounded-md border border-transparent cursor-pointer",
+        "hover:border-dashed hover:border-muted-foreground/40 hover:bg-muted/30",
+        "transition-colors",
+      )}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onEdit();
+      }}
+    >
+      <TooltipProvider delayDuration={300}>
+        <Tooltip>
+          <TooltipTrigger className="absolute inset-0 z-10 cursor-pointer" />
+          <TooltipContent side="bottom" className="flex items-center gap-1.5">
+            <Pencil className="h-3 w-3" />
+            {t.teams.tickets.detail("click_to_edit")}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      <div className="px-1 py-0.5">{children}</div>
+    </div>
+  );
+};
 
 type TaskDetailSheetProps = {
   isOpen: boolean;
@@ -64,11 +133,10 @@ const TaskDetailSheet: React.FC<TaskDetailSheetProps> = ({
   task: initialTask,
   onTaskUpdate,
 }) => {
-  // Keep a local copy of the task for UI updates
   const [task, setTask] = useState<TicketDTO | null>(initialTask);
   const t = useAppClientTranslations();
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Create form for epic and iteration editing
   const form = useForm({
     defaultValues: {
       epicId: initialTask?.epicId,
@@ -76,7 +144,6 @@ const TaskDetailSheet: React.FC<TaskDetailSheetProps> = ({
     },
   });
 
-  // Update form when task changes
   useEffect(() => {
     if (initialTask) {
       form.reset({
@@ -85,6 +152,10 @@ const TaskDetailSheet: React.FC<TaskDetailSheetProps> = ({
       });
     }
   }, [initialTask, form]);
+
+  useEffect(() => {
+    setTask(initialTask);
+  }, [initialTask]);
 
   // Editing states
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -95,306 +166,17 @@ const TaskDetailSheet: React.FC<TaskDetailSheetProps> = ({
   const [isEditingEpic, setIsEditingEpic] = useState(false);
   const [isEditingIteration, setIsEditingIteration] = useState(false);
   const [selectedTab, setSelectedTab] = useState("comments");
-  const commentsViewRef = useRef<HTMLDivElement | null>(null);
 
-  // Form values
   const [editedTitle, setEditedTitle] = useState("");
   const [editedDescription, setEditedDescription] = useState("");
 
-  const [isSaving, setIsSaving] = useState(false);
-
-  // Refs for input elements
   const titleInputRef = useRef<HTMLInputElement>(null);
-  const descriptionContainerRef = useRef<HTMLDivElement>(null);
+  const commentsViewRef = useRef<HTMLDivElement | null>(null);
 
-  // Update local task when prop changes
   useEffect(() => {
-    setTask(initialTask);
-  }, [initialTask]);
-
-  // Start editing title
-  const handleEditTitle = () => {
-    if (task) {
-      setEditedTitle(task.requestTitle);
-      setIsEditingTitle(true);
-      // Focus will be set by useEffect below
-    }
-  };
-
-  // Focus input element when entering edit mode
-  useEffect(() => {
-    if (isEditingTitle && titleInputRef.current) {
-      titleInputRef.current.focus();
-    }
+    if (isEditingTitle && titleInputRef.current) titleInputRef.current.focus();
   }, [isEditingTitle]);
 
-  // Start editing description
-  const handleEditDescription = () => {
-    if (task) {
-      setEditedDescription(task.requestDescription || "");
-      setIsEditingDescription(true);
-    }
-  };
-
-  // Start editing epic
-  const handleEditEpic = () => {
-    if (task) {
-      setIsEditingEpic(true);
-    }
-  };
-
-  // Start editing iteration
-  const handleEditIteration = () => {
-    if (task) {
-      setIsEditingIteration(true);
-    }
-  };
-
-  // Handle blur for title (save on blur)
-  const handleTitleBlur = async () => {
-    if (!task) return;
-
-    // Create updated task with new title
-    const updatedTask = {
-      ...task,
-      requestTitle: editedTitle,
-    };
-
-    // Update local state first for immediate feedback
-    setTask(updatedTask);
-
-    // Exit edit mode
-    setIsEditingTitle(false);
-
-    // Then call API if handler exists
-    if (onTaskUpdate) {
-      setIsSaving(true);
-      try {
-        await onTaskUpdate(updatedTask);
-      } catch (error) {
-        // If API fails, revert to the previous state
-        console.error("Failed to update task title:", error);
-        setTask(task);
-      } finally {
-        setIsSaving(false);
-      }
-    }
-  };
-
-  // Handle save for description
-  const handleDescriptionSave = async () => {
-    if (!task) return;
-
-    // Create updated task with new description
-    const updatedTask = {
-      ...task,
-      requestDescription: editedDescription,
-    };
-
-    // Update local state first for immediate feedback
-    setTask(updatedTask);
-
-    // Exit edit mode
-    setIsEditingDescription(false);
-
-    // Then call API if handler exists
-    if (onTaskUpdate) {
-      setIsSaving(true);
-      try {
-        await onTaskUpdate(updatedTask);
-      } catch (error) {
-        // If API fails, revert to the previous state
-        console.error("Failed to update task description:", error);
-        setTask(task);
-      } finally {
-        setIsSaving(false);
-      }
-    }
-  };
-
-  // Handler for RichTextEditor's onChange
-  const handleDescriptionChange = (content: string) => {
-    setEditedDescription(content);
-  };
-
-  // Handle save for epic
-  const handleEpicSave = async () => {
-    if (!task) return;
-
-    // Get the epicId from the form
-    const epicId = form.getValues().epicId;
-
-    // Create updated task with new epic
-    const updatedTask = {
-      ...task,
-      epicId: epicId, // Will be undefined if "None" was selected
-    };
-
-    // Update local state immediately for UI feedback
-    setTask(updatedTask);
-
-    // Exit edit mode
-    setIsEditingEpic(false);
-
-    // Then call API if handler exists
-    if (onTaskUpdate) {
-      setIsSaving(true);
-      try {
-        await onTaskUpdate(updatedTask);
-
-        // Optional: Fetch updated task data to get the new epicName
-        // This is necessary because the server might update epicName based on epicId
-        // If your API already returns the updated task with epicName, you can use that instead
-      } catch (error) {
-        // If API fails, revert to the previous state
-        console.error("Failed to update task epic:", error);
-        setTask(task);
-      } finally {
-        setIsSaving(false);
-      }
-    }
-  };
-
-  const handleIterationSave = async () => {
-    if (!task) return;
-
-    // Get the iterationId from the form
-    const iterationId = form.getValues().iterationId;
-
-    // Create updated task with new iteration
-    const updatedTask = {
-      ...task,
-      iterationId: iterationId, // Will be undefined if "None" was selected
-    };
-
-    // Update local state immediately for UI feedback
-    setTask(updatedTask);
-
-    // Exit edit mode
-    setIsEditingIteration(false);
-
-    // Then call API if handler exists
-    if (onTaskUpdate) {
-      setIsSaving(true);
-      try {
-        await onTaskUpdate(updatedTask);
-
-        // Optional: Fetch updated task data to get the new iterationName
-        // This is necessary because the server might update iterationName based on iterationId
-      } catch (error) {
-        // If API fails, revert to the previous state
-        console.error("Failed to update task iteration:", error);
-        setTask(task);
-      } finally {
-        setIsSaving(false);
-      }
-    }
-  };
-
-  // Handle priority change
-  const handlePriorityChange = async (selectedPriority: TicketPriority) => {
-    if (!task) return;
-
-    // Create updated task with new priority
-    const updatedTask = {
-      ...task,
-      priority: selectedPriority,
-    };
-
-    // Update local state first for immediate feedback
-    setTask(updatedTask);
-
-    // Exit edit mode
-    setIsEditingPriority(false);
-
-    // Then call API if handler exists
-    if (onTaskUpdate) {
-      setIsSaving(true);
-      try {
-        await onTaskUpdate(updatedTask);
-      } catch (error) {
-        // If API fails, revert to the previous state
-        console.error("Failed to update task priority:", error);
-        setTask(task);
-      } finally {
-        setIsSaving(false);
-      }
-    }
-  };
-
-  // Handle state change
-  const handleStateChange = async (
-    newStateId: number,
-    newStateName: string,
-  ) => {
-    if (!task) return;
-
-    // Create updated task with new state
-    const updatedTask = {
-      ...task,
-      currentStateId: newStateId,
-      currentStateName: newStateName,
-    };
-
-    // Update local state first for immediate feedback
-    setTask(updatedTask);
-
-    // Exit edit mode
-    setIsEditingState(false);
-
-    // Then call API if handler exists
-    if (onTaskUpdate) {
-      setIsSaving(true);
-      try {
-        await onTaskUpdate(updatedTask);
-      } catch (error) {
-        // If API fails, revert to the previous state
-        console.error("Failed to update task state:", error);
-        setTask(task);
-      } finally {
-        setIsSaving(false);
-      }
-    }
-  };
-
-  // Handle assignee change
-  const handleAssigneeChange = async (
-    selectedUser: UserWithTeamRoleDTO | null,
-  ) => {
-    if (!task) return;
-
-    // Create updated task with new assignee information
-    const updatedTask = {
-      ...task,
-      assignUserId: selectedUser?.id || null,
-      assignUserName: selectedUser
-        ? `${selectedUser.firstName} ${selectedUser.lastName}`
-        : null,
-      assignUserImageUrl: selectedUser?.imageUrl || null,
-    };
-
-    // Update local state first for immediate feedback
-    setTask(updatedTask);
-
-    // Exit edit mode
-    setIsEditingAssignee(false);
-
-    // Then call API if handler exists
-    if (onTaskUpdate) {
-      setIsSaving(true);
-      try {
-        await onTaskUpdate(updatedTask);
-      } catch (error) {
-        // If API fails, revert to the previous state
-        console.error("Failed to update task assignee:", error);
-        setTask(task);
-      } finally {
-        setIsSaving(false);
-      }
-    }
-  };
-
-  // Reset editing states when sheet opens/closes
   useEffect(() => {
     if (!isOpen) {
       setIsEditingTitle(false);
@@ -407,52 +189,140 @@ const TaskDetailSheet: React.FC<TaskDetailSheetProps> = ({
     }
   }, [isOpen]);
 
-  const handleTabChange = (value: string) => {
-    setSelectedTab(value);
+  /* ── generic save helper ── */
+  const saveTask = async (updatedTask: TicketDTO) => {
+    setTask(updatedTask);
+    if (onTaskUpdate) {
+      setIsSaving(true);
+      try {
+        await onTaskUpdate(updatedTask);
+      } catch {
+        setTask(task);
+      } finally {
+        setIsSaving(false);
+      }
+    }
+  };
+
+  const handleTitleBlur = async () => {
+    if (!task) return;
+    setIsEditingTitle(false);
+    await saveTask({ ...task, requestTitle: editedTitle });
+  };
+
+  const handleDescriptionSave = async () => {
+    if (!task) return;
+    setIsEditingDescription(false);
+    await saveTask({ ...task, requestDescription: editedDescription });
+  };
+
+  const handlePriorityChange = async (priority: TicketPriority) => {
+    if (!task) return;
+    setIsEditingPriority(false);
+    await saveTask({ ...task, priority });
+  };
+
+  const handleStateChange = async (
+    newStateId: number,
+    newStateName: string,
+  ) => {
+    if (!task) return;
+    setIsEditingState(false);
+    await saveTask({
+      ...task,
+      currentStateId: newStateId,
+      currentStateName: newStateName,
+    });
+  };
+
+  const handleAssigneeChange = async (
+    selectedUser: UserWithTeamRoleDTO | null,
+  ) => {
+    if (!task) return;
+    setIsEditingAssignee(false);
+    await saveTask({
+      ...task,
+      assignUserId: selectedUser?.id || null,
+      assignUserName: selectedUser
+        ? `${selectedUser.firstName} ${selectedUser.lastName}`
+        : null,
+      assignUserImageUrl: selectedUser?.imageUrl || null,
+    });
+  };
+
+  const handleEpicSave = async () => {
+    if (!task) return;
+    setIsEditingEpic(false);
+    await saveTask({ ...task, epicId: form.getValues().epicId });
+  };
+
+  const handleIterationSave = async () => {
+    if (!task) return;
+    setIsEditingIteration(false);
+    await saveTask({ ...task, iterationId: form.getValues().iterationId });
   };
 
   const handleFocusComments = () => {
-    setSelectedTab("comments"); // Ensure the Comments tab is active
-
-    // Delay scrolling slightly to allow UI to update first
+    setSelectedTab("comments");
     setTimeout(() => {
-      if (commentsViewRef.current) {
-        commentsViewRef.current.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      }
+      commentsViewRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
     }, 100);
   };
 
-  if (!task) return null; // Don't render if no task is selected
+  if (!task) return null;
 
   const canEdit = !task.isCompleted;
 
-  // CSS class for editable content hover effect
-  const editableClass = canEdit
-    ? "group cursor-pointer transition-colors border border-transparent hover:border-dashed hover:border-gray-400 dark:hover:border-gray-600 rounded-md"
-    : "";
+  const currentDate = new Date();
+  const estimatedDate = task.estimatedCompletionDate
+    ? new Date(task.estimatedCompletionDate)
+    : null;
+  const StatusIcon = () => {
+    if (task.isCompleted)
+      return <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />;
+    if (estimatedDate && estimatedDate < currentDate)
+      return <AlertCircle className="h-4 w-4 text-destructive shrink-0" />;
+    return <Clock className="h-4 w-4 text-blue-500 shrink-0" />;
+  };
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-[70rem] h-full px-4"
+        className="w-full sm:max-w-6xl p-0 flex flex-col h-full overflow-hidden"
       >
-        <SheetHeader className="pt-2 pl-0">
-          <SheetTitle>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center flex-1 gap-2 min-w-0">
-                <Button variant="link" className="gap-0 px-0 h-auto">
-                  <Link
-                    href={`/portal/teams/${obfuscate(task.teamId)}/projects/${task.projectShortName}/${task.projectTicketNumber}`}
-                    className="text-sm font-medium"
-                  >
-                    [{task.projectShortName}-{task.projectTicketNumber}]
-                  </Link>
-                </Button>
+        {/* ── Sticky header ── */}
+        <SheetHeader className="px-6 pr-14 py-4 border-b shrink-0">
+          <div className="flex flex-col gap-1.5 min-w-0">
+            {/* Badge row */}
+            <div className="flex flex-wrap items-center gap-1.5">
+              <Badge
+                variant="outline"
+                className="rounded-full text-xs font-normal"
+              >
+                {task.projectShortName}
+              </Badge>
+              <Badge
+                variant={task.isCompleted ? "secondary" : "default"}
+                className="rounded-full text-xs font-normal"
+              >
+                {task.currentStateName}
+              </Badge>
+              <TicketPriorityDisplay priority={task.priority} />
+            </div>
 
+            {/* Title */}
+            <SheetTitle className="p-0">
+              <div className="flex items-center gap-2">
+                <Link
+                  href={`/portal/teams/${obfuscate(task.teamId)}/projects/${task.projectShortName}/${task.projectTicketNumber}`}
+                  className="text-sm font-medium text-muted-foreground hover:text-primary hover:underline underline-offset-4 transition-colors shrink-0"
+                >
+                  [{task.projectShortName}-{task.projectTicketNumber}]
+                </Link>
                 {isEditingTitle ? (
                   <Input
                     ref={titleInputRef}
@@ -462,552 +332,422 @@ const TaskDetailSheet: React.FC<TaskDetailSheetProps> = ({
                     onKeyDown={(e) => {
                       if (e.key === "Enter") handleTitleBlur();
                     }}
-                    className="text-xl font-semibold h-9"
+                    className="text-lg font-semibold h-9"
+                    autoFocus
                   />
                 ) : (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <h2
-                          className={`text-xl font-semibold px-1 py-1 truncate cursor-pointer ${editableClass}`}
-                          onClick={canEdit ? handleEditTitle : undefined}
-                        >
-                          {task.requestTitle}
-                        </h2>
-                      </TooltipTrigger>
-                      {canEdit && (
-                        <TooltipContent>
-                          <p>Click to edit title</p>
-                        </TooltipContent>
+                  <div className="flex items-center gap-2 group/title min-w-0">
+                    <span
+                      className={cn(
+                        "text-xl font-bold leading-tight truncate",
+                        task.isCompleted &&
+                          "line-through text-muted-foreground",
                       )}
-                    </Tooltip>
-                  </TooltipProvider>
+                    >
+                      {task.requestTitle}
+                    </span>
+                    {canEdit && (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setEditedTitle(task.requestTitle);
+                          setIsEditingTitle(true);
+                        }}
+                        className="opacity-0 group-hover/title:opacity-100 shrink-0 rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
+                        aria-label="Edit title"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                className="flex items-center gap-1"
-                onClick={handleFocusComments}
-              >
-                <MessageSquarePlus className="h-4 w-4" />
-                {t.common.buttons("add_comment")}
-              </Button>
-            </div>
-          </SheetTitle>
+            </SheetTitle>
+          </div>
         </SheetHeader>
 
-        <ScrollArea className="h-[calc(100vh-200px)] mt-2">
-          <div className="space-y-6 pr-4">
-            {/* Status and Priority Section */}
-            <div className="grid grid-cols-2 gap-4">
-              {/* Priority Section */}
-              <div>
-                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t.teams.tickets.form.base("priority")}
-                </h3>
-
-                {isEditingPriority ? (
-                  <div className="flex flex-col gap-2">
-                    <Select
-                      defaultValue={task.priority as string}
-                      onValueChange={(value: TicketPriority) =>
-                        handlePriorityChange(value)
-                      }
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select priority">
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={
-                                PRIORITY_CONFIG[task.priority as TicketPriority]
-                                  .iconColor
-                              }
-                            >
-                              {
-                                PRIORITY_CONFIG[task.priority as TicketPriority]
-                                  .icon
-                              }
-                            </span>
-                            <span>{task.priority}</span>
-                          </div>
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {PRIORITIES_ORDERED.map((priority: TicketPriority) => (
-                          <SelectItem key={priority} value={priority}>
-                            <div className="flex items-center gap-2">
-                              <span
-                                className={PRIORITY_CONFIG[priority].iconColor}
-                              >
-                                {PRIORITY_CONFIG[priority].icon}
-                              </span>
-                              <span>{priority}</span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                ) : (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div
-                          className={`flex items-center p-2 rounded-md bg-gray-50 dark:bg-gray-800 ${editableClass}`}
-                          onClick={
-                            canEdit
-                              ? () => setIsEditingPriority(true)
-                              : undefined
-                          }
-                        >
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={
-                                PRIORITY_CONFIG[task.priority as TicketPriority]
-                                  .iconColor
-                              }
-                            >
-                              {
-                                PRIORITY_CONFIG[task.priority as TicketPriority]
-                                  .icon
-                              }
-                            </span>
-                            <span
-                              className={
-                                PRIORITY_CONFIG[task.priority as TicketPriority]
-                                  .textColor
-                              }
-                            >
-                              {task.priority}
-                            </span>
-                          </div>
-                          {canEdit && (
-                            <Edit2 className="h-3 w-3 ml-auto opacity-0 group-hover:opacity-100 text-gray-400" />
-                          )}
-                        </div>
-                      </TooltipTrigger>
-                      {canEdit && (
-                        <TooltipContent>
-                          <p>Click to change priority</p>
-                        </TooltipContent>
-                      )}
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
-              </div>
-
-              {/* Status Section */}
-              <div>
-                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t.teams.tickets.form.base("state")}
-                </h3>
-
-                {isEditingState && task.workflowId ? (
-                  <div className="flex flex-col gap-2">
-                    <WorkflowStateSelect
-                      workflowId={task.workflowId}
-                      currentStateId={task.currentStateId!}
-                      onChange={handleStateChange}
-                    />
-                  </div>
-                ) : (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div
-                          className={`flex items-center p-2 rounded-md bg-gray-50 dark:bg-gray-800 ${editableClass}`}
-                          onClick={
-                            canEdit ? () => setIsEditingState(true) : undefined
-                          }
-                        >
-                          <span>{task.currentStateName || "Not Set"}</span>
-                          {canEdit && (
-                            <Edit2 className="h-3 w-3 ml-auto opacity-0 group-hover:opacity-100 text-gray-400" />
-                          )}
-                        </div>
-                      </TooltipTrigger>
-                      {canEdit && (
-                        <TooltipContent>
-                          <p>Click to change state</p>
-                        </TooltipContent>
-                      )}
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
-              </div>
-            </div>
-
-            {/* Description Section with Click-to-Edit - REPLACED TEXTAREA WITH RICHTEXTEDITOR */}
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {t.teams.tickets.form.base("description")}
-              </h3>
-
-              {isEditingDescription ? (
-                <div ref={descriptionContainerRef}>
-                  <RichTextEditor
-                    value={editedDescription}
-                    onChange={handleDescriptionChange}
-                  />
-                  <div className="flex justify-end mt-2 gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setIsEditingDescription(false)}
-                    >
-                      {t.common.buttons("cancel")}
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={handleDescriptionSave}
-                      disabled={isSaving}
-                    >
-                      {isSaving
-                        ? t.common.buttons("saving")
-                        : t.common.buttons("save")}
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div
-                        className={`text-sm bg-gray-50 dark:bg-gray-800 p-3 rounded-md min-h-[100px] ${editableClass}`}
-                        onClick={canEdit ? handleEditDescription : undefined}
-                      >
-                        <div
-                          className="prose dark:prose-invert max-w-none text-muted-foreground"
-                          dangerouslySetInnerHTML={{
-                            __html:
-                              task.requestDescription ||
-                              "No description provided. Click to add one.",
-                          }}
-                        />
-                        {canEdit && (
-                          <Edit2 className="h-3 w-3 float-right mt-1 opacity-0 group-hover:opacity-100 text-gray-400" />
-                        )}
-                      </div>
-                    </TooltipTrigger>
-                    {canEdit && (
-                      <TooltipContent>
-                        <p>Click to edit description</p>
-                      </TooltipContent>
-                    )}
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-            </div>
-
-            {/* Epic and Iteration Section */}
-            <div className="grid grid-cols-2 gap-4">
-              {/* Epic Section */}
-              <div>
-                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Epic
-                </h3>
-
-                {isEditingEpic ? (
-                  <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md">
-                    <Form {...form}>
-                      <EpicFormField
-                        form={form}
-                        projectId={task.projectId!}
-                        name="epicId"
+        {/* ── Scrollable body ── */}
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          <div className="px-6 py-5">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+              {/* ── Left 2/3 ── */}
+              <div className="flex flex-col gap-4 lg:col-span-2">
+                {/* Description */}
+                <CollapsibleCard
+                  icon={<FileText className="h-4 w-4 text-muted-foreground" />}
+                  title={t.teams.tickets.form.base("description")}
+                >
+                  {isEditingDescription ? (
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <RichTextEditor
+                        value={editedDescription}
+                        onChange={setEditedDescription}
                       />
-                      <div className="flex justify-end mt-2 gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setIsEditingEpic(false)}
-                        >
-                          {t.common.buttons("cancel")}
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={handleEpicSave}
-                          disabled={isSaving}
-                        >
-                          {isSaving
-                            ? t.common.buttons("saving")
-                            : t.common.buttons("save")}
-                        </Button>
-                      </div>
-                    </Form>
-                  </div>
-                ) : (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div
-                          className={`p-2 rounded-md bg-gray-50 dark:bg-gray-800 ${editableClass}`}
-                          onClick={canEdit ? handleEditEpic : undefined}
-                        >
-                          <span>{task.epicName || "None"}</span>
-                          {canEdit && (
-                            <Edit2 className="h-3 w-3 float-right mt-1 opacity-0 group-hover:opacity-100 text-gray-400" />
-                          )}
-                        </div>
-                      </TooltipTrigger>
-                      {canEdit && (
-                        <TooltipContent>
-                          <p>Click to change epic</p>
-                        </TooltipContent>
-                      )}
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
-              </div>
-
-              {/* Iteration Section */}
-              <div>
-                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Iteration
-                </h3>
-
-                {isEditingIteration ? (
-                  <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md">
-                    <Form {...form}>
-                      <IterationFormField
-                        form={form}
-                        projectId={task.projectId!}
-                        name="iterationId"
-                      />
-                      <div className="flex justify-end mt-2 gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setIsEditingIteration(false)}
-                        >
-                          {t.common.buttons("cancel")}
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={handleIterationSave}
-                          disabled={isSaving}
-                        >
-                          {isSaving
-                            ? t.common.buttons("saving")
-                            : t.common.buttons("save")}
-                        </Button>
-                      </div>
-                    </Form>
-                  </div>
-                ) : (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div
-                          className={`p-2 rounded-md bg-gray-50 dark:bg-gray-800 ${editableClass}`}
-                          onClick={canEdit ? handleEditIteration : undefined}
-                        >
-                          <span>{task.iterationName || "None"}</span>
-                          {canEdit && (
-                            <Edit2 className="h-3 w-3 float-right mt-1 opacity-0 group-hover:opacity-100 text-gray-400" />
-                          )}
-                        </div>
-                      </TooltipTrigger>
-                      {canEdit && (
-                        <TooltipContent>
-                          <p>Click to change iteration</p>
-                        </TooltipContent>
-                      )}
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
-              </div>
-            </div>
-
-            <div className="col-span-1 sm:col-span-2 text-sm font-medium flex items-start gap-4">
-              <span className="pt-1">
-                {t.teams.tickets.detail("attachments")}
-              </span>
-              <AttachmentView entityType="Ticket" entityId={task.id!} />
-            </div>
-
-            <div className="col-span-1 sm:col-span-2 text-sm font-medium flex items-start gap-4">
-              <span className="pt-1">{t.teams.tickets.detail("watchers")}</span>
-              <EntityWatchers entityType="Ticket" entityId={task.id!} />
-            </div>
-
-            <Separator />
-
-            {/* Assignment & People Section */}
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                {t.teams.tickets.detail("people")}
-              </h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {t.teams.tickets.form.base("requester")}
-                  </p>
-                  <div className="flex items-center mt-1 gap-2">
-                    <UserAvatar imageUrl={task.requestUserImageUrl} />
-                    <span className="text-sm">
-                      {task.requestUserName || "Not specified"}
-                    </span>
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {t.teams.tickets.form.base("assignee")}
-                  </p>
-
-                  {isEditingAssignee ? (
-                    <div className="mt-1">
-                      <TeamUserSelect
-                        teamId={task.teamId!}
-                        currentUserId={task.assignUserId}
-                        onUserChange={handleAssigneeChange}
+                      <InlineActions
+                        onSave={handleDescriptionSave}
+                        onCancel={() => setIsEditingDescription(false)}
+                        isSaving={isSaving}
+                        t={t}
                       />
                     </div>
                   ) : (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div
-                            className={`flex items-center mt-1 p-2 rounded-md bg-gray-50 dark:bg-gray-800 gap-2 ${editableClass}`}
-                            onClick={
-                              canEdit
-                                ? () => setIsEditingAssignee(true)
-                                : undefined
+                    <EditableSection
+                      onEdit={() => {
+                        setEditedDescription(task.requestDescription || "");
+                        setIsEditingDescription(true);
+                      }}
+                      canEdit={canEdit}
+                    >
+                      <div
+                        className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground"
+                        dangerouslySetInnerHTML={{
+                          __html:
+                            task.requestDescription ||
+                            "<em>No description provided.</em>",
+                        }}
+                      />
+                    </EditableSection>
+                  )}
+                </CollapsibleCard>
+
+                {/* Tabs: Comments / Changes / Timeline */}
+                <CollapsibleCard
+                  icon={
+                    <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                  }
+                  title={t.teams.tickets.detail("comments")}
+                >
+                  <Tabs value={selectedTab} onValueChange={setSelectedTab}>
+                    <TabsList className="grid w-full grid-cols-3 mb-4">
+                      <TabsTrigger value="comments">
+                        {t.common.misc("comments")}
+                      </TabsTrigger>
+                      <TabsTrigger value="changes-history">
+                        {t.teams.tickets.detail("changes_history")}
+                      </TabsTrigger>
+                      <TabsTrigger value="timeline-history">
+                        {t.teams.tickets.detail("timeline")}
+                      </TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="comments">
+                      <div ref={commentsViewRef}>
+                        <CommentsView entityType="Ticket" entityId={task.id!} />
+                      </div>
+                    </TabsContent>
+                    <TabsContent value="changes-history">
+                      <AuditLogView entityType="Ticket" entityId={task.id!} />
+                    </TabsContent>
+                    <TabsContent value="timeline-history">
+                      <TicketTimelineHistory teamId={task.id!} />
+                    </TabsContent>
+                  </Tabs>
+                </CollapsibleCard>
+              </div>
+
+              {/* ── Right 1/3 sidebar ── */}
+              <div className="flex flex-col gap-4">
+                {/* People */}
+                <CollapsibleCard
+                  icon={<User className="h-4 w-4 text-muted-foreground" />}
+                  title={t.teams.tickets.detail("people")}
+                >
+                  <div className="space-y-4">
+                    {/* Requester */}
+                    <div>
+                      <MetaLabel>
+                        {t.teams.tickets.form.base("requester")}
+                      </MetaLabel>
+                      <div className="flex items-center gap-2">
+                        <UserAvatar
+                          imageUrl={task.requestUserImageUrl}
+                          size="w-6 h-6"
+                        />
+                        <span className="text-sm">
+                          {task.requestUserName || "Not specified"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Assignee */}
+                    <div>
+                      <MetaLabel>
+                        {t.teams.tickets.form.base("assignee")}
+                      </MetaLabel>
+                      {isEditingAssignee ? (
+                        <div onClick={(e) => e.stopPropagation()}>
+                          <TeamUserSelect
+                            teamId={task.teamId!}
+                            currentUserId={task.assignUserId}
+                            onUserChange={handleAssigneeChange}
+                          />
+                        </div>
+                      ) : (
+                        <EditableSection
+                          onEdit={() => setIsEditingAssignee(true)}
+                          canEdit={canEdit}
+                        >
+                          <div className="flex items-center gap-2">
+                            <UserAvatar
+                              imageUrl={task.assignUserImageUrl}
+                              size="w-6 h-6"
+                            />
+                            <span className="text-sm">
+                              {task.assignUserName || (
+                                <span className="text-muted-foreground italic">
+                                  {t.teams.tickets.detail("unassigned")}
+                                </span>
+                              )}
+                            </span>
+                          </div>
+                        </EditableSection>
+                      )}
+                    </div>
+                  </div>
+                </CollapsibleCard>
+
+                {/* Details — state & priority */}
+                <CollapsibleCard
+                  icon={<StatusIcon />}
+                  title={t.teams.tickets.detail("ticker_detail")}
+                >
+                  <div className="space-y-4">
+                    {/* Priority */}
+                    <div>
+                      <MetaLabel>
+                        {t.teams.tickets.form.base("priority")}
+                      </MetaLabel>
+                      {isEditingPriority ? (
+                        <div
+                          className="flex flex-col gap-2"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <select
+                            className="w-full rounded-md border px-3 py-1.5 text-sm"
+                            defaultValue={task.priority as string}
+                            onChange={(e) =>
+                              handlePriorityChange(
+                                e.target.value as TicketPriority,
+                              )
                             }
                           >
-                            <UserAvatar imageUrl={task.assignUserImageUrl} />
-                            <span className="text-sm">
-                              {task.assignUserName || "Unassigned"}
-                            </span>
-                            {canEdit && (
-                              <Edit2 className="h-3 w-3 ml-auto opacity-0 group-hover:opacity-100 text-gray-400" />
-                            )}
-                          </div>
-                        </TooltipTrigger>
-                        {canEdit && (
-                          <TooltipContent>
-                            <p>Click to change assignee</p>
-                          </TooltipContent>
-                        )}
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
-                </div>
-              </div>
-            </div>
+                            {PRIORITIES_ORDERED.map((p: TicketPriority) => (
+                              <option key={p} value={p}>
+                                {p}
+                              </option>
+                            ))}
+                          </select>
+                          <InlineActions
+                            onSave={() => setIsEditingPriority(false)}
+                            onCancel={() => setIsEditingPriority(false)}
+                            t={t}
+                          />
+                        </div>
+                      ) : (
+                        <EditableSection
+                          onEdit={() => setIsEditingPriority(true)}
+                          canEdit={canEdit}
+                        >
+                          <TicketPriorityDisplay priority={task.priority} />
+                        </EditableSection>
+                      )}
+                    </div>
 
-            <Separator />
-
-            {/* Dates Section */}
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                {t.teams.tickets.detail("date_time")}
-              </h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {t.teams.tickets.form.base("created_at")}
-                  </p>
-                  <p className="text-sm mt-1">
-                    {task.createdAt
-                      ? new Date(task.createdAt).toLocaleDateString()
-                      : "Not available"}
-                    {task.createdAt && (
-                      <span className="text-xs text-gray-500 ml-2">
-                        (
-                        {formatDistanceToNow(task.createdAt, {
-                          addSuffix: true,
-                        })}
-                        )
-                      </span>
-                    )}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {t.teams.tickets.form.base("last_modified_at")}
-                  </p>
-                  <p className="text-sm mt-1">
-                    {task.modifiedAt
-                      ? new Date(task.modifiedAt).toLocaleDateString()
-                      : "Not modified"}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Due Date
-                  </p>
-                  <p className="text-sm mt-1">
-                    {task.estimatedCompletionDate
-                      ? new Date(
-                          task.estimatedCompletionDate,
-                        ).toLocaleDateString()
-                      : t.teams.tickets.detail("not_set")}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Completed
-                  </p>
-                  <p className="text-sm mt-1">
-                    {task.actualCompletionDate
-                      ? new Date(task.actualCompletionDate).toLocaleDateString()
-                      : task.isCompleted
-                        ? "Completed (date not specified)"
-                        : "Not completed"}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Project & Workflow Section */}
-            <Separator />
-            <Tabs
-              defaultValue="comments"
-              value={selectedTab}
-              onValueChange={handleTabChange}
-            >
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="comments">
-                  {t.common.misc("comments")}
-                </TabsTrigger>
-                <TabsTrigger value="changes-history">
-                  {t.teams.tickets.detail("changes_history")}
-                </TabsTrigger>
-                <TabsTrigger value="timeline-history">
-                  {t.teams.tickets.detail("timeline")}
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="comments">
-                {selectedTab === "comments" && (
-                  <div ref={commentsViewRef}>
-                    <CommentsView entityType="Ticket" entityId={task.id!} />
+                    {/* State */}
+                    <div>
+                      <MetaLabel>
+                        {t.teams.tickets.form.base("state")}
+                      </MetaLabel>
+                      {isEditingState && task.workflowId ? (
+                        <div onClick={(e) => e.stopPropagation()}>
+                          <WorkflowStateSelect
+                            workflowId={task.workflowId}
+                            currentStateId={task.currentStateId!}
+                            onChange={handleStateChange}
+                          />
+                        </div>
+                      ) : (
+                        <EditableSection
+                          onEdit={() => setIsEditingState(true)}
+                          canEdit={canEdit}
+                        >
+                          <Badge variant="outline" className="font-normal">
+                            {task.currentStateName || "Not Set"}
+                          </Badge>
+                        </EditableSection>
+                      )}
+                    </div>
                   </div>
-                )}
-              </TabsContent>
-              <TabsContent value="changes-history">
-                {selectedTab === "changes-history" && (
-                  <AuditLogView entityType="Ticket" entityId={task.id!} />
-                )}
-              </TabsContent>
-              <TabsContent value="timeline-history">
-                {selectedTab === "timeline-history" && (
-                  <TicketTimelineHistory teamId={task.id!} />
-                )}
-              </TabsContent>
-            </Tabs>
-          </div>
-        </ScrollArea>
+                </CollapsibleCard>
 
-        <div className="mt-6 flex justify-end space-x-2">
-          <Button variant="outline" onClick={() => setIsOpen(false)}>
-            {t.common.buttons("close")}
-          </Button>
+                {/* Epic & Iteration */}
+                <CollapsibleCard
+                  icon={<FileText className="h-4 w-4 text-muted-foreground" />}
+                  title="Epic & Iteration"
+                >
+                  <div className="space-y-4">
+                    {/* Epic */}
+                    <div>
+                      <MetaLabel>Epic</MetaLabel>
+                      {isEditingEpic ? (
+                        <div onClick={(e) => e.stopPropagation()}>
+                          <Form {...form}>
+                            <EpicFormField
+                              form={form}
+                              projectId={task.projectId!}
+                              name="epicId"
+                              hideLabel
+                            />
+                          </Form>
+                          <InlineActions
+                            onSave={handleEpicSave}
+                            onCancel={() => setIsEditingEpic(false)}
+                            isSaving={isSaving}
+                            t={t}
+                          />
+                        </div>
+                      ) : (
+                        <EditableSection
+                          onEdit={() => setIsEditingEpic(true)}
+                          canEdit={canEdit}
+                        >
+                          <span className="text-sm">
+                            {task.epicName || (
+                              <span className="text-muted-foreground italic">
+                                None
+                              </span>
+                            )}
+                          </span>
+                        </EditableSection>
+                      )}
+                    </div>
+
+                    {/* Iteration */}
+                    <div>
+                      <MetaLabel>Iteration</MetaLabel>
+                      {isEditingIteration ? (
+                        <div onClick={(e) => e.stopPropagation()}>
+                          <Form {...form}>
+                            <IterationFormField
+                              form={form}
+                              projectId={task.projectId!}
+                              name="iterationId"
+                              hideLabel
+                            />
+                          </Form>
+                          <InlineActions
+                            onSave={handleIterationSave}
+                            onCancel={() => setIsEditingIteration(false)}
+                            isSaving={isSaving}
+                            t={t}
+                          />
+                        </div>
+                      ) : (
+                        <EditableSection
+                          onEdit={() => setIsEditingIteration(true)}
+                          canEdit={canEdit}
+                        >
+                          <span className="text-sm">
+                            {task.iterationName || (
+                              <span className="text-muted-foreground italic">
+                                None
+                              </span>
+                            )}
+                          </span>
+                        </EditableSection>
+                      )}
+                    </div>
+                  </div>
+                </CollapsibleCard>
+
+                {/* Dates */}
+                <CollapsibleCard
+                  icon={<Calendar className="h-4 w-4 text-muted-foreground" />}
+                  title={t.teams.tickets.detail("important_dates")}
+                >
+                  <div className="space-y-3 text-sm">
+                    <div>
+                      <MetaLabel>
+                        {t.teams.tickets.form.base("created_at")}
+                      </MetaLabel>
+                      <span>
+                        {task.createdAt
+                          ? new Date(task.createdAt).toLocaleDateString()
+                          : "—"}
+                        {task.createdAt && (
+                          <span className="text-xs text-muted-foreground ml-2">
+                            (
+                            {formatDistanceToNow(task.createdAt, {
+                              addSuffix: true,
+                            })}
+                            )
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                    <div>
+                      <MetaLabel>
+                        {t.teams.tickets.form.base("last_modified_at")}
+                      </MetaLabel>
+                      <span>
+                        {task.modifiedAt
+                          ? new Date(task.modifiedAt).toLocaleDateString()
+                          : "—"}
+                      </span>
+                    </div>
+                    <div>
+                      <MetaLabel>
+                        {t.teams.tickets.form.base("target_completion_date")}
+                      </MetaLabel>
+                      <div className="flex items-center gap-1.5">
+                        <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span>
+                          {task.estimatedCompletionDate ? (
+                            new Date(
+                              task.estimatedCompletionDate,
+                            ).toLocaleDateString()
+                          ) : (
+                            <span className="text-muted-foreground italic">
+                              {t.teams.tickets.detail("not_set")}
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                    {task.isCompleted && (
+                      <div>
+                        <MetaLabel>Completed</MetaLabel>
+                        <span>
+                          {task.actualCompletionDate
+                            ? new Date(
+                                task.actualCompletionDate,
+                              ).toLocaleDateString()
+                            : "Date not specified"}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </CollapsibleCard>
+
+                {/* Attachments */}
+                <CollapsibleCard
+                  icon={<Paperclip className="h-4 w-4 text-muted-foreground" />}
+                  title={t.teams.tickets.detail("attachments")}
+                  defaultOpen={false}
+                >
+                  <AttachmentView entityType="Ticket" entityId={task.id!} />
+                </CollapsibleCard>
+
+                {/* Watchers */}
+                <CollapsibleCard
+                  icon={<Eye className="h-4 w-4 text-muted-foreground" />}
+                  title={t.teams.tickets.detail("watchers")}
+                  defaultOpen={false}
+                >
+                  <EntityWatchers entityType="Ticket" entityId={task.id!} />
+                </CollapsibleCard>
+              </div>
+            </div>
+          </div>
         </div>
       </SheetContent>
     </Sheet>

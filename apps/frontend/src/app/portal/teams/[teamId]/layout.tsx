@@ -1,6 +1,6 @@
 import React from "react";
 
-import { TeamContentLayout } from "@/components/teams/team-content-layout";
+import { TeamLayoutSwitcher } from "@/components/teams/team-layout-switcher";
 import { deobfuscateToNumber } from "@/lib/endecode";
 import { TeamProvider } from "@/providers/team-provider";
 import { UserTeamRoleProvider } from "@/providers/user-team-role-provider";
@@ -26,7 +26,7 @@ const Layout = async ({
   return (
     <TeamProvider teamId={teamIdNum}>
       <UserTeamRoleProvider teamId={teamIdNum}>
-        <TeamContentLayout>{children}</TeamContentLayout>
+        <TeamLayoutSwitcher>{children}</TeamLayoutSwitcher>
       </UserTeamRoleProvider>
     </TeamProvider>
   );
