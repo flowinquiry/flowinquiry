@@ -1,4 +1,4 @@
-import { ContentLayout } from "@/components/admin-panel/content-layout";
+import { SimpleContentView } from "@/components/admin-panel/simple-content-view";
 import { AuthorityView } from "@/components/authorities/authority-view";
 import { deobfuscateToString } from "@/lib/endecode";
 import { getAppTranslations } from "@/lib/translation";
@@ -9,9 +9,9 @@ const Page = async (props: { params: Promise<{ authorityId: string }> }) => {
   const t = await getAppTranslations();
 
   return (
-    <ContentLayout title={t.common.navigation("authorities")}>
+    <SimpleContentView title={t.common.navigation("authorities")}>
       <AuthorityView authorityId={authorityId} />
-    </ContentLayout>
+    </SimpleContentView>
   );
 };
 

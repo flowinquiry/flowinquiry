@@ -1,6 +1,6 @@
 import React from "react";
 
-import { ContentLayout } from "@/components/admin-panel/content-layout";
+import { SimpleContentView } from "@/components/admin-panel/simple-content-view";
 import { UserView } from "@/components/users/user-view";
 import { deobfuscateToNumber } from "@/lib/endecode";
 import { getAppTranslations } from "@/lib/translation";
@@ -11,9 +11,9 @@ const Page = async (props: { params: Promise<{ userId: string }> }) => {
   const t = await getAppTranslations();
 
   return (
-    <ContentLayout title={t.common.navigation("users")}>
+    <SimpleContentView title={t.common.navigation("users")}>
       <UserView userId={userId} />
-    </ContentLayout>
+    </SimpleContentView>
   );
 };
 

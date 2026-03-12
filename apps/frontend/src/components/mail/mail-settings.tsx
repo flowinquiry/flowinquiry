@@ -294,7 +294,7 @@ export function MailSettings() {
       <div className="flex flex-col gap-4">
         <Heading title={t.mail("title")} description={t.mail("description")} />
         <Separator />
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 max-w-5xl">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {Array.from({ length: 4 }).map((_, i) => (
             <Card key={i}>
               <CardHeader>
@@ -329,7 +329,8 @@ export function MailSettings() {
           }}
           className="flex flex-col gap-6"
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-5xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {" "}
             {Object.entries(FIELD_GROUPS).map(([groupLabel, keys]) => (
               <Card key={groupLabel} className="flex flex-col">
                 <CardHeader className="pb-2 border-b">
@@ -444,13 +445,13 @@ export function MailSettings() {
           </div>
 
           {submitAttempted && Object.keys(form.formState.errors).length > 0 && (
-            <div className="max-w-5xl rounded-md bg-destructive/10 p-3 text-sm font-medium text-destructive">
+            <div className="rounded-md bg-destructive/10 p-3 text-sm font-medium text-destructive">
               Please fill in all required fields before submitting.
             </div>
           )}
 
           {/* Sticky save bar */}
-          <div className="sticky bottom-0 max-w-5xl flex items-center justify-end gap-3 rounded-xl border bg-background/80 px-4 py-3 shadow-sm backdrop-blur supports-backdrop-filter:bg-background/60">
+          <div className="sticky bottom-0 flex items-center justify-end gap-3 rounded-xl border bg-background/80 px-4 py-3 shadow-sm backdrop-blur supports-backdrop-filter:bg-background/60">
             <Button
               type="button"
               variant="outline"

@@ -3,7 +3,7 @@
 import React from "react";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
-import { Heading } from "@/components/heading";
+import { Separator } from "@/components/ui/separator";
 import NewWorkflowFromScratch from "@/components/workflows/workflow-create-from-scratch";
 import { useAppClientTranslations } from "@/hooks/use-translations";
 
@@ -19,16 +19,9 @@ const WorkflowNew = () => {
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-4">
+    <div className="flex flex-col gap-4">
       <Breadcrumbs items={breadcrumbItems} />
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Heading
-            title={t.workflows.add("title")}
-            description={t.workflows.add("description")}
-          />
-        </div>
-      </div>
+      <Separator />
       <NewWorkflowFromScratch />
     </div>
   );

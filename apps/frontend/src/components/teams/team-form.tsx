@@ -37,7 +37,17 @@ import { validateForm } from "@/lib/validator";
 import { useError } from "@/providers/error-provider";
 import { TeamDTO, TeamDTOSchema } from "@/types/teams";
 
-export const TeamForm = ({ teamId }: { teamId: number | undefined }) => {
+export const TeamForm = ({
+  teamId,
+  onSuccess,
+  onCancel,
+  isSheet = false,
+}: {
+  teamId: number | undefined;
+  onSuccess?: (teamId: number) => void;
+  onCancel?: () => void;
+  isSheet?: boolean;
+}) => {
   const router = useRouter();
 
   const {
@@ -105,7 +115,11 @@ export const TeamForm = ({ teamId }: { teamId: number | undefined }) => {
           (data) => (redirectTeamId = data.id),
         );
       }
-      router.push(`/portal/teams/${obfuscate(redirectTeamId)}/dashboard`);
+      if (onSuccess) {
+        onSuccess(redirectTeamId!);
+      } else {
+        router.push(`/portal/teams/${obfuscate(redirectTeamId)}/dashboard`);
+      }
     }
   }
 
@@ -156,16 +170,29 @@ export const TeamForm = ({ teamId }: { teamId: number | undefined }) => {
   }
 
   return (
-    <div className="flex flex-col gap-4" data-testid="team-form-container">
-      <Breadcrumbs items={breadcrumbItems} />
-      <Separator />
+    <div
+      className={isSheet ? "flex flex-col gap-4" : "flex flex-col gap-4 flex-1"}
+      data-testid="team-form-container"
+    >
+      {!isSheet && (
+        <>
+          <Breadcrumbs items={breadcrumbItems} />
+          <Separator />
+        </>
+      )}
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="flex flex-col gap-6"
+          className={
+            isSheet ? "flex flex-col gap-6" : "flex flex-col flex-1 gap-6"
+          }
           data-testid="team-form"
         >
-          <div className="flex flex-col gap-4 max-w-3xl">
+          <div
+            className={
+              isSheet ? "flex flex-col gap-4" : "flex flex-col gap-4 max-w-3xl"
+            }
+          >
             {/* ── Details card (logo + fields together) ── */}
             <Card data-testid="team-form-details-section">
               <CardHeader className="border-b pb-4">
@@ -245,13 +272,17 @@ export const TeamForm = ({ teamId }: { teamId: number | undefined }) => {
 
           {/* ── Sticky save bar ── */}
           <div
-            className="sticky bottom-0 max-w-3xl flex items-center justify-end gap-3 rounded-xl border bg-background/80 px-4 py-3 shadow-sm backdrop-blur supports-backdrop-filter:bg-background/60"
+            className={
+              isSheet
+                ? "flex items-center justify-end gap-3 border-t pt-4"
+                : "mt-auto sticky bottom-0 flex items-center justify-end gap-3 rounded-xl border bg-background/80 px-4 py-3 shadow-sm backdrop-blur supports-backdrop-filter:bg-background/60"
+            }
             data-testid="team-form-buttons"
           >
             <Button
               variant="outline"
               type="button"
-              onClick={() => router.back()}
+              onClick={() => (onCancel ? onCancel() : router.back())}
               testId="team-form-discard"
             >
               {t.common.buttons("discard")}

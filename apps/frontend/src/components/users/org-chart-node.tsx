@@ -4,51 +4,38 @@ import React from "react";
 
 import { UserAvatar } from "@/components/shared/avatar-display";
 
-interface PersonNodeProps {
-  data: {
-    label: string;
-    avatarUrl: string;
-    userPageLink: string;
-  };
-}
-
 const PersonNode = ({ data }: { data: any }) => {
   const { label, avatarUrl, userPageLink, onClick } = data;
 
-  // Detect dark mode
-  const isDarkMode =
-    typeof window !== "undefined" &&
-    document.documentElement.classList.contains("dark");
-
   return (
     <div
-      className={`p-2 rounded-lg shadow-md flex flex-col items-center ${
-        isDarkMode ? "bg-gray-800 border-gray-600" : "bg-white border-gray-300"
-      }`}
-      style={{
-        width: "150px",
-        height: "80px",
-      }}
-      onClick={onClick} // Call the onClick handler when clicked
+      className="group relative flex flex-col items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2.5 shadow-sm transition-all duration-200 hover:border-primary/50 hover:shadow-md cursor-pointer"
+      style={{ width: "160px", minHeight: "72px" }}
+      onClick={onClick}
     >
-      {/* Input and Output Handles for Edges */}
       <Handle
         type="target"
         position={Position.Top}
-        style={{ backgroundColor: isDarkMode ? "#d1d5db" : "#6b7280" }}
+        className="!bg-primary/60 !border-primary/30 !w-2 !h-2"
       />
       <Handle
         type="source"
         position={Position.Bottom}
-        style={{ backgroundColor: isDarkMode ? "#d1d5db" : "#6b7280" }}
+        className="!bg-primary/60 !border-primary/30 !w-2 !h-2"
       />
 
-      {/* Avatar */}
-      <UserAvatar imageUrl={avatarUrl} size="w-8 h-8" />
+      <UserAvatar
+        imageUrl={avatarUrl}
+        size="w-9 h-9"
+        className="ring-2 ring-background shadow-sm"
+      />
 
-      {/* User Name */}
-      <Link href={userPageLink}>
-        <span className={`text-center text-xs scale-50`}>{label}</span>
+      <Link
+        href={userPageLink}
+        onClick={(e) => e.stopPropagation()}
+        className="text-center text-xs font-medium leading-tight text-foreground hover:text-primary hover:underline line-clamp-2 px-1 transition-colors"
+      >
+        {label}
       </Link>
     </div>
   );

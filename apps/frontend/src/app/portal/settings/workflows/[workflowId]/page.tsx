@@ -1,4 +1,4 @@
-import { ContentLayout } from "@/components/admin-panel/content-layout";
+import { SimpleContentView } from "@/components/admin-panel/simple-content-view";
 import WorkflowDetailView from "@/components/workflows/workflow-detail-view";
 import { deobfuscateToNumber } from "@/lib/endecode";
 import { getAppTranslations } from "@/lib/translation";
@@ -9,9 +9,9 @@ const Page = async (props: { params: Promise<{ workflowId: string }> }) => {
   const t = await getAppTranslations();
 
   return (
-    <ContentLayout title={t.common.navigation("workflows")}>
+    <SimpleContentView title={t.common.navigation("workflows")}>
       <WorkflowDetailView workflowId={workflowId} />
-    </ContentLayout>
+    </SimpleContentView>
   );
 };
 

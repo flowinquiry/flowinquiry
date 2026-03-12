@@ -6,8 +6,10 @@ import dagre from "@dagrejs/dagre";
 import {
   addEdge,
   Background,
+  BackgroundVariant,
   Edge,
   MarkerType,
+  MiniMap,
   Node,
   Position,
   ReactFlow,
@@ -16,6 +18,7 @@ import {
   useNodesState,
   useReactFlow,
 } from "@xyflow/react";
+import { Network, ZoomIn, ZoomOut } from "lucide-react";
 import React, { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -25,6 +28,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import PersonNode from "@/components/users/org-chart-node";
 import { useAppClientTranslations } from "@/hooks/use-translations";
 import { getOrgChart, getUserHierarchy } from "@/lib/actions/users.action";
@@ -102,9 +106,9 @@ const OrgChartContent = ({
   const t = useAppClientTranslations();
 
   return (
-    <div className="flex h-full w-full">
-      {/* Org Chart */}
-      <div className="relative grow h-full w-full">
+    <div className="flex h-full w-full overflow-hidden rounded-lg border bg-background">
+      {/* ── Org Chart canvas ── */}
+      <div className="relative flex-1 h-full">
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -114,29 +118,78 @@ const OrgChartContent = ({
           fitView
           attributionPosition="bottom-left"
           nodeTypes={{ custom: PersonNode }}
+          proOptions={{ hideAttribution: true }}
         >
-          <Background gap={16} size={0.5} />
+          <Background
+            variant={BackgroundVariant.Dots}
+            gap={20}
+            size={1}
+            className="opacity-40"
+          />
+          <MiniMap
+            nodeStrokeWidth={3}
+            className="!bottom-2 !right-2 !rounded-md !border !shadow-sm"
+            zoomable
+            pannable
+          />
         </ReactFlow>
-        <div className="absolute top-2 right-2 z-10 flex space-x-2">
-          <Button variant="outline" onClick={() => zoomIn()}>
-            {t.common.misc("zoom_in")}
+
+        {/* Zoom controls */}
+        <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-8 w-8 shadow-sm bg-background"
+            onClick={() => zoomIn()}
+            title={t.common.misc("zoom_in")}
+          >
+            <ZoomIn className="h-4 w-4" />
           </Button>
-          <Button variant="outline" onClick={() => zoomOut()}>
-            {t.common.misc("zoom_out")}
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-8 w-8 shadow-sm bg-background"
+            onClick={() => zoomOut()}
+            title={t.common.misc("zoom_out")}
+          >
+            <ZoomOut className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
-      {/* Instructions Sidebar */}
-      <div className="w-64 p-4 border-l border-gray-200 bg-gray-50 dark:bg-gray-800 overflow-auto">
-        <h2 className="font-bold mb-4">
-          {t.users.org_chart_view("instruction_title")}
-        </h2>
-        <ul className="list-disc ml-4 space-y-2">
-          <li>{t.users.org_chart_view("instruction_desc1")}</li>
-          <li>{t.users.org_chart_view("instruction_desc2")}</li>
-          <li>{t.users.org_chart_view("instruction_desc3")}</li>
-        </ul>
+      {/* ── Instructions sidebar ── */}
+      <div className="w-56 shrink-0 border-l flex flex-col bg-muted/30">
+        <div className="px-4 pt-4 pb-3 border-b">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-md bg-primary/10">
+              <Network className="h-3.5 w-3.5 text-primary" />
+            </div>
+            <span className="text-sm font-semibold">
+              {t.users.org_chart_view("instruction_title")}
+            </span>
+          </div>
+        </div>
+        <ScrollArea className="flex-1">
+          <ul className="px-4 py-4 space-y-3">
+            {(
+              [
+                "instruction_desc1",
+                "instruction_desc2",
+                "instruction_desc3",
+              ] as const
+            ).map((key, i) => (
+              <li
+                key={key}
+                className="flex items-start gap-2.5 text-xs text-muted-foreground leading-relaxed"
+              >
+                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-semibold text-primary">
+                  {i + 1}
+                </span>
+                {t.users.org_chart_view(key)}
+              </li>
+            ))}
+          </ul>
+        </ScrollArea>
       </div>
     </div>
   );
@@ -293,11 +346,16 @@ const OrgChartDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="!max-w-7xl w-full sm:!max-w-7xl md:!max-w-7xl lg:!max-w-7xl">
-        <DialogHeader>
-          <DialogTitle>{t.users.common("org_chart")}</DialogTitle>
+      <DialogContent className="!max-w-5xl w-full sm:!max-w-5xl md:!max-w-5xl lg:!max-w-5xl p-0 gap-0 overflow-hidden">
+        <DialogHeader className="px-6 py-4 border-b">
+          <DialogTitle className="flex items-center gap-2">
+            <div className="p-1.5 rounded-md bg-primary/10">
+              <Network className="h-4 w-4 text-primary" />
+            </div>
+            {t.users.common("org_chart")}
+          </DialogTitle>
         </DialogHeader>
-        <div className="h-[500px] w-full">
+        <div className="h-[580px] w-full">
           {isOpen && (
             <ReactFlowProvider>
               <OrgChartContent

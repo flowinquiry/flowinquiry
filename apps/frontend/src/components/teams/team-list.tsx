@@ -20,7 +20,8 @@ import { TeamAvatar } from "@/components/shared/avatar-display";
 import { EntitiesDeleteDialog } from "@/components/shared/entity-delete-dialog";
 import LoadingPlaceHolder from "@/components/shared/loading-place-holder";
 import PaginationExt from "@/components/shared/pagination-ext";
-import { Button, buttonVariants } from "@/components/ui/button";
+import TeamNewSheet from "@/components/teams/team-new-sheet";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -47,7 +48,6 @@ import { usePagePermission } from "@/hooks/use-page-permission";
 import { useAppClientTranslations } from "@/hooks/use-translations";
 import { deleteTeams, searchTeams } from "@/lib/actions/teams.action";
 import { obfuscate } from "@/lib/endecode";
-import { cn } from "@/lib/utils";
 import { useError } from "@/providers/error-provider";
 import { Filter, QueryDTO } from "@/types/query";
 import { PermissionUtils } from "@/types/resources";
@@ -66,6 +66,7 @@ export const TeamList = () => {
   const [filterUserTeamsOnly, setFilterUserTeamsOnly] = useState(false);
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<TeamDTO | null>(null);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const t = useAppClientTranslations();
   const searchParams = useSearchParams();
@@ -188,14 +189,13 @@ export const TeamList = () => {
             </label>
           </div>
           {PermissionUtils.canWrite(permissionLevel) && (
-            <Link
-              href="/portal/teams/new/edit"
-              className={cn(buttonVariants({ variant: "default" }))}
+            <Button
+              onClick={() => setIsSheetOpen(true)}
               data-testid="team-list-new-team"
             >
               <Plus className="mr-2 h-4 w-4" />
               {t.teams.list("new_team")}
-            </Link>
+            </Button>
           )}
         </div>
       </div>
@@ -216,14 +216,14 @@ export const TeamList = () => {
             {t.teams.list("no_teams")}
           </p>
           {PermissionUtils.canWrite(permissionLevel) && (
-            <Link
-              href="/portal/teams/new/edit"
-              className={cn(buttonVariants({ variant: "default" }), "mt-1")}
+            <Button
+              onClick={() => setIsSheetOpen(true)}
+              className="mt-1"
               data-testid="team-list-new-team-empty"
             >
               <Plus className="mr-2 h-4 w-4" />
               {t.teams.list("new_team")}
-            </Link>
+            </Button>
           )}
         </div>
       ) : (
@@ -349,6 +349,12 @@ export const TeamList = () => {
           />
         </div>
       )}
+
+      <TeamNewSheet
+        open={isSheetOpen}
+        onClose={() => setIsSheetOpen(false)}
+        onCreated={() => mutate()}
+      />
     </div>
   );
 };

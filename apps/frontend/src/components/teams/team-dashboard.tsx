@@ -1,41 +1,26 @@
 "use client";
 
-import { Pencil } from "lucide-react";
-import Link from "next/link";
 import React, { useState } from "react";
 import useSWR from "swr";
 
 import { Heading } from "@/components/heading";
-import { TeamAvatar } from "@/components/shared/avatar-display";
 import TimeRangeSelector from "@/components/shared/time-range-selector";
 import AddUserToTeamDialog from "@/components/teams/team-add-user-dialog";
 import TeamDashboardTopSection from "@/components/teams/team-dashboard-kpis";
 import RecentTeamActivities from "@/components/teams/team-dashboard-recent-activities";
-import TeamNavLayout from "@/components/teams/team-nav";
 import TicketDistributionChart from "@/components/teams/team-tickets-distribution-chart";
 import TicketPriorityPieChart from "@/components/teams/team-tickets-priority-chart";
 import UnassignedTickets from "@/components/teams/team-tickets-unassigned";
 import TicketCreationByDaySeriesChart from "@/components/teams/tickets-creation-timeseries-chart";
 import TeamOverdueTickets from "@/components/teams/tickets-overdue";
-import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { usePagePermission } from "@/hooks/use-page-permission";
 import { useAppClientTranslations } from "@/hooks/use-translations";
 import { checkTeamHasAnyManager } from "@/lib/actions/teams.action";
-import { obfuscate } from "@/lib/endecode";
-import { cn } from "@/lib/utils";
 import { BreadcrumbProvider } from "@/providers/breadcrumb-provider";
 import { useTeam } from "@/providers/team-provider";
-import { PermissionUtils } from "@/types/resources";
 
 const TeamDashboard = () => {
   const team = useTeam();
-  const permissionLevel = usePagePermission();
   const [isDialogOpen, setDialogOpen] = useState(false);
   const t = useAppClientTranslations();
 
@@ -59,74 +44,40 @@ const TeamDashboard = () => {
 
   return (
     <BreadcrumbProvider items={breadcrumbItems}>
-      <TeamNavLayout teamId={team.id!}>
-        <div className="flex flex-col gap-4">
-          {/* ── Toolbar ── */}
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            {/* Left: avatar + heading */}
-            <div className="flex items-center gap-3 min-w-0">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="shrink-0 cursor-default">
-                    <TeamAvatar imageUrl={team.logoUrl} size="w-10 h-10" />
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent className="max-w-xs" side="bottom">
-                  <p className="font-semibold">{team.name}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {team.slogan ?? t.teams.common("default_slogan")}
-                  </p>
-                  {team.description && (
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {team.description}
-                    </p>
-                  )}
-                </TooltipContent>
-              </Tooltip>
-              <Heading
-                title={t.teams.dashboard("title")}
-                description={t.teams.dashboard("description")}
-              />
-            </div>
-
-            {/* Right: time range + edit button */}
-            <div className="flex shrink-0 items-center gap-2">
-              <TimeRangeSelector />
-              {PermissionUtils.canWrite(permissionLevel) && (
-                <Link
-                  href={`/portal/teams/${obfuscate(team.id)}/edit`}
-                  className={cn(buttonVariants({ variant: "outline" }))}
-                >
-                  <Pencil className="mr-2 h-4 w-4" />
-                  {t.teams.dashboard("edit_team")}
-                </Link>
-              )}
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* ── Dashboard widgets ── */}
-          <div className="space-y-6">
-            <TeamDashboardTopSection teamId={team.id!} />
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <TicketCreationByDaySeriesChart teamId={team.id!} />
-              <RecentTeamActivities teamId={team.id!} />
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-              <UnassignedTickets teamId={team.id!} />
-              <TeamOverdueTickets teamId={team.id!} />
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <TicketDistributionChart teamId={team.id!} />
-              <TicketPriorityPieChart teamId={team.id!} />
-            </div>
+      <div className="flex flex-col gap-4">
+        {/* ── Toolbar ── */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <Heading
+            title={t.teams.dashboard("title")}
+            description={t.teams.dashboard("description")}
+          />
+          <div className="flex shrink-0 items-center gap-2">
+            <TimeRangeSelector />
           </div>
         </div>
-      </TeamNavLayout>
+
+        <Separator />
+
+        {/* ── Dashboard widgets ── */}
+        <div className="space-y-6">
+          <TeamDashboardTopSection teamId={team.id!} />
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <TicketCreationByDaySeriesChart teamId={team.id!} />
+            <RecentTeamActivities teamId={team.id!} />
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <UnassignedTickets teamId={team.id!} />
+            <TeamOverdueTickets teamId={team.id!} />
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <TicketDistributionChart teamId={team.id!} />
+            <TicketPriorityPieChart teamId={team.id!} />
+          </div>
+        </div>
+      </div>
 
       {!isValidating && !hasManager?.result && (
         <AddUserToTeamDialog

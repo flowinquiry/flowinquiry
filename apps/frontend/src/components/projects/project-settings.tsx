@@ -309,16 +309,7 @@ export default function ProjectSettings({
           </div>
 
           {/* ── Action bar ── */}
-          <div className="mt-4 flex items-center gap-3 border-t pt-4">
-            <Button
-              type="submit"
-              disabled={form.formState.isSubmitting || !form.formState.isDirty}
-              data-testid="project-settings-save"
-            >
-              {form.formState.isSubmitting
-                ? t.common.buttons("saving")
-                : t.common.buttons("save_changes")}
-            </Button>
+          <div className="mt-4 flex items-center justify-end gap-3 border-t pt-4">
             <Button
               type="button"
               variant="outline"
@@ -327,6 +318,15 @@ export default function ProjectSettings({
               data-testid="project-settings-reset"
             >
               {t.common.buttons("discard")}
+            </Button>
+            <Button
+              type="submit"
+              disabled={form.formState.isSubmitting || !form.formState.isDirty}
+              data-testid="project-settings-save"
+            >
+              {form.formState.isSubmitting
+                ? t.common.buttons("saving")
+                : t.common.buttons("save_changes")}
             </Button>
           </div>
         </form>

@@ -16,8 +16,13 @@ export const SimpleContentView: React.FC<ISimpleContentViewProps> = ({
 }) => {
   return (
     <ContentLayout title={title}>
-      {breadcrumbItems && <Breadcrumbs items={breadcrumbItems} />}
-      <div className="grid grid-cols-1 py-2 gap-2">{children}</div>
+      <div
+        className="rounded-xl border bg-background p-6 flex flex-col gap-4"
+        style={{ minHeight: "calc(100vh - 4rem - 6rem)" }}
+      >
+        {breadcrumbItems && <Breadcrumbs items={breadcrumbItems} />}
+        <div className="flex flex-col flex-1">{children}</div>
+      </div>
     </ContentLayout>
   );
 };
