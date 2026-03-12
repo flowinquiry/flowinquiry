@@ -16,6 +16,9 @@ public interface ProjectIterationRepository
 
     List<ProjectIteration> findByProjectIdOrderByStartDateAsc(Long projectId);
 
+    List<ProjectIteration> findByProjectIdAndStatusNotOrderByStartDateAsc(
+            Long projectId, ProjectIterationStatus status);
+
     @Query(
             "Select (COUNT(p) > 0) from ProjectIteration p Where p.project.id = :projectId and p.status =:status and p.startDate >= :endDate")
     boolean existsByProjectIdAndStatusAndStartDateAfter(

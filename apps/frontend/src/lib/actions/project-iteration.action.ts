@@ -39,9 +39,15 @@ export const updateProjectIteration = (
 export const findIterationsByProjectId = async (
   projectId: number,
   setError?: (error: HttpError | string | null) => void,
+  excludeClosed = false,
 ) => {
   return get<Array<ProjectIterationDTO>>(
-    `/api/projects/${projectId}/iterations`,
+    `/api/projects/${projectId}/iterations${excludeClosed ? "?excludeClosed=true" : ""}`,
     setError,
   );
 };
+
+export const findActiveIterationsByProjectId = async (
+  projectId: number,
+  setError?: (error: HttpError | string | null) => void,
+) => findIterationsByProjectId(projectId, setError, true);

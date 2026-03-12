@@ -19,6 +19,7 @@ export function useAppClientTranslations() {
     teams: {
       common: useTranslations("teams.common"),
       dashboard: useTranslations("teams.dashboard"),
+      reports: useTranslations("teams.reports"),
       form: useTranslations("teams.form"),
       list: useTranslations("teams.list"),
       users: useTranslations("teams.users"),

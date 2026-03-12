@@ -200,7 +200,7 @@ export function ProjectIterationDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="sm:max-w-lg p-0 flex flex-col overflow-hidden max-h-[90vh]"
+        className="sm:max-w-3xl p-0 flex flex-col overflow-hidden max-h-[90vh]"
         data-testid="iteration-dialog"
       >
         {/* ── Sticky header ── */}
@@ -290,7 +290,7 @@ export function ProjectIterationDialog({
                     icon={<Calendar className="h-4 w-4" />}
                     title={t.teams.projects.iteration("form.start_date")}
                   />
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-4">
                     <DatePickerField
                       form={form}
                       fieldName="startDate"
@@ -320,19 +320,23 @@ export function ProjectIterationDialog({
 
             {/* ── Sticky footer ── */}
             <div className="flex items-center justify-between gap-3 border-t px-6 py-4 shrink-0">
-              {/* Close iteration — destructive-flavoured, left-aligned */}
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleClose}
-                disabled={iteration?.status !== "ACTIVE" || isSubmitting}
-                className="text-destructive hover:text-destructive hover:bg-destructive/10 gap-1.5"
-                data-testid="iteration-close-button"
-              >
-                <XCircle className="h-4 w-4" />
-                {t.common.buttons("close")}
-              </Button>
+              {/* Close iteration — only shown when editing an ACTIVE iteration */}
+              {isEditMode && iteration?.status === "ACTIVE" ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClose}
+                  disabled={isSubmitting}
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10 gap-1.5"
+                  data-testid="iteration-close-button"
+                >
+                  <XCircle className="h-4 w-4" />
+                  {t.common.buttons("close")}
+                </Button>
+              ) : (
+                <div />
+              )}
 
               {/* Cancel + Submit — right-aligned */}
               <div className="flex items-center gap-2">

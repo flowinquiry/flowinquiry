@@ -11,7 +11,6 @@ import {
   Paperclip,
   Pencil,
   User,
-  X,
 } from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
@@ -31,7 +30,6 @@ import { TicketPrioritySelect } from "@/components/teams/ticket-priority-select"
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Sheet,
   SheetContent,
@@ -204,126 +202,113 @@ const TicketDetailSheet: React.FC<TicketDetailsProps> = ({
         data-testid="ticket-detail-sheet"
       >
         <SheetContent
-          className="w-full sm:max-w-6xl p-0 flex flex-col h-full"
+          className="w-full sm:max-w-6xl p-0 flex flex-col h-full overflow-hidden"
           data-testid="ticket-detail-sheet-content"
         >
           {/* ── Sticky header ── */}
           <SheetHeader
-            className="px-6 py-4 border-b shrink-0"
+            className="px-6 pr-14 py-4 border-b shrink-0"
             data-testid="ticket-detail-header"
           >
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex flex-col gap-1.5 min-w-0 flex-1">
-                {/* Badge row */}
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <span
-                    className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold"
-                    style={{
-                      backgroundColor: workflowColor.background,
-                      color: workflowColor.text,
-                    }}
-                    data-testid="ticket-workflow-badge"
-                  >
-                    {initialTicket.workflowRequestName}
-                  </span>
-                  <Badge
-                    variant={
-                      initialTicket.isCompleted ? "secondary" : "default"
-                    }
-                    className="rounded-full text-xs font-normal"
-                    data-testid="ticket-state-badge"
-                  >
-                    {ticket.currentStateName ?? initialTicket.currentStateName}
-                  </Badge>
-                  <TicketPriorityDisplay
-                    priority={ticket.priority ?? initialTicket.priority}
-                  />
-                </div>
-
-                {/* Title */}
-                <SheetTitle className="p-0" data-testid="ticket-detail-title">
-                  {isEditingTitle ? (
-                    <form
-                      onSubmit={form.handleSubmit(onSubmit)}
-                      className="flex items-center gap-2"
-                      data-testid="edit-title-form"
-                    >
-                      <Controller
-                        name="requestTitle"
-                        control={form.control}
-                        render={({ field }) => (
-                          <Input
-                            {...field}
-                            className="text-lg font-semibold"
-                            autoFocus
-                            data-testid="title-input"
-                          />
-                        )}
-                      />
-                      <InlineActions
-                        onSave={() =>
-                          saveAndClose(() => setIsEditingTitle(false))
-                        }
-                        onCancel={() => setIsEditingTitle(false)}
-                        t={t}
-                      />
-                    </form>
-                  ) : (
-                    <div
-                      className="flex items-center gap-2 group/title"
-                      data-testid="ticket-title-container"
-                    >
-                      <Link
-                        href={`/portal/teams/${obfuscate(ticket.teamId)}/tickets/${obfuscate(ticket.id)}`}
-                        className={cn(
-                          "text-xl font-bold leading-tight hover:text-primary hover:underline underline-offset-4 transition-colors",
-                          initialTicket.isCompleted &&
-                            "line-through text-muted-foreground",
-                        )}
-                        data-testid="ticket-title-link"
-                      >
-                        {ticket.requestTitle ?? initialTicket.requestTitle}
-                      </Link>
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setIsEditingTitle(true);
-                        }}
-                        className="opacity-0 group-hover/title:opacity-100 rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
-                        aria-label="Edit title"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  )}
-                </SheetTitle>
-
-                {/* Health */}
-                {initialTicket.conversationHealth?.healthLevel && (
-                  <TicketHealthLevelDisplay
-                    currentLevel={
-                      initialTicket.conversationHealth
-                        .healthLevel as TicketHealthLevel
-                    }
-                    data-testid="ticket-health-level"
-                  />
-                )}
+            <div className="flex flex-col gap-1.5 min-w-0">
+              {/* Badge row */}
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span
+                  className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold"
+                  style={{
+                    backgroundColor: workflowColor.background,
+                    color: workflowColor.text,
+                  }}
+                  data-testid="ticket-workflow-badge"
+                >
+                  {initialTicket.workflowRequestName}
+                </span>
+                <Badge
+                  variant={initialTicket.isCompleted ? "secondary" : "default"}
+                  className="rounded-full text-xs font-normal"
+                  data-testid="ticket-state-badge"
+                >
+                  {ticket.currentStateName ?? initialTicket.currentStateName}
+                </Badge>
+                <TicketPriorityDisplay
+                  priority={ticket.priority ?? initialTicket.priority}
+                />
               </div>
 
-              {/* Close button */}
-              <button
-                onClick={onClose}
-                className="shrink-0 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors mt-0.5"
-                aria-label="Close"
-              >
-                <X className="h-4 w-4" />
-              </button>
+              {/* Title */}
+              <SheetTitle className="p-0" data-testid="ticket-detail-title">
+                {isEditingTitle ? (
+                  <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="flex items-center gap-2"
+                    data-testid="edit-title-form"
+                  >
+                    <Controller
+                      name="requestTitle"
+                      control={form.control}
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          className="text-lg font-semibold"
+                          autoFocus
+                          data-testid="title-input"
+                        />
+                      )}
+                    />
+                    <InlineActions
+                      onSave={() =>
+                        saveAndClose(() => setIsEditingTitle(false))
+                      }
+                      onCancel={() => setIsEditingTitle(false)}
+                      t={t}
+                    />
+                  </form>
+                ) : (
+                  <div
+                    className="flex items-center gap-2 group/title"
+                    data-testid="ticket-title-container"
+                  >
+                    <Link
+                      href={`/portal/teams/${obfuscate(ticket.teamId)}/tickets/${obfuscate(ticket.id)}`}
+                      className={cn(
+                        "text-xl font-bold leading-tight hover:text-primary hover:underline underline-offset-4 transition-colors",
+                        initialTicket.isCompleted &&
+                          "line-through text-muted-foreground",
+                      )}
+                      data-testid="ticket-title-link"
+                    >
+                      {ticket.requestTitle ?? initialTicket.requestTitle}
+                    </Link>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setIsEditingTitle(true);
+                      }}
+                      className="opacity-0 group-hover/title:opacity-100 rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
+                      aria-label="Edit title"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                )}
+              </SheetTitle>
+
+              {/* Health */}
+              {initialTicket.conversationHealth?.healthLevel && (
+                <TicketHealthLevelDisplay
+                  currentLevel={
+                    initialTicket.conversationHealth
+                      .healthLevel as TicketHealthLevel
+                  }
+                  data-testid="ticket-health-level"
+                />
+              )}
             </div>
           </SheetHeader>
 
           {/* ── Scrollable body ── */}
-          <ScrollArea
-            className="flex-1 min-h-0"
+          <div
+            className="flex-1 min-h-0 overflow-y-auto"
             data-testid="ticket-detail-scroll-area"
           >
             <div className="px-6 py-5">
@@ -696,7 +681,7 @@ const TicketDetailSheet: React.FC<TicketDetailsProps> = ({
                 </div>
               </div>
             </div>
-          </ScrollArea>
+          </div>
         </SheetContent>
       </Sheet>
     </FormProvider>

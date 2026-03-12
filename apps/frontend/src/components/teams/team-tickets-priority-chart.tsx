@@ -1,7 +1,6 @@
 "use client";
 
-import { ChevronDown, ChevronRight } from "lucide-react";
-import React, { useState } from "react";
+import React, { useMemo } from "react";
 import {
   Cell,
   Legend,
@@ -15,99 +14,153 @@ import useSWR from "swr";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { useAppClientTranslations } from "@/hooks/use-translations";
-import { getTicketsPriorityDistributionByTeam } from "@/lib/actions/tickets.action";
+import { aggregate } from "@/lib/actions/reports.action";
 import { useError } from "@/providers/error-provider";
 import { useTimeRange } from "@/providers/time-range-provider";
+import { AggregationQuery, Filter } from "@/types/query";
 import { TicketPriority } from "@/types/tickets";
 
-const TicketPriorityPieChart = ({ teamId }: { teamId: number }) => {
-  const [collapsed, setCollapsed] = useState(false);
+interface Props {
+  teamId: number;
+  /** Extra filters injected by the report filter panel (status, assignee, priority…) */
+  extraFilters?: Filter[];
+}
+
+const COLORS: Record<TicketPriority, string> = {
+  Critical: "#DC2626",
+  High: "#F97316",
+  Medium: "#F59E0B",
+  Low: "#16A34A",
+  Trivial: "#9CA3AF",
+};
+
+const TicketPriorityPieChart: React.FC<Props> = ({
+  teamId,
+  extraFilters = [],
+}) => {
   const { setError } = useError();
   const { timeRange, customDates } = useTimeRange();
   const t = useAppClientTranslations();
 
-  // Generate date parameters
-  const dateParams =
-    timeRange === "custom"
-      ? { from: customDates?.from, to: customDates?.to }
-      : { range: timeRange };
+  const query = useMemo<AggregationQuery>(() => {
+    const filters: Filter[] = [
+      { field: "team.id", operator: "eq", value: teamId },
+      { field: "isDeleted", operator: "eq", value: false },
+    ];
 
-  const { data: priorityData = [], isValidating } = useSWR(
-    ["fetchTicketsPriorityDistributionByTeam", teamId, dateParams],
-    () => getTicketsPriorityDistributionByTeam(teamId, dateParams, setError),
+    // Date range
+    if (timeRange === "custom" && customDates?.from && customDates?.to) {
+      filters.push({
+        field: "createdAt",
+        operator: "gte",
+        value: customDates.from.toISOString(),
+      });
+      filters.push({
+        field: "createdAt",
+        operator: "lte",
+        value: customDates.to.toISOString(),
+      });
+    } else if (timeRange !== "custom") {
+      const days: Record<string, number> = {
+        "7d": 7,
+        "14d": 14,
+        "30d": 30,
+        "90d": 90,
+      };
+      const d = days[timeRange];
+      if (d) {
+        const from = new Date();
+        from.setDate(from.getDate() - d);
+        filters.push({
+          field: "createdAt",
+          operator: "gte",
+          value: from.toISOString(),
+        });
+      }
+    }
+
+    // Extra filters from the filter panel
+    filters.push(...extraFilters);
+
+    return {
+      entity: "Ticket",
+      groupByFields: ["priority"],
+      aggregations: [{ field: "id", function: "count", alias: "ticketCount" }],
+      filters: { groups: [{ logicalOperator: "AND", filters }] },
+      sorts: [{ field: "ticketCount", direction: "desc" }],
+    };
+  }, [teamId, timeRange, customDates, extraFilters]);
+
+  const { data: rawData = [], isValidating } = useSWR(
+    [
+      "fetchTicketsPriorityDistribution",
+      teamId,
+      timeRange,
+      customDates,
+      extraFilters,
+    ],
+    () => aggregate(query, setError),
   );
 
-  // Define colors for the pie chart
-  const COLORS: Record<TicketPriority, string> = {
-    Critical: "#DC2626", // text-red-600
-    High: "#F97316", // text-orange-500
-    Medium: "#F59E0B", // text-yellow-500
-    Low: "#16A34A", // text-green-500
-    Trivial: "#9CA3AF", // text-gray-400
-  };
+  const chartData = useMemo(
+    () =>
+      rawData
+        .filter((row) => row.dimensions["priority"] != null)
+        .map((row) => {
+          const priority = row.dimensions["priority"] as TicketPriority;
+          return {
+            name: priority,
+            value: row.metrics["ticketCount"] ?? 0,
+            fill: COLORS[priority] ?? "#D3D3D3",
+          };
+        }),
+    [rawData],
+  );
 
   return (
-    <Card className="w-full mx-auto">
-      {/* Header with Chevron Icon and Title */}
+    <Card className="w-full">
       <CardHeader>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setCollapsed((prev) => !prev)}
-            className="flex items-center p-0"
-          >
-            {collapsed ? (
-              <ChevronRight className="w-5 h-5" />
-            ) : (
-              <ChevronDown className="w-5 h-5" />
-            )}
-          </button>
-          <CardTitle>
-            {t.teams.dashboard("priority_tickets_distribution.title")}
-          </CardTitle>
-        </div>
+        <CardTitle>
+          {t.teams.dashboard("priority_tickets_distribution.title")}
+        </CardTitle>
       </CardHeader>
-
-      {/* Collapsible Content */}
-      {!collapsed && (
-        <CardContent className="p-4">
-          {isValidating ? (
-            <div className="flex flex-col items-center justify-center h-64">
-              <Spinner className="h-8 w-8 mb-4" />
-              <span>{t.common.misc("loading_data")}</span>
-            </div>
-          ) : priorityData.length === 0 ? (
-            <p className="text-center">{t.common.misc("no_data_available")}</p>
-          ) : (
-            <div className="w-full h-64 md:h-96">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={priorityData}
-                    dataKey="ticketCount"
-                    nameKey="priority"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius="80%"
-                    fill="#8884d8"
-                    label
-                  >
-                    {priorityData.map((entry) => (
-                      <Cell
-                        key={`cell-${entry.priority}`}
-                        fill={
-                          COLORS[entry.priority as TicketPriority] || "#D3D3D3"
-                        }
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-        </CardContent>
-      )}
+      <CardContent className="p-4">
+        {isValidating ? (
+          <div className="flex flex-col items-center justify-center h-64">
+            <Spinner className="h-8 w-8 mb-4" />
+            <span>{t.common.misc("loading_data")}</span>
+          </div>
+        ) : chartData.length === 0 ? (
+          <p className="text-center">{t.common.misc("no_data_available")}</p>
+        ) : (
+          <div className="w-full h-64 md:h-96">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={chartData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius="80%"
+                  label={({ name, percent }) =>
+                    `${name} ${(percent * 100).toFixed(0)}%`
+                  }
+                  labelLine={false}
+                >
+                  {chartData.map((entry) => (
+                    <Cell key={`cell-${entry.name}`} fill={entry.fill} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  formatter={(value: number, name: string) => [value, name]}
+                />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </CardContent>
     </Card>
   );
 };

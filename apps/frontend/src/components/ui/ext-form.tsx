@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, XCircle } from "lucide-react";
 import React from "react";
 
 import { Button } from "@/components/ui/button";
@@ -165,19 +165,19 @@ export const DatePickerField: React.FC<
       control={form.control}
       name={fieldName}
       render={({ field }) => (
-        <FormItem className="flex flex-col">
+        <FormItem className="flex flex-col w-full">
           <FormLabel>
             {label}
             {required && <span className="text-destructive"> *</span>}
           </FormLabel>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2 min-w-0">
             <Popover>
               <PopoverTrigger asChild>
                 <FormControl>
                   <Button
                     variant={"outline"}
                     className={cn(
-                      "w-[240px] pl-3 text-left font-normal",
+                      "flex-1 min-w-0 pl-3 text-left font-normal",
                       !field.value && "text-muted-foreground",
                     )}
                     testId={testId}
@@ -187,7 +187,7 @@ export const DatePickerField: React.FC<
                     ) : (
                       <span>{placeholder}</span>
                     )}
-                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50 shrink-0" />
                   </Button>
                 </FormControl>
               </PopoverTrigger>
@@ -197,7 +197,7 @@ export const DatePickerField: React.FC<
                   selected={field.value || undefined}
                   onSelect={(date) => {
                     if (date) {
-                      field.onChange(date.toISOString()); // convert Date -> string
+                      field.onChange(date.toISOString());
                     } else {
                       field.onChange(undefined);
                     }
@@ -211,16 +211,16 @@ export const DatePickerField: React.FC<
                   }}
                   disabled={(date) => {
                     if (dateSelectionMode === "any") {
-                      return false; // No dates are disabled
+                      return false;
                     }
 
                     const today = new Date();
                     today.setHours(0, 0, 0, 0);
 
                     if (dateSelectionMode === "past") {
-                      return date > today; // Disable future dates
+                      return date > today;
                     } else if (dateSelectionMode === "future") {
-                      return date < today; // Disable past dates
+                      return date < today;
                     }
 
                     return false;
@@ -230,15 +230,14 @@ export const DatePickerField: React.FC<
               </PopoverContent>
             </Popover>
             {!required && field.value && (
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
+                type="button"
+                title={clearText}
+                className="shrink-0 text-muted-foreground hover:text-foreground focus:outline-none"
                 onClick={(e) => {
-                  e.preventDefault(); // Prevent default button behavior
-                  e.stopPropagation(); // Stop event from bubbling up
+                  e.preventDefault();
+                  e.stopPropagation();
                   field.onChange(undefined);
-
-                  // Force re-render if needed by triggering form state update
                   form.setValue(fieldName, undefined, {
                     shouldValidate: true,
                     shouldDirty: true,
@@ -246,8 +245,8 @@ export const DatePickerField: React.FC<
                   });
                 }}
               >
-                {clearText}
-              </Button>
+                <XCircle className="h-4 w-4" />
+              </button>
             )}
           </div>
           {description && <FormDescription>{description}</FormDescription>}

@@ -25,8 +25,8 @@ export default function AdminPanelLayout({
           !settings.disabled && (!getOpenState() ? "lg:ml-22.5" : "lg:ml-72"),
         )}
       >
-        <main className="flex-1 overflow-y-auto bg-zinc-100/70 dark:bg-zinc-950/60">
-          <div className="min-h-screen">{children}</div>
+        <main className="flex-1 overflow-auto bg-zinc-100/70 dark:bg-zinc-950/60">
+          <div className="min-h-full">{children}</div>
         </main>
 
         <footer className="shrink-0 border-t border-border/60">

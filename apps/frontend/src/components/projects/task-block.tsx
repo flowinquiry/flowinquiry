@@ -112,7 +112,10 @@ const TaskBlock: React.FC<TaskBlockProps> = ({ task, isDragging = false }) => {
                       />
                     </span>
                   </TooltipTrigger>
-                  <TooltipContent side="top">
+                  <TooltipContent
+                    side="top"
+                    className="bg-popover text-popover-foreground border shadow-md"
+                  >
                     <p className="text-xs">{task.assignUserName}</p>
                   </TooltipContent>
                 </Tooltip>
@@ -126,7 +129,7 @@ const TaskBlock: React.FC<TaskBlockProps> = ({ task, isDragging = false }) => {
       <TooltipContent
         side="right"
         align="start"
-        className="w-64 p-3 space-y-2"
+        className="w-64 p-3 space-y-2 bg-popover text-popover-foreground border shadow-md"
         data-testid="task-tooltip"
       >
         <p

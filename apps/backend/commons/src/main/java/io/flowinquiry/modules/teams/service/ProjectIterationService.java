@@ -36,6 +36,15 @@ public class ProjectIterationService {
                 .collect(toList());
     }
 
+    public List<ProjectIterationDTO> findActiveByProjectId(Long projectId) {
+        return projectIterationRepository
+                .findByProjectIdAndStatusNotOrderByStartDateAsc(
+                        projectId, ProjectIterationStatus.CLOSED)
+                .stream()
+                .map(projectIterationMapper::toDto)
+                .collect(toList());
+    }
+
     public Optional<ProjectIterationDTO> getIterationById(Long id) {
         return projectIterationRepository.findById(id).map(projectIterationMapper::toDto);
     }

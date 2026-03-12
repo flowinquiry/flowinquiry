@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export type Operator = "gt" | "lt" | "eq" | "ne" | "in" | "lk";
+export type Operator = "gt" | "gte" | "lt" | "lte" | "eq" | "ne" | "in" | "lk";
 
 export type Filter = {
   field: string;
@@ -29,7 +29,7 @@ export type Pagination = {
 // Zod schema for filters
 const filterSchema = z.object({
   field: z.string(),
-  operator: z.enum(["eq", "ne", "gt", "lt", "lk", "in"]),
+  operator: z.enum(["eq", "ne", "gt", "gte", "lt", "lte", "lk", "in"]),
   value: z.union([
     z.string(),
     z.number(),
@@ -77,4 +77,44 @@ export const createQueryParams = (pagination: Pagination): URLSearchParams => {
       {} as { [key: string]: string },
     ),
   });
+};
+
+export type AggregationFunction = "count" | "sum" | "avg" | "min" | "max";
+
+export type SortDirection = "asc" | "desc";
+
+export type AggregationField = {
+  field: string;
+  function: AggregationFunction;
+  alias: string;
+};
+
+export type SortField = {
+  field: string;
+  direction?: SortDirection;
+};
+
+/**
+ * Self-contained aggregation query for the generic /api/reports/aggregate endpoint.
+ * No new backend endpoint needed per report — just change groupByFields / aggregations.
+ */
+export type AggregationQuery = {
+  /** Simple JPA entity class name, e.g. "Ticket" */
+  entity: string;
+  /** Fields to GROUP BY. Supports dot-notation: "assignUser.firstName" */
+  groupByFields: string[];
+  /** Metrics to compute over each group */
+  aggregations: AggregationField[];
+  /** Optional WHERE filters — reuses existing QueryDTO */
+  filters?: QueryDTO;
+  /** Optional post-aggregation sort */
+  sorts?: SortField[];
+};
+
+/** One row returned by the aggregate endpoint */
+export type AggregationResult = {
+  /** GROUP BY field values, e.g. { channel: "email" } */
+  dimensions: Record<string, string | null>;
+  /** Aggregated metric values, e.g. { ticketCount: 42 } */
+  metrics: Record<string, number>;
 };

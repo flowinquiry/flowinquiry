@@ -28,6 +28,7 @@ interface EpicFormFieldProps {
   description?: string;
   required?: boolean;
   testId?: string;
+  hideLabel?: boolean;
 }
 
 export function EpicFormField({
@@ -38,6 +39,7 @@ export function EpicFormField({
   description,
   required = false,
   testId,
+  hideLabel = false,
 }: EpicFormFieldProps) {
   const t = useAppClientTranslations();
   const [epics, setEpics] = useState<ProjectEpicDTO[]>([]);
@@ -67,10 +69,12 @@ export function EpicFormField({
       name={name}
       render={({ field }) => (
         <FormItem>
-          <FormLabel>
-            {label}
-            {required && <span className="text-destructive"> *</span>}
-          </FormLabel>
+          {!hideLabel && (
+            <FormLabel>
+              {label}
+              {required && <span className="text-destructive"> *</span>}
+            </FormLabel>
+          )}
           <FormControl>
             <Select
               disabled={loading || (epics.length === 0 && required)}
