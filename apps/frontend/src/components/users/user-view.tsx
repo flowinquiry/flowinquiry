@@ -55,16 +55,18 @@ export const UserView = ({ userId }: { userId: number }) => {
       try {
         const userData = await findUserById(userId, setError);
         setUser(userData);
-        const teamData = await findTeamsByMemberId(userId, setError);
+        const [teamData, reportData] = await Promise.all([
+          findTeamsByMemberId(userId, setError),
+          getDirectReports(userId, setError),
+        ]);
         setTeams(teamData);
-        const reportData = await getDirectReports(userId, setError);
         setDirectReports(reportData);
       } finally {
         setLoading(false);
       }
     }
     fetchData();
-  }, [userId, router]);
+  }, [userId]);
 
   if (loading) {
     return (

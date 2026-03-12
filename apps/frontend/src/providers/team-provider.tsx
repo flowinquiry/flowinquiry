@@ -11,6 +11,7 @@
 import React, {
   createContext,
   ReactNode,
+  useCallback,
   useContext,
   useEffect,
   useState,
@@ -31,11 +32,16 @@ interface TeamProviderProps {
   children: ReactNode;
 }
 
+interface TeamContextValue {
+  team: TeamDTO;
+  refreshTeam: () => void;
+}
+
 /**
  * Create the team context with a default null value
  * This context will be provided by the TeamProvider
  */
-const TeamContext = createContext<TeamDTO | null>(null);
+const TeamContext = createContext<TeamContextValue | null>(null);
 
 /**
  * Custom hook to access the team context
@@ -50,7 +56,23 @@ export const useTeam = (): TeamDTO => {
   if (!context) {
     throw new Error("useTeam must be used within a TeamProvider");
   }
-  return context;
+  return context.team;
+};
+
+/**
+ * Custom hook to refresh the team data
+ *
+ * Provides a function to refresh the current team's data from any component within the TeamProvider.
+ *
+ * @returns {function} The function to refresh the team data
+ * @throws {Error} If used outside of a TeamProvider
+ */
+export const useTeamRefresh = (): (() => void) => {
+  const context = useContext(TeamContext);
+  if (!context) {
+    throw new Error("useTeamRefresh must be used within a TeamProvider");
+  }
+  return context.refreshTeam;
 };
 
 /**
@@ -74,20 +96,30 @@ export const TeamProvider: React.FC<TeamProviderProps> = ({
   const { setError } = useError();
 
   /**
+   * Function to fetch team data
+   *
+   * Fetches the team data from the server and updates the state.
+   * This function is exposed through the context to allow manual refreshing of the team data.
+   */
+  const fetchTeam = useCallback(() => {
+    findTeamById(teamId, setError).then((data) => setTeam(data));
+  }, [teamId, setError]);
+
+  /**
    * Effect to fetch team data when the component mounts or teamId changes
    */
   useEffect(() => {
-    const fetchTeam = async () => {
-      findTeamById(teamId, setError).then((data) => setTeam(data));
-    };
-
     fetchTeam();
-  }, [teamId]);
+  }, [fetchTeam]);
 
   // Show loading indicator while team data is being fetched
   if (!team) {
     return <div>Loading...</div>;
   }
 
-  return <TeamContext.Provider value={team}>{children}</TeamContext.Provider>;
+  return (
+    <TeamContext.Provider value={{ team, refreshTeam: fetchTeam }}>
+      {children}
+    </TeamContext.Provider>
+  );
 };

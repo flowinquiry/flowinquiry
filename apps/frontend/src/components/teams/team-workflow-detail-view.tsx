@@ -1,22 +1,20 @@
 "use client";
 
-import { Edit, Workflow, X } from "lucide-react";
+import { Edit, Eye, GitBranch, Workflow, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 
 import { Heading } from "@/components/heading";
-import { TeamAvatar } from "@/components/shared/avatar-display";
-import TeamNavLayout from "@/components/teams/team-nav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { WorkflowDiagram } from "@/components/workflows/workflow-diagram-view";
 import WorkflowEditForm from "@/components/workflows/workflow-editor-form";
 import { usePagePermission } from "@/hooks/use-page-permission";
@@ -28,13 +26,11 @@ import {
 import { obfuscate } from "@/lib/endecode";
 import { BreadcrumbProvider } from "@/providers/breadcrumb-provider";
 import { useError } from "@/providers/error-provider";
-import { useTeam } from "@/providers/team-provider";
 import { useUserTeamRole } from "@/providers/user-team-role-provider";
 import { PermissionUtils } from "@/types/resources";
 import { WorkflowDetailDTO } from "@/types/workflows";
 
 const TeamWorkflowDetailView = ({ workflowId }: { workflowId: number }) => {
-  const team = useTeam();
   const [workflowDetail, setWorkflowDetail] =
     useState<WorkflowDetailDTO | null>(null);
   const [previewWorkflowDetail, setPreviewWorkflowDetail] =
@@ -91,139 +87,174 @@ const TeamWorkflowDetailView = ({ workflowId }: { workflowId: number }) => {
 
   return (
     <BreadcrumbProvider items={breadcrumbItems}>
-      <TeamNavLayout teamId={workflowDetail?.ownerId ?? team.id!}>
-        <div className="flex flex-col gap-4">
-          {/* ── Toolbar ── */}
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex items-center gap-3 min-w-0">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="shrink-0 cursor-default">
-                      <TeamAvatar imageUrl={team.logoUrl} size="w-10 h-10" />
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-xs" side="bottom">
-                    <p className="font-semibold">{team.name}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {team.slogan ?? t.teams.common("default_slogan")}
-                    </p>
-                    {team.description && (
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {team.description}
-                      </p>
-                    )}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-
-              {loading ? (
-                <div className="space-y-1.5">
-                  <Skeleton className="h-5 w-48" />
-                  <Skeleton className="h-4 w-64" />
-                </div>
-              ) : (
-                <div className="min-w-0">
-                  <Heading
-                    title={workflowDetail?.name ?? ""}
-                    description={workflowDetail?.description ?? ""}
-                  />
-                  {workflowDetail?.tags && (
-                    <div className="flex flex-wrap gap-1.5 mt-1.5">
-                      {workflowDetail.tags
-                        .split(",")
-                        .map((tag) => tag.trim())
-                        .filter(Boolean)
-                        .map((tag) => (
-                          <Badge
-                            key={tag}
-                            variant="outline"
-                            className="text-xs"
-                          >
-                            {tag}
-                          </Badge>
-                        ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {canManage && !loading && (
-              <Button
-                variant={isEditing ? "outline" : "default"}
-                onClick={() => setIsEditing(!isEditing)}
-                className="shrink-0"
-              >
-                {isEditing ? (
-                  <>
-                    <X className="mr-2 h-4 w-4" />
-                    {t.workflows.detail("cancel_edit")}
-                  </>
-                ) : (
-                  <>
-                    <Edit className="mr-2 h-4 w-4" />
-                    {t.workflows.detail("customize_workflow")}
-                  </>
+      <div className="flex flex-col gap-4">
+        {/* ── Toolbar ── */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex items-center gap-3 min-w-0">
+            {loading ? (
+              <div className="space-y-1.5">
+                <Skeleton className="h-5 w-48" />
+                <Skeleton className="h-4 w-64" />
+              </div>
+            ) : (
+              <div className="min-w-0">
+                <Heading
+                  title={workflowDetail?.name ?? ""}
+                  description={workflowDetail?.description ?? ""}
+                />
+                {workflowDetail?.tags && (
+                  <div className="flex flex-wrap gap-1.5 mt-1.5">
+                    {workflowDetail.tags
+                      .split(",")
+                      .map((tag) => tag.trim())
+                      .filter(Boolean)
+                      .map((tag) => (
+                        <Badge key={tag} variant="outline" className="text-xs">
+                          {tag}
+                        </Badge>
+                      ))}
+                  </div>
                 )}
-              </Button>
+              </div>
             )}
           </div>
 
-          <Separator />
-
-          {/* ── Loading skeleton ── */}
-          {loading && (
-            <div className="flex flex-col gap-4">
-              <Card>
-                <CardHeader>
-                  <Skeleton className="h-5 w-40" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-64 w-full rounded-lg" />
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {/* ── Edit form ── */}
-          {isEditing && workflowDetail && !loading && (
-            <WorkflowEditForm
-              workflowDetail={workflowDetail}
-              onCancel={() => setIsEditing(false)}
-              onSave={handleSave}
-              onPreviewChange={setPreviewWorkflowDetail}
-            />
-          )}
-
-          {/* ── Diagram ── */}
-          {previewWorkflowDetail && !loading && (
-            <Card>
-              <CardHeader className="border-b pb-4">
-                <div className="flex items-center gap-2 text-base font-semibold">
-                  <Workflow className="h-4 w-4 text-muted-foreground" />
-                  {t.workflows.detail("ticket_type_label", {
-                    requestName: previewWorkflowDetail.requestName,
-                  })}
-                </div>
-              </CardHeader>
-              <CardContent className="pt-4 p-0 overflow-hidden rounded-b-xl">
-                <WorkflowDiagram workflowDetails={previewWorkflowDetail} />
-              </CardContent>
-            </Card>
-          )}
-
-          {/* ── Error / not found ── */}
-          {!loading && !workflowDetail && (
-            <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed py-16 text-center">
-              <Workflow className="h-10 w-10 text-muted-foreground/50" />
-              <p className="text-sm text-muted-foreground">
-                {t.workflows.detail("error_loading")}
-              </p>
-            </div>
+          {canManage && !loading && (
+            <Button
+              variant={isEditing ? "outline" : "default"}
+              onClick={() => setIsEditing(!isEditing)}
+              className="shrink-0"
+            >
+              {isEditing ? (
+                <>
+                  <X className="mr-2 h-4 w-4" />
+                  {t.workflows.detail("cancel_edit")}
+                </>
+              ) : (
+                <>
+                  <Edit className="mr-2 h-4 w-4" />
+                  {t.workflows.detail("customize_workflow")}
+                </>
+              )}
+            </Button>
           )}
         </div>
-      </TeamNavLayout>
+
+        <Separator />
+
+        {/* ── Loading skeleton ── */}
+        {loading && (
+          <div className="flex flex-col gap-4">
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-5 w-40" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-64 w-full rounded-lg" />
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {!loading && (
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
+            {/* ── Left: editor (editing) or full-width diagram (view-only) ── */}
+            {isEditing && workflowDetail ? (
+              <Card className="h-fit">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-1.5 rounded-md bg-primary/10">
+                      <GitBranch className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-sm font-semibold">
+                        {t.workflows.add("edit_workflow")}
+                      </CardTitle>
+                      <CardDescription className="text-xs mt-0.5">
+                        {t.workflows.detail("ticket_type_label", {
+                          requestName: workflowDetail.requestName,
+                        })}
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <Separator />
+                <CardContent className="pt-5">
+                  <WorkflowEditForm
+                    workflowDetail={workflowDetail}
+                    onCancel={() => setIsEditing(false)}
+                    onSave={handleSave}
+                    onPreviewChange={setPreviewWorkflowDetail}
+                  />
+                </CardContent>
+              </Card>
+            ) : (
+              previewWorkflowDetail && (
+                <Card className="xl:col-span-2">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center gap-2.5">
+                      <div className="p-1.5 rounded-md bg-primary/10">
+                        <Workflow className="h-4 w-4 text-primary" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-sm font-semibold">
+                          {previewWorkflowDetail.name}
+                        </CardTitle>
+                        <CardDescription className="text-xs mt-0.5">
+                          {t.workflows.detail("ticket_type_label", {
+                            requestName: previewWorkflowDetail.requestName,
+                          })}
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <Separator />
+                  <CardContent className="pt-0 p-0 overflow-hidden rounded-b-xl">
+                    <WorkflowDiagram workflowDetails={previewWorkflowDetail} />
+                  </CardContent>
+                </Card>
+              )
+            )}
+
+            {/* ── Right: sticky live preview (only while editing) ── */}
+            {isEditing && previewWorkflowDetail && (
+              <div className="sticky top-4">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center gap-2.5">
+                      <div className="p-1.5 rounded-md bg-primary/10">
+                        <Eye className="h-4 w-4 text-primary" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-sm font-semibold">
+                          Live Preview
+                        </CardTitle>
+                        <CardDescription className="text-xs mt-0.5">
+                          Diagram updates as you edit states and transitions
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <Separator />
+                  <CardContent className="pt-0 p-0 overflow-hidden rounded-b-xl">
+                    <WorkflowDiagram workflowDetails={previewWorkflowDetail} />
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* ── Error / not found ── */}
+            {!workflowDetail && (
+              <div className="xl:col-span-2 flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed py-16 text-center">
+                <Workflow className="h-10 w-10 text-muted-foreground/50" />
+                <p className="text-sm text-muted-foreground">
+                  {t.workflows.detail("error_loading")}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </BreadcrumbProvider>
   );
 };

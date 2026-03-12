@@ -358,7 +358,14 @@ const ProjectEditDialog: React.FC<ProjectDialogProps> = ({
                 </div>
 
                 {/* ── Footer action bar ── */}
-                <div className="flex items-center gap-3 border-t px-6 py-4 shrink-0">
+                <div className="flex items-center justify-end gap-3 border-t px-6 py-4 shrink-0">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => handleOpenChange(false)}
+                  >
+                    {t.common.buttons("cancel")}
+                  </Button>
                   <SubmitButton
                     label={
                       isEdit
@@ -367,13 +374,6 @@ const ProjectEditDialog: React.FC<ProjectDialogProps> = ({
                     }
                     labelWhileLoading={t.common.buttons("saving")}
                   />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => handleOpenChange(false)}
-                  >
-                    {t.common.buttons("cancel")}
-                  </Button>
                 </div>
               </form>
             </Form>

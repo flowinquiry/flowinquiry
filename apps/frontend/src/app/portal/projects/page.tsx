@@ -1,7 +1,6 @@
 import React from "react";
 
-import { ContentLayout } from "@/components/admin-panel/content-layout";
-import { Breadcrumbs } from "@/components/breadcrumbs";
+import { SimpleContentView } from "@/components/admin-panel/simple-content-view";
 import ProjectListView from "@/components/projects/project-list-view";
 import { getAppTranslations } from "@/lib/translation";
 
@@ -14,10 +13,12 @@ const Page = async () => {
   ];
 
   return (
-    <ContentLayout title="Projects">
-      <Breadcrumbs items={breadcrumbItems} />
+    <SimpleContentView
+      title={t.common.navigation("projects")}
+      breadcrumbItems={breadcrumbItems}
+    >
       <ProjectListView />
-    </ContentLayout>
+    </SimpleContentView>
   );
 };
 

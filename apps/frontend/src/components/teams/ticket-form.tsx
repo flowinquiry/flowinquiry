@@ -302,12 +302,7 @@ export const TicketForm = ({ ticketId }: { ticketId: number }) => {
             </div>
 
             {/* ── Action bar ── */}
-            <div className="mt-4 flex items-center gap-3 border-t pt-4">
-              <SubmitButton
-                label={t.common.buttons("save")}
-                labelWhileLoading={t.common.buttons("saving")}
-                testId="ticket-form-submit"
-              />
+            <div className="mt-4 flex items-center justify-end gap-3 border-t pt-4">
               <Button
                 type="button"
                 variant="outline"
@@ -317,6 +312,11 @@ export const TicketForm = ({ ticketId }: { ticketId: number }) => {
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 {t.common.buttons("discard")}
               </Button>
+              <SubmitButton
+                label={t.common.buttons("save")}
+                labelWhileLoading={t.common.buttons("saving")}
+                testId="ticket-form-submit"
+              />
             </div>
           </form>
         </Form>

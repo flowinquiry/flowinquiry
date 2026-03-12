@@ -10,19 +10,11 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { Breadcrumbs } from "@/components/breadcrumbs";
-import { Button } from "@/components/ui/button";
 import { useAppClientTranslations } from "@/hooks/use-translations";
 import { obfuscate } from "@/lib/endecode";
-import { useBreadcrumb } from "@/providers/breadcrumb-provider";
+import { cn } from "@/lib/utils";
 
-const TeamNavLayout = ({
-  teamId,
-  children,
-}: {
-  teamId: number;
-  children: React.ReactNode;
-}) => {
+const TeamNavLayout = ({ teamId }: { teamId: number }) => {
   const pathname = usePathname();
   const t = useAppClientTranslations();
 
@@ -54,41 +46,27 @@ const TeamNavLayout = ({
     },
   ];
 
-  const breadcrumbsItems = useBreadcrumb();
-
   return (
-    <div className="h-full flex flex-col">
-      <Breadcrumbs items={breadcrumbsItems} />
-
-      <div className="flex flex-1 gap-4 pt-4">
-        <aside className="w-64 bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] h-full">
-          <div>
-            <nav className="space-y-2">
-              {teamFeatures.map((feature) => (
-                <Button
-                  key={feature.href}
-                  asChild
-                  variant={
-                    pathname.startsWith(feature.href) ? "default" : "ghost"
-                  }
-                  className="w-full justify-start text-sm font-medium"
-                >
-                  <Link
-                    href={feature.href}
-                    className="flex items-center p-2 rounded-md"
-                  >
-                    <feature.icon className="w-5 h-5 mr-2" />
-                    {feature.label}
-                  </Link>
-                </Button>
-              ))}
-            </nav>
-          </div>
-        </aside>
-
-        <main className="flex-1 overflow-auto">{children}</main>
-      </div>
-    </div>
+    <nav className="flex gap-1 overflow-x-auto border-b pb-0">
+      {teamFeatures.map((feature) => {
+        const isActive = pathname.startsWith(feature.href);
+        return (
+          <Link
+            key={feature.href}
+            href={feature.href}
+            className={cn(
+              "flex items-center gap-2 whitespace-nowrap px-4 py-2.5 text-sm font-medium border-b-2 transition-colors",
+              isActive
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/40",
+            )}
+          >
+            <feature.icon className="w-4 h-4 shrink-0" />
+            {feature.label}
+          </Link>
+        );
+      })}
+    </nav>
   );
 };
 

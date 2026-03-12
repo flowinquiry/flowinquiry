@@ -7,7 +7,6 @@ import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { Breadcrumbs } from "@/components/breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SubmitButton } from "@/components/ui/ext-form";
@@ -27,7 +26,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useAppClientTranslations } from "@/hooks/use-translations";
@@ -150,29 +148,10 @@ const AuthorityForm = ({
 
   const isSystemRole = authority?.systemRole;
 
-  const breadcrumbItems = [
-    { title: t.common.navigation("dashboard"), link: "/portal" },
-    {
-      title: t.common.navigation("authorities"),
-      link: "/portal/settings/authorities",
-    },
-    ...(authority
-      ? [
-          {
-            title: `${authority.descriptiveName}`,
-            link: `/portal/settings/authorities/${obfuscate(authority.name)}`,
-          },
-          { title: t.common.buttons("edit"), link: "#" },
-        ]
-      : [{ title: t.common.buttons("add"), link: "#" }]),
-  ];
-
   if (loading) {
     return (
       <div className="flex flex-col gap-4" data-testid="authority-form-loading">
-        <div className="h-5 w-64 animate-pulse rounded bg-muted" />
-        <Separator />
-        <div className="flex flex-col gap-4 max-w-3xl">
+        <div className="flex flex-col gap-4">
           <Card>
             <CardHeader>
               <Skeleton className="h-5 w-36" />
@@ -205,17 +184,18 @@ const AuthorityForm = ({
   }
 
   return (
-    <div className="flex flex-col gap-4" data-testid="authority-form-container">
-      <Breadcrumbs items={breadcrumbItems} />
-      <Separator />
+    <div
+      className="flex flex-col gap-4 flex-1"
+      data-testid="authority-form-container"
+    >
       <Form {...form}>
         <form
-          className="flex flex-col gap-6"
+          className="flex flex-col flex-1 gap-6"
           onSubmit={form.handleSubmit(onSubmit)}
           data-testid="authority-form"
         >
           <div
-            className="flex flex-col gap-4 max-w-3xl"
+            className="flex flex-col gap-4"
             data-testid="authority-form-content"
           >
             {/* Authority details card */}
@@ -322,7 +302,7 @@ const AuthorityForm = ({
 
           {/* Sticky save bar */}
           <div
-            className="sticky bottom-0 max-w-3xl flex items-center justify-end gap-3 rounded-xl border bg-background/80 px-4 py-3 shadow-sm backdrop-blur supports-backdrop-filter:bg-background/60"
+            className="mt-auto sticky bottom-0 flex items-center justify-end gap-3 rounded-xl border bg-background/80 px-4 py-3 shadow-sm backdrop-blur supports-backdrop-filter:bg-background/60"
             data-testid="authority-form-buttons"
           >
             <Button

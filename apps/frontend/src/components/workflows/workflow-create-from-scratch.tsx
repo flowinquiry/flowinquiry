@@ -1,10 +1,20 @@
 "use client";
 
+import { Eye, GitBranch } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { WorkflowDiagram } from "@/components/workflows/workflow-diagram-view";
 import WorkflowEditForm from "@/components/workflows/workflow-editor-form";
+import { useAppClientTranslations } from "@/hooks/use-translations";
 import { saveWorkflowDetail } from "@/lib/actions/workflows.action";
 import { obfuscate } from "@/lib/endecode";
 import { useError } from "@/providers/error-provider";
@@ -26,15 +36,14 @@ const NewWorkflowFromScratch = ({
 }: {
   teamId?: number;
 }) => {
-  const [workflowDetail, setWorkflowDetail] =
-    useState<WorkflowDetailDTO>(defaultWorkflow);
+  const [workflowDetail] = useState<WorkflowDetailDTO>(defaultWorkflow);
   const [previewWorkflowDetail, setPreviewWorkflowDetail] =
     useState<WorkflowDetailDTO>(defaultWorkflow);
   const router = useRouter();
   const { setError } = useError();
+  const t = useAppClientTranslations();
 
   const handleSave = async (updatedWorkflow: WorkflowDetailDTO) => {
-    // Ensure the team ID is correctly assigned to the workflow
     const workflowToSave = {
       ...updatedWorkflow,
       visibility: teamId
@@ -59,24 +68,66 @@ const NewWorkflowFromScratch = ({
   };
 
   const handleCancel = () => {
-    router.push(`/portal/teams/${obfuscate(teamId)}/workflows`);
+    if (teamId) {
+      router.push(`/portal/teams/${obfuscate(teamId)}/workflows`);
+    } else {
+      router.push(`/portal/settings/workflows`);
+    }
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Workflow Form */}
-      <div className="border p-4 rounded shadow-xs">
-        <WorkflowEditForm
-          workflowDetail={workflowDetail}
-          onCancel={handleCancel}
-          onSave={handleSave}
-          onPreviewChange={setPreviewWorkflowDetail}
-        />
-      </div>
+    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
+      {/* ── Left: Editor form ── */}
+      <Card className="h-fit">
+        <CardHeader className="pb-2">
+          <div className="flex items-center gap-2.5">
+            <div className="p-1.5 rounded-md bg-primary/10">
+              <GitBranch className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <CardTitle className="text-sm font-semibold">
+                {t.workflows.add("title")}
+              </CardTitle>
+              <CardDescription className="text-xs mt-0.5">
+                {t.workflows.add("create_workflow_from_scratch_description")}
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <Separator />
+        <CardContent className="pt-5">
+          <WorkflowEditForm
+            workflowDetail={workflowDetail}
+            onCancel={handleCancel}
+            onSave={handleSave}
+            onPreviewChange={setPreviewWorkflowDetail}
+          />
+        </CardContent>
+      </Card>
 
-      {/* Workflow Preview */}
-      <div className="border p-4 rounded shadow-xs">
-        <WorkflowDiagram workflowDetails={previewWorkflowDetail} />
+      {/* ── Right: Live preview ── */}
+      <div className="sticky top-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <div className="flex items-center gap-2.5">
+              <div className="p-1.5 rounded-md bg-primary/10">
+                <Eye className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-sm font-semibold">
+                  Live Preview
+                </CardTitle>
+                <CardDescription className="text-xs mt-0.5">
+                  Diagram updates as you edit states and transitions
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <Separator />
+          <CardContent className="pt-4 p-0 overflow-hidden rounded-b-xl">
+            <WorkflowDiagram workflowDetails={previewWorkflowDetail} />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

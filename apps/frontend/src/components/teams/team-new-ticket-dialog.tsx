@@ -230,20 +230,20 @@ const NewTicketToTeamDialog: React.FC<NewTicketToTeamDialogProps> = ({
               </div>
             </div>
 
-            <div className="pt-4 flex justify-start gap-4">
-              <SubmitButton
-                label={t.common.buttons("save")}
-                labelWhileLoading={t.common.buttons("saving")}
-                data-testid="ticket-submit-button"
-              />
+            <div className="pt-4 flex justify-end gap-4">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setOpen(false)}
                 data-testid="ticket-discard-button"
               >
-                Discard
+                {t.common.buttons("discard")}
               </Button>
+              <SubmitButton
+                label={t.common.buttons("save")}
+                labelWhileLoading={t.common.buttons("saving")}
+                data-testid="ticket-submit-button"
+              />
             </div>
           </form>
         </Form>
