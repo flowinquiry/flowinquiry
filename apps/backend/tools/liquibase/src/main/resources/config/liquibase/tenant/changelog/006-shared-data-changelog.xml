@@ -60,19 +60,18 @@
 	</changeSet>
 
 	<changeSet author="flowinquiry"
-		id="000:05-insert-default-user-authority-data-prod" context="prod">
+		id="006:01-insert-default-user-authority-data-prod" context="prod">
 		<loadData
 			file="config/liquibase/tenant/data/prod/fw_user_authority_prod.csv"
 			separator=";" tableName="fw_user_authority"
 			usePreparedStatements="true">
 			<column name="user_id" type="numeric" />
 			<column name="authority_name" type="string" />
-			<column name="tenant_id" type="uuid" />
 		</loadData>
 	</changeSet>
 
 	<changeSet author="flowinquiry"
-		id="000:07-insert-default-fw-team-role">
+		id="006:02-insert-default-fw-team-role">
 		<loadData
 			file="config/liquibase/tenant/data/shared/fw_team_role.csv"
 			tableName="fw_team_role" separator=";">
@@ -82,7 +81,7 @@
 	</changeSet>
 
 	<changeSet author="flowinquiry"
-		id="000:09-insert-default-fw-resource">
+		id="006:03-insert-default-fw-resource">
 		<loadData
 			file="config/liquibase/tenant/data/shared/fw_resource.csv"
 			separator=";" tableName="fw_resource" usePreparedStatements="true">
@@ -92,10 +91,49 @@
 	</changeSet>
 
 	<changeSet author="flowinquiry"
-		id="000:10-insert-default-fw-authority-resource-permission">
+		id="006:04-insert-default-fw-authority-resource-permission">
 		<loadData
 			file="config/liquibase/tenant/data/shared/fw_authority_resource_permission.csv"
 			separator=";" tableName="fw_authority_resource_permission"
 			usePreparedStatements="true" />
+	</changeSet>
+	<changeSet author="flowinquiry"
+		id="006:05-insert-workflow-data-prod" context="prod">
+		<loadData
+			file="config/liquibase/tenant/data/prod/fw_workflow_prod.csv"
+			separator=";" tableName="fw_workflow" usePreparedStatements="true">
+			<column name="id" type="numeric" />
+			<column name="name" type="string" />
+			<column name="description" type="string" />
+			<column name="owner_id" type="numeric" />
+		</loadData>
+		<sql>SELECT setval('fw_workflow_id_seq', (SELECT MAX(id) FROM
+			fw_workflow));</sql>
+		<loadData
+			file="config/liquibase/tenant/data/prod/fw_workflow_state_prod.csv"
+			separator=";" tableName="fw_workflow_state"
+			usePreparedStatements="true">
+			<column name="id" type="numeric" />
+			<column name="workflow_id" type="numeric" />
+			<column name="state_name" type="string" />
+			<column name="is_initial" type="boolean" />
+			<column name="is_final" type="boolean" />
+		</loadData>
+		<sql>SELECT setval('fw_workflow_state_id_seq', (SELECT MAX(id) FROM
+			fw_workflow_state));</sql>
+		<loadData
+			file="config/liquibase/tenant/data/prod/fw_workflow_transition_prod.csv"
+			separator=";" tableName="fw_workflow_transition"
+			usePreparedStatements="true">
+			<column name="id" type="numeric" />
+			<column name="workflow_id" type="numeric" />
+			<column name="source_state_id" type="numeric" />
+			<column name="target_state_id" type="numeric" />
+			<column name="event_name" type="string" />
+			<column name="sla_duration" type="numeric" />
+			<column name="escalate_on_violation" type="boolean" />
+		</loadData>
+		<sql>SELECT setval('fw_workflow_transition_id_seq', (SELECT MAX(id)
+			FROM fw_workflow_transition));</sql>
 	</changeSet>
 </databaseChangeLog>
