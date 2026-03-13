@@ -659,45 +659,4 @@
 			<column name="entity_id" />
 		</createIndex>
 	</changeSet>
-
-	<changeSet author="flowinquiry"
-		id="001:01-insert-workflow-data-prod" context="prod">
-		<loadData
-			file="config/liquibase/tenant/data/prod/fw_workflow_prod.csv"
-			separator=";" tableName="fw_workflow" usePreparedStatements="true">
-			<column name="id" type="numeric" />
-			<column name="name" type="string" />
-			<column name="description" type="string" />
-			<column name="owner_id" type="numeric" />
-		</loadData>
-		<sql>SELECT setval('fw_workflow_id_seq', (SELECT MAX(id) FROM
-			fw_workflow));</sql>
-		<loadData
-			file="config/liquibase/tenant/data/prod/fw_workflow_state_prod.csv"
-			separator=";" tableName="fw_workflow_state"
-			usePreparedStatements="true">
-			<column name="id" type="numeric" />
-			<column name="workflow_id" type="numeric" />
-			<column name="state_name" type="string" />
-			<column name="is_initial" type="boolean" />
-			<column name="is_final" type="boolean" />
-		</loadData>
-		<sql>SELECT setval('fw_workflow_state_id_seq', (SELECT MAX(id) FROM
-			fw_workflow_state));</sql>
-		<loadData
-			file="config/liquibase/tenant/data/prod/fw_workflow_transition_prod.csv"
-			separator=";" tableName="fw_workflow_transition"
-			usePreparedStatements="true">
-			<column name="id" type="numeric" />
-			<column name="workflow_id" type="numeric" />
-			<column name="source_state_id" type="numeric" />
-			<column name="target_state_id" type="numeric" />
-			<column name="event_name" type="string" />
-			<column name="sla_duration" type="numeric" />
-			<column name="escalate_on_violation" type="boolean" />
-		</loadData>
-		<sql>SELECT setval('fw_workflow_transition_id_seq', (SELECT MAX(id)
-			FROM fw_workflow_transition));</sql>
-	</changeSet>
-
 </databaseChangeLog>

@@ -6,7 +6,7 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
 	<changeSet author="flowinquiry"
-		id="000:04-insert-default-user-data" runOnChange="true">
+		id="007:01-insert-default-user-data" runOnChange="true">
 		<loadData
 			file="config/liquibase/tenant/data/dev/fw_user_dev.csv" separator=";"
 			tableName="fw_user" usePreparedStatements="true">
@@ -52,7 +52,7 @@
 	</changeSet>
 
 	<changeSet author="flowinquiry"
-		id="000:05-insert-default-user-authority-data" runOnChange="true">
+		id="007:02-insert-default-user-authority-data" runOnChange="true">
 		<loadData
 			file="config/liquibase/tenant/data/dev/fw_user_authority_dev.csv"
 			separator=";" tableName="fw_user_authority"
@@ -76,7 +76,7 @@
 	</changeSet>
 
 	<changeSet author="flowinquiry"
-		id="000:06-insert-default-fw-team-data" runOnChange="true">
+		id="007:03-insert-default-fw-team-data" runOnChange="true">
 		<loadData
 			file="config/liquibase/tenant/data/dev/fw_team_dev.csv"
 			tableName="fw_team" separator=";">
@@ -92,7 +92,7 @@
 	</changeSet>
 
 	<changeSet author="flowinquiry"
-		id="000:08-insert-default-fw-user-team-data" runOnChange="true">
+		id="007:04-insert-default-fw-user-team-data" runOnChange="true">
 		<loadData
 			file="config/liquibase/tenant/data/dev/fw_user_team_dev.csv"
 			tableName="fw_user_team" separator=";">
@@ -105,7 +105,7 @@
 
 
 	<changeSet author="flowinquiry"
-		id="001:01-insert-workflow-data" runOnChange="true">
+		id="007:05-insert-workflow-data" runOnChange="true">
 		<loadData
 			file="config/liquibase/tenant/data/dev/fw_workflow_dev.csv"
 			separator=";" tableName="fw_workflow" usePreparedStatements="true">
@@ -148,7 +148,7 @@
 	</changeSet>
 
 	<changeSet author="flowinquiry"
-		id="001:02-insert-team-workflow-usage-data" runOnChange="true">
+		id="007:08-insert-team-workflow-usage-data" runOnChange="true">
 		<loadData
 			file="config/liquibase/tenant/data/dev/fw_team_workflow_selection_dev.csv"
 			separator=";" tableName="fw_team_workflow_selection"

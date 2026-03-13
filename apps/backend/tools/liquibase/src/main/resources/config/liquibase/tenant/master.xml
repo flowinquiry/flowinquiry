@@ -26,11 +26,11 @@
 		file="/config/liquibase/tenant/changelog/005_create_email_job_table.xml" />
 
 	<include
-		file="config/liquibase/tenant/changelog/shared-data-changelog.xml" />
+		file="/config/liquibase/tenant/changelog/006-shared-data-changelog.xml" />
 	<include
-		file="config/liquibase/tenant/changelog/dev-data-changelog.xml"
+		file="/config/liquibase/tenant/changelog/007-dev-data-changelog.xml"
 		context="dev" />
 	<include
-		file="config/liquibase/tenant/changelog/test-data-changelog.xml"
+		file="/config/liquibase/tenant/changelog/008-test-data-changelog.xml"
 		context="test" />
 </databaseChangeLog>
