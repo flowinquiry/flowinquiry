@@ -79,6 +79,21 @@ jobs:
           cache-from: type=registry,ref=${{ steps.meta.outputs.image }}:cache
           cache-to: type=registry,ref=${{ steps.meta.outputs.image }}:cache,mode=max
 
+      - name: Make frontend package public
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          REPO_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          gh api \
+            --method PATCH \
+            /orgs/${REPO_LC}/packages/container/flowinquiry-frontend \
+            -f visibility=public \
+          || \
+          gh api \
+            --method PATCH \
+            /user/packages/container/flowinquiry-frontend \
+            -f visibility=public
+
   # ─────────────────────────────────────────────
   # Backend – Spring Boot (Jib, multi-platform)
   # ─────────────────────────────────────────────
@@ -125,4 +140,19 @@ jobs:
             -Djib.to.auth.password="${{ secrets.GITHUB_TOKEN }}" \
             -Djib.from.platforms="linux/amd64,linux/arm64" \
             -Pversion="${{ steps.meta.outputs.version }}"
+
+      - name: Make backend package public
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          REPO_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          gh api \
+            --method PATCH \
+            /orgs/${REPO_LC}/packages/container/flowinquiry-server \
+            -f visibility=public \
+          || \
+          gh api \
+            --method PATCH \
+            /user/packages/container/flowinquiry-server \
+            -f visibility=public
 
