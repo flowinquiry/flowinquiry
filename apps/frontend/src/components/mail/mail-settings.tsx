@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
+  BookOpen,
   EyeIcon,
   EyeOffIcon,
   Lock,
@@ -321,6 +322,24 @@ export function MailSettings() {
         <Heading title={t.mail("title")} description={t.mail("description")} />
       </div>
       <Separator />
+
+      {/* Documentation banner */}
+      <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-300">
+        <BookOpen className="mt-0.5 h-4 w-4 shrink-0" />
+        <span>
+          Need help configuring your SMTP server? Follow our step-by-step guide
+          to set up email delivery correctly.{" "}
+          <a
+            href="https://docs.flowinquiry.io/user_guides/administrator/smtp_server"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium underline underline-offset-2 hover:text-blue-600 dark:hover:text-blue-200"
+          >
+            View SMTP configuration guide →
+          </a>
+        </span>
+      </div>
+
       <Form {...form}>
         <form
           onSubmit={(e) => {
