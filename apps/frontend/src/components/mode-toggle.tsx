@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
 
 const themeVariants = [
   { name: "Default", value: "default", color: "#6366f1" },
-  { name: "Dark", value: "dark", color: "#1e293b" },
+  { name: "Slate", value: "slate", color: "#1e293b" },
   { name: "Rose", value: "rose", color: "#f43f5e" },
   { name: "Gray", value: "gray", color: "#6b7280" },
   { name: "Steel Blue", value: "steel-blue", color: "#3b82f6" },
@@ -51,7 +51,12 @@ export function ModeToggle() {
 
   // Load theme variant from localStorage on mount
   useEffect(() => {
-    const saved = localStorage.getItem("theme-variant");
+    let saved = localStorage.getItem("theme-variant");
+    // Migrate legacy "dark" value to "slate"
+    if (saved === "dark") {
+      saved = "slate";
+      localStorage.setItem("theme-variant", "slate");
+    }
     if (saved) setCurrentThemeVariant(saved);
     setMounted(true);
   }, []);

@@ -5,10 +5,15 @@ plugins {
 jib {
     from {
         image = "eclipse-temurin:21-jre"
-        platforms {
-            platform {
-                os = "linux"
-                architecture = "amd64"
+        // Platforms can be overridden at invocation time via -Djib.from.platforms
+        // e.g. -Djib.from.platforms=linux/amd64,linux/arm64 for multi-arch CI builds.
+        // Default to amd64 only for fast local builds.
+        if (!project.hasProperty("jib.from.platforms")) {
+            platforms {
+                platform {
+                    os = "linux"
+                    architecture = "amd64"
+                }
             }
         }
     }

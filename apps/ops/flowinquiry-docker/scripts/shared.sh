@@ -88,6 +88,13 @@ get_ip_address() {
 start_flowinquiry() {
   local install_dir="$1"
 
+  # Persist the version to a .env file so future `docker compose` runs
+  # (e.g. manual restarts) also use the pinned version.
+  if [ -n "$FLOWINQUIRY_VERSION" ]; then
+    echo "FLOWINQUIRY_VERSION=$FLOWINQUIRY_VERSION" > "$install_dir/.env"
+    echo "📌 Pinned version $FLOWINQUIRY_VERSION saved to $install_dir/.env"
+  fi
+
   echo "🔒 SSL Configuration"
   echo "SSL is recommended when installing FlowInquiry for production use or when accessing from anywhere."
   echo "For local testing purposes, you may not need SSL."

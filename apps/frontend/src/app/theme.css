@@ -1,21 +1,36 @@
 /* Theme variants that work with both light and dark modes */
 
-/* Dark theme - extends the default dark mode */
-.theme-dark {
-  --sidebar-background: 222.2 84% 4.9%;
-  --header: 222.2 84% 4.9%;
-  --primary: 217.2 91.2% 59.8%;
+/* Slate theme */
+.theme-slate {
+  --sidebar-background: 215 28% 25%;
+  --header: 215 28% 25%;
+  --primary: 215 25% 30%;
   --primary-foreground: 210 40% 98%;
+  --secondary: 215 20% 45%;
+  --secondary-foreground: 210 40% 98%;
+  --ring: 215 25% 30%;
+  --sidebar-foreground: 210 40% 92%;
+  --sidebar-primary: 215 25% 30%;
+  --sidebar-primary-foreground: 210 40% 98%;
+  --sidebar-accent: 215 25% 32%;
+  --sidebar-accent-foreground: 210 40% 98%;
+  --sidebar-border: 215 22% 20%;
+  --sidebar-ring: 215 25% 40%;
+  --menu-arrow: 215 25% 32%;
+  --menu-arrow-active: 215 28% 40%;
 }
 
 /* Rose theme */
 .theme-rose {
   --sidebar-background: 341 64% 43%;
   --header: 341 64% 43%;
-  --primary: 336 80% 58%;
+  --primary: 336 80% 45%;
   --primary-foreground: 210 40% 98%;
   --secondary: 339 60% 51%;
   --secondary-foreground: 210 40% 98%;
+  --ring: 336 80% 45%;
+  --sidebar-primary: 336 80% 45%;
+  --sidebar-primary-foreground: 210 40% 98%;
   --menu-arrow: 339 60% 51%;
   --menu-arrow-active: 336 67% 60%;
 }
@@ -24,10 +39,13 @@
 .theme-gray {
   --sidebar-background: 210 10% 23%;
   --header: 210 10% 23%;
-  --primary: 210 50% 40%;
+  --primary: 210 10% 35%;
   --primary-foreground: 210 40% 98%;
-  --secondary: 207 14% 31%;
+  --secondary: 207 10% 45%;
   --secondary-foreground: 210 40% 98%;
+  --ring: 210 10% 35%;
+  --sidebar-primary: 210 10% 35%;
+  --sidebar-primary-foreground: 210 40% 98%;
   --menu-arrow: 207 14% 31%;
   --menu-arrow-active: 203 16% 43%;
 }
@@ -40,6 +58,9 @@
   --primary-foreground: 210 40% 98%;
   --secondary: 224 40% 48%;
   --secondary-foreground: 210 40% 98%;
+  --ring: 220 70% 50%;
+  --sidebar-primary: 220 70% 50%;
+  --sidebar-primary-foreground: 210 40% 98%;
   --menu-arrow: 224 40% 48%;
   --menu-arrow-active: 216 47% 60%;
 }
@@ -48,10 +69,13 @@
 .theme-purple {
   --sidebar-background: 299 56% 19%;
   --header: 299 56% 19%;
-  --primary: 280 75% 60%;
+  --primary: 280 75% 50%;
   --primary-foreground: 210 40% 98%;
   --secondary: 299 40% 28%;
   --secondary-foreground: 210 40% 98%;
+  --ring: 280 75% 50%;
+  --sidebar-primary: 280 75% 50%;
+  --sidebar-primary-foreground: 210 40% 98%;
   --menu-arrow: 299 40% 28%;
   --menu-arrow-active: 298 44% 33%;
 }
@@ -64,6 +88,9 @@
   --primary-foreground: 210 40% 98%;
   --secondary: 346 26% 35%;
   --secondary-foreground: 210 40% 98%;
+  --ring: 0 65% 45%;
+  --sidebar-primary: 0 65% 45%;
+  --sidebar-primary-foreground: 210 40% 98%;
   --menu-arrow: 346 26% 35%;
   --menu-arrow-active: 344 27% 42%;
 }
@@ -72,10 +99,13 @@
 .theme-green {
   --sidebar-background: 164 64% 21%;
   --header: 164 64% 21%;
-  --primary: 150 80% 40%;
+  --primary: 150 80% 35%;
   --primary-foreground: 210 40% 98%;
   --secondary: 164 68% 24%;
   --secondary-foreground: 210 40% 98%;
+  --ring: 150 80% 35%;
+  --sidebar-primary: 150 80% 35%;
+  --sidebar-primary-foreground: 210 40% 98%;
   --menu-arrow: 164 68% 24%;
   --menu-arrow-active: 163 69% 30%;
 }
@@ -84,10 +114,13 @@
 .theme-ocean-blue {
   --sidebar-background: 206 92% 35%;
   --header: 206 92% 35%;
-  --primary: 195 100% 50%;
+  --primary: 199 89% 40%;
   --primary-foreground: 210 40% 98%;
   --secondary: 205 94% 39%;
   --secondary-foreground: 210 40% 98%;
+  --ring: 199 89% 40%;
+  --sidebar-primary: 199 89% 40%;
+  --sidebar-primary-foreground: 210 40% 98%;
   --menu-arrow: 205 94% 39%;
   --menu-arrow-active: 203 85% 48%;
 }
@@ -110,5 +143,12 @@
   --sidebar-accent: 240 3.7% 15.9%;
   --sidebar-accent-foreground: 240 4.8% 95.9%;
   --sidebar-border: 240 3.7% 15.9%;
-  /* Primary foreground is already set appropriately for dark mode */
+}
+
+/* Slate dark mode — keep slate-specific sidebar tones */
+.dark .theme-slate {
+  --sidebar-foreground: 210 40% 92%;
+  --sidebar-accent: 215 25% 32%;
+  --sidebar-accent-foreground: 210 40% 98%;
+  --sidebar-border: 215 22% 20%;
 }

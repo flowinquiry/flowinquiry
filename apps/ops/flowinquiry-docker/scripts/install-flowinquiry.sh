@@ -28,8 +28,37 @@ check_docker() {
     echo "✅ Docker and Docker Compose are properly installed and running."
 }
 
+# Function to fetch the latest FlowInquiry version from version.json
+detect_latest_version() {
+    local version_url="https://raw.githubusercontent.com/flowinquiry/flowinquiry/refs/heads/main/version.json"
+    local version=""
+
+    echo "🔍 Detecting latest FlowInquiry version..."
+
+    if command -v curl >/dev/null 2>&1; then
+        version=$(curl -sSL "$version_url" | grep '"latestVersion"' | sed 's/.*"latestVersion"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/')
+    elif command -v wget >/dev/null 2>&1; then
+        version=$(wget -qO- "$version_url" | grep '"latestVersion"' | sed 's/.*"latestVersion"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/')
+    fi
+
+    if [ -z "$version" ]; then
+        echo "⚠️  Could not detect latest version automatically. Falling back to 'latest'."
+        version="latest"
+    else
+        echo "✅ Latest FlowInquiry version: $version"
+    fi
+
+    echo "$version"
+}
+
 # Run Docker check at the beginning
 check_docker
+
+# Detect and export the latest version so Docker Compose picks it up
+FLOWINQUIRY_VERSION=$(detect_latest_version)
+export FLOWINQUIRY_VERSION
+
+echo "🏷️  Using image version: $FLOWINQUIRY_VERSION"
 
 # Define the base URL of the raw GitHub content
 RAW_BASE_URL="https://raw.githubusercontent.com/flowinquiry/flowinquiry/refs/heads/main/apps/ops/flowinquiry-docker"
@@ -108,3 +137,4 @@ cd - > /dev/null  # Return to previous directory silently
 
 source "$SCRIPTS_DIR/shared.sh"
 start_flowinquiry "$INSTALL_DIR"
+
