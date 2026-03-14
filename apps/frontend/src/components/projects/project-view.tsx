@@ -159,7 +159,10 @@ export default function ProjectView({
   ];
 
   return (
-    <div data-testid="project-view-container">
+    <div
+      className="min-w-0 overflow-x-hidden"
+      data-testid="project-view-container"
+    >
       {loading ? (
         <p className="text-lg font-semibold" data-testid="project-view-loading">
           {t.common.misc("loading_data")}
@@ -345,7 +348,7 @@ export default function ProjectView({
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="board">
+            <TabsContent value="board" className="min-w-0 overflow-x-hidden">
               <ProjectBoardView
                 ref={boardViewRef}
                 project={project}

@@ -25,6 +25,19 @@ export async function findUsers(
   );
 }
 
+export async function findAllUsers(
+  query: QueryDTO,
+  pagination: Pagination,
+  setError?: (error: HttpError | string | null) => void,
+) {
+  return doAdvanceSearch<UserDTO>(
+    `/api/users/search-all`,
+    query,
+    pagination,
+    setError,
+  );
+}
+
 export async function findUsersByTerm(
   userTerm: string,
   setError?: (error: HttpError | string | null) => void,

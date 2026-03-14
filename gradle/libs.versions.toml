@@ -12,7 +12,6 @@ parssonVersion="1.1.7"
 springbootVersion = "3.5.6"
 springAiVersion="1.0.2"
 springDependencyManagementVersion="1.1.7"
-jhisterVersion = "8.11.0"
 j2HtmlVersion = "1.6.0"
 shedlockVersion="6.10.0"
 jibVersion="3.4.4"
@@ -32,7 +31,6 @@ opencsv = "5.7.1"
 caffeine = {module="com.github.ben-manes.caffeine:caffeine", version.ref="caffeineVersion"}
 caffeine-jcache = {module="com.github.ben-manes.caffeine:jcache", version.ref="caffeineVersion"}
 redis-hibernate = {module="org.redisson:redisson-hibernate-6", version.ref="redisHibernateVersion"}
-jhipster-framework = { module = "tech.jhipster:jhipster-framework", version.ref = "jhisterVersion" }
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombokVersion" }
 liquibase = { module = "org.liquibase:liquibase-core", version.ref = "liquibaseVersion" }
 assertJ = { module = "org.assertj:assertj-core", version.ref = "assertJVersion" }

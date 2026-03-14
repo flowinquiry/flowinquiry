@@ -3,9 +3,27 @@
 <head></head>
 <body>
 <div th:fragment="header(title)">
-    <div style="background-color: #0056b3; color: #ffffff; text-align: left; padding: 20px;">
-        <h1 style="font-size: 24px; margin: 0;" th:text="${title}">Default Header</h1>
+  <!-- Top accent bar -->
+  <div style="height:4px; background: linear-gradient(90deg,#0056b3 0%,#0ea5e9 100%); border-radius:8px 8px 0 0;"></div>
+  <!-- Brand bar -->
+  <div style="background-color:#0056b3; padding:20px 28px; display:table; width:100%; box-sizing:border-box;">
+    <!-- Logo (inline SVG scaled to 32 px) -->
+    <div style="display:table-cell; vertical-align:middle; width:44px;">
+      <svg width="32" height="32" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <path transform="scale(1.00287,1.00287)"
+              d="M30 100c-16.569 0-30-13.431-30-30v-40c0-16.569 13.431-30 30-30h40c16.569 0 30 13.431 30 30v40c0 16.569-13.431 30-30-30z"
+              fill="#ffffff" opacity="0.15"/>
+        <path d="M49.942 52.994L90.595 51.529C88.068 47.352 87.436 43.698 82.606 43.068 75.377 42.128 68.148 41.185 60.918 40.242L18.843 34.762C20.101 36.792 39.724 53.361 49.942 52.994" fill="#ffffff"/>
+        <path d="M0 9.786C4.391 17.043 26.615 32.858 32.953 33.672 50.283 35.903 67.61 38.132 84.939 40.36 81.546 34.753 80.759 31.01 74.627 29.401L47.91 22.378C31.94 18.182 15.97 13.984 0 9.786" fill="#ffffff"/>
+        <path d="M63.108 66.207L94.349 59.547C92.321 56.201 92.315 54.188 88.522 54.358 82.364 54.631 76.208 54.907 70.051 55.18 58.708 55.686 47.365 56.194 36.023 56.698 37.298 58.064 54.94 67.947 63.108 66.207" fill="#ffffff"/>
+      </svg>
     </div>
+    <!-- Title -->
+    <div style="display:table-cell; vertical-align:middle; padding-left:12px;">
+      <span style="display:block; font-family:Arial,Helvetica,sans-serif; font-size:11px; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:rgba(255,255,255,0.65); margin-bottom:3px;">FlowInquiry</span>
+      <h1 style="margin:0; font-family:Arial,Helvetica,sans-serif; font-size:20px; font-weight:700; color:#ffffff; line-height:1.2;" th:text="${title}">Notification</h1>
+    </div>
+  </div>
 </div>
 </body>
 </html>

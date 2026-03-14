@@ -1,46 +1,42 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head></head>
-<body>
-<div class="email-container" style="max-width: 600px; margin: auto; background-color: #ffffff; border: 1px solid #dcdcdc; border-radius: 8px;">
-  <!-- Include Header -->
-  <div th:insert="~{mail/header :: header('Account activation')}"></div>
+<body style="margin:0; padding:0; background-color:#f0f4f8;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f0f4f8; padding:32px 16px;">
+  <tr>
+    <td align="center">
+      <div style="max-width:600px; margin:auto; background-color:#ffffff; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08); overflow:hidden; font-family:Arial,Helvetica,sans-serif; text-align:left;">
 
-  <!-- Body -->
-  <div style="padding: 20px; text-align: left;">
-    <p th:text="#{email.activation.greeting(${user.email})}">
-      Dear user@example.com,
-    </p>
-    <p th:text="#{email.activation.text1}">
-      Your FlowInquiry account has been created. Please click the button below to activate it:
-    </p>
-    <!-- Activation Button -->
-    <a th:with="url=(@{|${baseUrl}/account/activate?key=${user.activationKey}|})"
-       th:href="${url}"
-       style="display: inline-block; padding: 12px 20px; font-size: 16px; font-weight: bold; color: #ffffff; background-color: #0056b3; text-decoration: none; border-radius: 4px; margin-top: 10px;"
-       th:text="#{email.activation.action}">
-      Activate Account
-    </a>
-    <p style="margin-top: 20px;">
-      If the button above doesn't work, copy and paste the following URL into your browser:
-    </p>
-    <!-- Full Activation Link -->
-    <p>
-      <a th:with="url=(@{|${baseUrl}/account/activate?key=${user.activationKey}|})"
-         th:href="${url}"
-         th:text="${url}">
-        Full Activation Link
-      </a>
-    </p>
-    <p>
-      <span th:text="#{email.regards}">Regards,</span>
-      <br />
-      <span th:text="#{email.signature}">FlowInquiry Team.</span>
-    </p>
-  </div>
+        <div th:insert="~{mail/header :: header('Activate Your Account')}"></div>
 
-  <!-- Include Footer -->
-  <div th:insert="~{mail/footer :: footer}"></div>
-</div>
+        <!-- Body -->
+        <div style="padding:28px 28px 8px;">
+          <p style="margin:0 0 16px; font-size:15px; color:#374151;" th:text="#{email.activation.greeting(${user.email})}">Dear user,</p>
+          <p style="margin:0 0 24px; font-size:15px; color:#374151;" th:text="#{email.activation.text1}">Your FlowInquiry account has been created. Please click the button below to activate it:</p>
+
+          <!-- CTA button -->
+          <div style="margin-bottom:24px;">
+            <a th:with="url=(@{|${baseUrl}/account/activate?key=${user.activationKey}|})"
+               th:href="${url}"
+               style="display:inline-block; padding:12px 28px; font-size:15px; font-weight:700; color:#ffffff; background-color:#0056b3; text-decoration:none; border-radius:6px;"
+               th:text="#{email.activation.action}">Activate Account</a>
+          </div>
+
+          <!-- Fallback link -->
+          <p style="font-size:12px; color:#94a3b8; margin:0 0 4px;">If the button doesn't work, copy this link:</p>
+          <p style="font-size:12px; margin:0 0 24px; word-break:break-all;">
+            <a th:with="url=(@{|${baseUrl}/account/activate?key=${user.activationKey}|})"
+               th:href="${url}" th:text="${url}" style="color:#0056b3;">link</a>
+          </p>
+
+          <p style="font-size:14px; color:#6b7280; margin:0 0 4px;" th:text="#{email.regards}">Regards,</p>
+          <p style="font-size:14px; font-weight:600; color:#374151; margin:0 0 28px;" th:text="#{email.signature}">FlowInquiry Team</p>
+        </div>
+
+        <div th:insert="~{mail/footer :: footer}"></div>
+      </div>
+    </td>
+  </tr>
+</table>
 </body>
 </html>

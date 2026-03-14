@@ -1,6 +1,6 @@
 import React, { Suspense } from "react";
 
-import { SimpleContentView } from "@/components/admin-panel/simple-content-view";
+import { ContentLayout } from "@/components/admin-panel/content-layout";
 import ProjectView from "@/components/projects/project-view";
 import { getAppTranslations } from "@/lib/translation";
 
@@ -13,11 +13,11 @@ const ProjectDetailPage = async (props: ProjectDetailPageProps) => {
   const t = await getAppTranslations();
 
   return (
-    <SimpleContentView title={t.common.navigation("projects")}>
+    <ContentLayout title={t.common.navigation("projects")}>
       <Suspense>
         <ProjectView projectShortName={params.projectId} />
       </Suspense>
-    </SimpleContentView>
+    </ContentLayout>
   );
 };
 

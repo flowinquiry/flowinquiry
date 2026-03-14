@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UserPlus, Users } from "lucide-react";
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -61,7 +61,18 @@ const AddUserToTeamDialog: React.FC<AddUserToTeamDialogProps> = ({
   const t = useAppClientTranslations();
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
+    defaultValues: { users: [], role: "" },
   });
+
+  const [dialogKey, setDialogKey] = React.useState(0);
+
+  // Reset form and force remount of inner components every time the dialog opens
+  useEffect(() => {
+    if (open) {
+      form.reset({ users: [], role: "" });
+      setDialogKey((k) => k + 1);
+    }
+  }, [open, form]);
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
     if (data && data.users) {
@@ -85,6 +96,7 @@ const AddUserToTeamDialog: React.FC<AddUserToTeamDialogProps> = ({
   return (
     <Dialog open={open} onOpenChange={setOpen} data-testid="add-user-dialog">
       <DialogContent
+        key={dialogKey}
         className="sm:max-w-115 gap-0 p-0 overflow-hidden"
         data-testid="add-user-dialog-content"
       >

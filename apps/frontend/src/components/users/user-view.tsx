@@ -54,13 +54,16 @@ export const UserView = ({ userId }: { userId: number }) => {
     async function fetchData() {
       try {
         const userData = await findUserById(userId, setError);
-        setUser(userData);
+        setUser(userData ?? null);
+        if (!userData) return;
         const [teamData, reportData] = await Promise.all([
           findTeamsByMemberId(userId, setError),
           getDirectReports(userId, setError),
         ]);
-        setTeams(teamData);
-        setDirectReports(reportData);
+        setTeams(teamData ?? []);
+        setDirectReports(reportData ?? []);
+      } catch {
+        setUser(null);
       } finally {
         setLoading(false);
       }

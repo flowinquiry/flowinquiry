@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import React, { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -41,6 +42,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Tooltip,
   TooltipContent,
@@ -52,6 +54,7 @@ import { usePagePermission } from "@/hooks/use-page-permission";
 import { useAppClientTranslations } from "@/hooks/use-translations";
 import {
   deleteUser,
+  findAllUsers,
   findUsers,
   resendActivationEmail,
 } from "@/lib/actions/users.action";
@@ -75,10 +78,15 @@ export const UserList = () => {
   );
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [isOrgChartOpen, setIsOrgChartOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<
+    "ALL" | "ACTIVE" | "PENDING"
+  >("ALL");
 
   const t = useAppClientTranslations();
-
   const permissionLevel = usePagePermission();
+  const { data: session } = useSession();
+
+  const isAdmin = session?.user?.authorities?.includes("ROLE_ADMIN") ?? false;
 
   const searchParams = useSearchParams();
   const { replace } = useRouter();
@@ -88,32 +96,35 @@ export const UserList = () => {
   const fetchUsers = useCallback(async () => {
     setLoading(true);
 
-    const query: QueryDTO = {
-      filters: userSearchTerm
-        ? [
-            {
-              field: "firstName,lastName",
-              operator: "lk",
-              value: userSearchTerm,
-            },
-          ]
-        : [],
+    const filters: QueryDTO["filters"] = [];
+
+    if (userSearchTerm) {
+      filters.push({
+        field: "firstName,lastName",
+        operator: "lk",
+        value: userSearchTerm,
+      });
+    }
+
+    // Status filter: admins can filter by PENDING/ACTIVE/ALL; non-admins always see ACTIVE only
+    if (isAdmin && statusFilter !== "ALL") {
+      filters.push({
+        field: "status",
+        operator: "eq",
+        value: statusFilter,
+      });
+    }
+
+    const query: QueryDTO = { filters };
+    const pagination = {
+      page: currentPage,
+      size: 10,
+      sort: [{ field: "firstName,lastName", direction: sortDirection }],
     };
 
-    findUsers(
-      query,
-      {
-        page: currentPage,
-        size: 10,
-        sort: [
-          {
-            field: "firstName,lastName",
-            direction: sortDirection,
-          },
-        ],
-      },
-      setError,
-    )
+    const fetcher = isAdmin ? findAllUsers : findUsers;
+
+    fetcher(query, pagination, setError)
       .then((pageResult) => {
         setItems(pageResult.content);
         setTotalElements(pageResult.totalElements);
@@ -124,6 +135,8 @@ export const UserList = () => {
     userSearchTerm,
     currentPage,
     sortDirection,
+    isAdmin,
+    statusFilter,
     setLoading,
     setItems,
     setTotalElements,
@@ -138,6 +151,7 @@ export const UserList = () => {
       params.delete("name");
     }
     setUserSearchTerm(userName);
+    setCurrentPage(1);
     replace(`${pathname}?${params.toString()}`);
   }, 2000);
 
@@ -232,6 +246,33 @@ export const UserList = () => {
       </div>
 
       <Separator />
+
+      {/* Status filter tabs – admins only */}
+      {isAdmin && (
+        <Tabs
+          value={statusFilter}
+          onValueChange={(v) => {
+            setStatusFilter(v as typeof statusFilter);
+            setCurrentPage(1);
+          }}
+        >
+          <TabsList>
+            <TabsTrigger value="ALL">All</TabsTrigger>
+            <TabsTrigger value="ACTIVE">
+              <span className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-green-500" />
+                Active
+              </span>
+            </TabsTrigger>
+            <TabsTrigger value="PENDING">
+              <span className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-yellow-400" />
+                Pending
+              </span>
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      )}
 
       {/* Content */}
       {loading ? (
