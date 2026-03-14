@@ -3,15 +3,20 @@
 <head></head>
 <body>
 <div th:fragment="footer">
-    <div style="text-align: left; padding: 15px; font-size: 14px; background-color: #f9f9f9; color: #777777;">
-        <a href="https://flowinquiry.com" style="color: #0056b3; text-decoration: none;" th:text="#{email.footer.website}">
-            Visit our website
-        </a>
-        <br />
-        <span th:text="'© ' + ${#dates.format(new java.util.Date(), 'yyyy')} + ' ' + #{email.footer.copyright}">
-            © 2024 FlowInquiry. All rights reserved.
-        </span>
-    </div>
+  <div style="background-color:#f4f6f9; border-top:1px solid #e2e8f0; border-radius:0 0 8px 8px; padding:20px 28px; font-family:Arial,Helvetica,sans-serif; text-align:left;">
+    <a href="https://flowinquiry.io"
+       style="font-size:13px; font-weight:600; color:#0056b3; text-decoration:none;"
+       th:text="#{email.footer.website}">flowinquiry.io</a>
+    <span style="margin:0 8px; color:#e2e8f0;">|</span>
+    <span style="font-size:12px; color:#94a3b8;"
+          th:text="'© ' + ${#dates.format(new java.util.Date(), 'yyyy')} + ' ' + #{email.footer.copyright}">
+      © FlowInquiry. All rights reserved.
+    </span>
+    <p style="margin:10px 0 0; font-size:11px; color:#b0bec5; line-height:1.5;">
+      You are receiving this email because you are a member of a FlowInquiry workspace.
+      Please do not reply to this email directly.
+    </p>
+  </div>
 </div>
 </body>
 </html>

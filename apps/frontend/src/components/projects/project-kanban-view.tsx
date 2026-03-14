@@ -98,6 +98,7 @@ export default function ProjectKanbanView({
           overflowY: "hidden",
           scrollbarWidth: "thin",
           WebkitOverflowScrolling: "touch",
+          paddingRight: "1rem",
         }}
         data-testid="project-view-board"
       >
@@ -114,7 +115,6 @@ export default function ProjectKanbanView({
             columnColor="bg-[hsl(var(--card))]"
           />
         ))}
-        <div className="min-w-md shrink-0 opacity-0 pointer-events-none" />
       </div>
 
       <DragOverlay>

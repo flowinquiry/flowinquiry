@@ -201,6 +201,38 @@ public class UserService {
     }
 
     public UserDTO createUser(UserDTO userDTO) {
+        // Check if a user with this email already exists (including soft-deleted)
+        Optional<User> existingOpt = userRepository.findOneByEmailIgnoreCase(userDTO.getEmail());
+
+        if (existingOpt.isPresent()) {
+            User existing = existingOpt.get();
+            if (Boolean.TRUE.equals(existing.getIsDeleted())) {
+                // Resurrect the soft-deleted user: reset state and re-send invite
+                existing.setIsDeleted(false);
+                existing.setStatus(UserStatus.PENDING);
+                existing.setFirstName(userDTO.getFirstName());
+                existing.setLastName(userDTO.getLastName());
+                existing.setResetKey(Random.generateResetKey());
+                existing.setResetDate(Instant.now());
+                if (userDTO.getAuthorities() != null) {
+                    Set<Authority> authorities =
+                            userDTO.getAuthorities().stream()
+                                    .map(authorityRepository::findById)
+                                    .filter(Optional::isPresent)
+                                    .map(Optional::get)
+                                    .collect(Collectors.toSet());
+                    existing.setAuthorities(authorities);
+                }
+                userRepository.save(existing);
+                log.debug("Resurrected soft-deleted user: {}", existing);
+                UserDTO savedUser = userMapper.toDto(existing);
+                eventPublisher.publishEvent(new CreatedUserEvent(this, savedUser));
+                return savedUser;
+            } else {
+                throw new EmailAlreadyUsedException();
+            }
+        }
+
         User user = userMapper.toEntity(userDTO);
 
         user.setResetKey(Random.generateResetKey());
@@ -351,6 +383,19 @@ public class UserService {
 
                             log.debug("Changed password for User: {}", user.getEmail());
                         });
+    }
+
+    @Transactional(readOnly = true)
+    public Page<UserDTO> findAllUsers(Optional<QueryDTO> queryDTO, Pageable pageable) {
+        Specification<User> spec = createSpecification(queryDTO.orElse(null));
+        if (spec == null) {
+            spec = (root, query, criteriaBuilder) -> criteriaBuilder.conjunction();
+        }
+        spec =
+                spec.and(
+                        (root, query, criteriaBuilder) ->
+                                criteriaBuilder.isNotNull(root.get(User_.ID)));
+        return userRepository.findAll(spec, pageable).map(userMapper::toDto);
     }
 
     @Transactional(readOnly = true)

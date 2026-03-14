@@ -1,60 +1,66 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head></head>
-<body>
-<div class="email-container" style="max-width: 600px; margin: auto; background-color: #ffffff; border: 1px solid #dcdcdc; border-radius: 8px;">
-    <div th:insert="~{mail/header :: header('New ticket has been created')}"></div>
-    <div style="padding: 20px; text-align: left;">
-        <p th:text="#{email.greeting(${user.firstName})}">
-            Dear user@example.com,
-        </p>
+<body style="margin:0; padding:0; background-color:#f0f4f8;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f0f4f8; padding:32px 16px;">
+  <tr>
+    <td align="center">
+      <div style="max-width:600px; margin:auto; background-color:#ffffff; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08); overflow:hidden; font-family:Arial,Helvetica,sans-serif; text-align:left;">
 
-        <p>A new ticket has been created.</p>
+        <div th:insert="~{mail/header :: header('New Ticket Created')}"></div>
 
-        <p>Here are the details:</p>
-        <table class="details-table">
-            <tr>
-                <th>Ticket Title</th>
-                <td th:text="${ticket.requestTitle}">[Ticket Title]</td>
-            </tr>
-            <tr>
-                <th>Priority</th>
-                <td th:text="${ticket.priority}">[Ticket Priority]</td>
-            </tr>
-            <tr>
-                <th>Created By</th>
-                <td th:text="${ticket.requestUserName}">[Creator Name]</td>
-            </tr>
-            <tr>
-                <th>Summary</th>
-                <td th:utext="${ticket.requestDescription}">[Brief Ticket Description]</td>
-            </tr>
-        </table>
+        <!-- Body -->
+        <div style="padding:28px 28px 8px;">
+          <p style="margin:0 0 16px; font-size:15px; color:#374151;" th:text="#{email.greeting(${user.firstName})}">Dear User,</p>
+          <p style="margin:0 0 20px; font-size:15px; color:#374151;">A new ticket has been submitted and assigned to you. Here are the details:</p>
 
-        <a th:with="url=(@{|${baseUrl}${ticketPath}|})"
-           th:href="${url}"
-           style="display: inline-block; padding: 12px 20px; font-size: 16px; font-weight: bold; color: #ffffff; background-color: #0056b3; text-decoration: none; border-radius: 4px; margin-top: 10px;"
-           th:text="#{email.ticket.comment.action}">
-            View Ticket
-        </a>
-        <p th:text="#{email.ticket.comment.text3}" style="margin-top: 20px;">
-            If the button above doesn't work, copy and paste the following URL into your browser:
-        </p>
-        <!-- Full Ticket Link -->
-        <p>
-            <a th:with="url=(@{|${baseUrl}${ticketPath}|})"
-               th:href="${url}"
-               th:text="${url}">
-                Full Ticket Link
-            </a>
-        </p>
-        <p>
-            <span th:text="#{email.regards}">Regards,</span>
-            <br />
-            <span th:text="#{email.signature}">FlowInquiry Team.</span>
-        </p>
-    </div>
-    <div th:insert="~{mail/footer :: footer}"></div>
-</div>
+          <!-- Details card -->
+          <div style="background-color:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; overflow:hidden; margin-bottom:24px;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse; font-size:14px;">
+              <tr>
+                <td style="padding:12px 16px; font-weight:700; color:#6b7280; width:130px; border-bottom:1px solid #e2e8f0; white-space:nowrap;">Ticket Title</td>
+                <td style="padding:12px 16px; color:#111827; border-bottom:1px solid #e2e8f0;" th:text="${ticket.requestTitle}">[Ticket Title]</td>
+              </tr>
+              <tr style="background-color:#ffffff;">
+                <td style="padding:12px 16px; font-weight:700; color:#6b7280; border-bottom:1px solid #e2e8f0; white-space:nowrap;">Priority</td>
+                <td style="padding:12px 16px; border-bottom:1px solid #e2e8f0;">
+                  <!-- Priority badge -->
+                  <span th:text="${ticket.priority}"
+                        style="display:inline-block; padding:2px 10px; border-radius:99px; font-size:12px; font-weight:700; background-color:#fef3c7; color:#92400e;">[Priority]</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:12px 16px; font-weight:700; color:#6b7280; border-bottom:1px solid #e2e8f0; white-space:nowrap;">Created By</td>
+                <td style="padding:12px 16px; color:#111827; border-bottom:1px solid #e2e8f0;" th:text="${ticket.requestUserName}">[Creator]</td>
+              </tr>
+              <tr style="background-color:#ffffff;">
+                <td style="padding:12px 16px; font-weight:700; color:#6b7280; vertical-align:top; white-space:nowrap;">Summary</td>
+                <td style="padding:12px 16px; color:#374151; line-height:1.6;" th:utext="${ticket.requestDescription}">[Description]</td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- CTA button -->
+          <div style="margin-bottom:24px;">
+            <a th:with="url=(@{|${baseUrl}${ticketPath}|})" th:href="${url}"
+               style="display:inline-block; padding:12px 28px; font-size:15px; font-weight:700; color:#ffffff; background-color:#0056b3; text-decoration:none; border-radius:6px;"
+               th:text="#{email.ticket.comment.action}">View Ticket</a>
+          </div>
+
+          <!-- Fallback link -->
+          <p style="font-size:12px; color:#94a3b8; margin:0 0 4px;" th:text="#{email.ticket.comment.text3}">If the button doesn't work, copy this link:</p>
+          <p style="font-size:12px; margin:0 0 24px; word-break:break-all;">
+            <a th:with="url=(@{|${baseUrl}${ticketPath}|})" th:href="${url}" th:text="${url}" style="color:#0056b3;">link</a>
+          </p>
+
+          <p style="font-size:14px; color:#6b7280; margin:0 0 4px;" th:text="#{email.regards}">Regards,</p>
+          <p style="font-size:14px; font-weight:600; color:#374151; margin:0 0 28px;" th:text="#{email.signature}">FlowInquiry Team</p>
+        </div>
+
+        <div th:insert="~{mail/footer :: footer}"></div>
+      </div>
+    </td>
+  </tr>
+</table>
 </body>
 </html>

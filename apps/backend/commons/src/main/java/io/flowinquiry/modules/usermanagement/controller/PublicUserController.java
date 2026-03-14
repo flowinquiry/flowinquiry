@@ -36,7 +36,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -53,9 +52,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import tech.jhipster.web.util.PaginationUtil;
-import tech.jhipster.web.util.ResponseUtil;
 
 @RestController
 @RequestMapping("/api/users")
@@ -85,9 +81,42 @@ public class PublicUserController {
         this.userMapper = userMapper;
     }
 
+    @Operation(
+            summary = "Search all users (admin only)",
+            description = "Get all users including PENDING ones - requires ADMIN authority")
+    @PostMapping("/search-all")
+    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
+    public ResponseEntity<Page<UserDTO>> searchAllUsers(
+            @Valid @RequestBody Optional<QueryDTO> queryDTO, Pageable pageable) {
+        log.debug("REST request to get all users (admin)");
+
+        if (!onlyContainsAllowedProperties(pageable)) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        if (queryDTO.isPresent()) {
+            QueryDTO existingQuery = queryDTO.get();
+            if (existingQuery.getFilters() == null) {
+                existingQuery.setFilters(new ArrayList<>());
+            }
+            existingQuery
+                    .getFilters()
+                    .add(new Filter("isDeleted", FilterOperator.EQ, Boolean.FALSE));
+        } else {
+            QueryDTO defaultQuery = new QueryDTO();
+            List<Filter> filters =
+                    List.of(new Filter("isDeleted", FilterOperator.EQ, Boolean.FALSE));
+            defaultQuery.setFilters(filters);
+            queryDTO = Optional.of(defaultQuery);
+        }
+
+        final Page<UserDTO> page = userService.findAllUsers(queryDTO, pageable);
+        return new ResponseEntity<>(page, HttpStatus.OK);
+    }
+
     /**
-     * {@code GET /users} : get all users with only public information - calling this method is
-     * allowed for anyone.
+     * {@code POST /users/search} : get all users with only public information - calling this method
+     * is allowed for anyone.
      *
      * @param pageable the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all users.
@@ -138,10 +167,7 @@ public class PublicUserController {
 
         // Fetch public users and generate pagination headers
         final Page<UserDTO> page = userService.findAllPublicUsers(queryDTO, pageable);
-        HttpHeaders headers =
-                PaginationUtil.generatePaginationHttpHeaders(
-                        ServletUriComponentsBuilder.fromCurrentRequest(), page);
-        return new ResponseEntity<>(page, headers, HttpStatus.OK);
+        return new ResponseEntity<>(page, HttpStatus.OK);
     }
 
     /**
@@ -226,7 +252,7 @@ public class PublicUserController {
     public ResponseEntity<UserDTO> getUser(
             @Parameter(description = "ID of the user to retrieve") @PathVariable("userId")
                     Long userId) {
-        return ResponseUtil.wrapOrNotFound(userService.getUserWithManagerById(userId));
+        return ResponseEntity.of(userService.getUserWithManagerById(userId));
     }
 
     @Operation(
@@ -335,14 +361,9 @@ public class PublicUserController {
 
         if (userDTO.getId() != null) {
             throw new IllegalArgumentException("A new user cannot already have an ID");
-            // Lowercase the user login before comparing with database
-        } else if (userRepository.findOneByEmailIgnoreCase(userDTO.getEmail()).isPresent()) {
-            throw new EmailAlreadyUsedException();
-        } else {
-            UserDTO newUser = userService.createUser(userDTO);
-            return ResponseEntity.created(new URI("/api/users/" + newUser.getEmail()))
-                    .body(newUser);
         }
+        UserDTO newUser = userService.createUser(userDTO);
+        return ResponseEntity.created(new URI("/api/users/" + newUser.getEmail())).body(newUser);
     }
 
     /**

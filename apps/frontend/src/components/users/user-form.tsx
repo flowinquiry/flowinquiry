@@ -68,6 +68,7 @@ export const UserForm = ({ userId }: { userId?: number }) => {
     const savedUser = data.id
       ? await updateUser(prepareFormData(data), setError)
       : await createUser(data, setError);
+    if (!savedUser?.id) return;
     router.push(`/portal/users/${obfuscate(savedUser.id)}`);
   }
 

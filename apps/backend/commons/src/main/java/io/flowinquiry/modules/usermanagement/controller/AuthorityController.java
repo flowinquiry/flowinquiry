@@ -32,8 +32,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import tech.jhipster.web.util.HeaderUtil;
-import tech.jhipster.web.util.ResponseUtil;
 
 @RestController
 @RequestMapping("/api/authorities")
@@ -86,9 +84,6 @@ public class AuthorityController {
 
         AuthorityDTO savedAuthority = authorityService.createAuthority(authority);
         return ResponseEntity.created(new URI("/api/authorities/" + savedAuthority.getName()))
-                .headers(
-                        HeaderUtil.createEntityCreationAlert(
-                                applicationName, true, ENTITY_NAME, savedAuthority.getName()))
                 .body(savedAuthority);
     }
 
@@ -145,7 +140,7 @@ public class AuthorityController {
             @Parameter(description = "Name of the authority", required = true) @PathVariable("name")
                     String name) {
         Optional<AuthorityDTO> authority = authorityService.findAuthorityByName(name);
-        return ResponseUtil.wrapOrNotFound(authority);
+        return ResponseEntity.of(authority);
     }
 
     /**
@@ -170,11 +165,7 @@ public class AuthorityController {
                     @PathVariable("id")
                     String id) {
         authorityService.deleteAuthority(id);
-        return ResponseEntity.noContent()
-                .headers(
-                        HeaderUtil.createEntityDeletionAlert(
-                                applicationName, true, ENTITY_NAME, id))
-                .build();
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{authorityName}/users")
