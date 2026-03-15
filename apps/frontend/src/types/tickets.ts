@@ -48,7 +48,7 @@ export const TicketDTOSchema = z.object({
   assignUserId: z.number().nullish(),
   assignUserName: z.string().nullish(),
   assignUserImageUrl: z.string().nullish(),
-  currentStateId: z.number().nullish(),
+  currentStateId: z.number({ message: "State is required" }).int().positive(),
   currentStateName: z.string().nullish(),
   iterationId: z.number().nullish(),
   iterationName: z.string().nullish(),

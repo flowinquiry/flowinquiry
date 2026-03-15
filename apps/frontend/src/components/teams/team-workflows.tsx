@@ -1,12 +1,12 @@
 "use client";
 
-import { Ellipsis, GitBranch, Plus, Trash, Workflow } from "lucide-react";
+import { Ellipsis, GitBranch, Trash, Workflow } from "lucide-react";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 
 import { Heading } from "@/components/heading";
 import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -35,7 +35,6 @@ import {
   getWorkflowsByTeam,
 } from "@/lib/actions/workflows.action";
 import { obfuscate } from "@/lib/endecode";
-import { cn } from "@/lib/utils";
 import { BreadcrumbProvider } from "@/providers/breadcrumb-provider";
 import { useError } from "@/providers/error-provider";
 import { useTeam } from "@/providers/team-provider";
@@ -98,16 +97,6 @@ const TeamWorkflowsView = () => {
             title={t.common.navigation("workflows")}
             description={t.workflows.list("description")}
           />
-
-          {canManage && (
-            <Link
-              href={`/portal/teams/${obfuscate(team.id)}/workflows/new`}
-              className={cn(buttonVariants({ variant: "default" }), "shrink-0")}
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              {t.workflows.list("new_workflow")}
-            </Link>
-          )}
         </div>
 
         <Separator />
@@ -136,15 +125,6 @@ const TeamWorkflowsView = () => {
             <p className="text-sm text-muted-foreground">
               {t.workflows.list("no_workflows")}
             </p>
-            {canManage && (
-              <Link
-                href={`/portal/teams/${obfuscate(team.id)}/workflows/new`}
-                className={cn(buttonVariants({ variant: "default" }), "mt-1")}
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                {t.workflows.list("new_workflow")}
-              </Link>
-            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">

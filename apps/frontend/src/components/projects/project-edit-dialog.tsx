@@ -60,7 +60,7 @@ type ProjectDialogProps = {
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   teamEntity: TeamDTO;
   project?: ProjectDTO | null;
-  onSaveSuccess: () => void;
+  onSaveSuccess: (savedProject: ProjectDTO) => void;
 };
 
 const SectionHeader = ({
@@ -131,13 +131,14 @@ const ProjectEditDialog: React.FC<ProjectDialogProps> = ({
   }, [project, teamEntity.id, open, form]);
 
   const onSubmit = async (data: ProjectDTO) => {
+    let savedProject: ProjectDTO;
     if (project) {
-      await updateProject(project.id!, data, setError);
+      savedProject = await updateProject(project.id!, data, setError);
     } else {
-      await createProject(data, setError);
+      savedProject = await createProject(data, setError);
     }
     setOpen(false);
-    onSaveSuccess();
+    onSaveSuccess(savedProject);
   };
 
   // Handle dialog close - make sure to clean up any pending editor state

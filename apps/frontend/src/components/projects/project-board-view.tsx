@@ -94,9 +94,22 @@ const getEpicColor = (id: number) => EPIC_COLORS[id % EPIC_COLORS.length];
 type Props = {
   project: ProjectDTO;
   workflow: WorkflowDetailDTO;
+  openEpicDialog?: boolean;
+  onEpicDialogClose?: () => void;
+  openIterationDialog?: boolean;
+  onIterationDialogClose?: () => void;
+  refreshKey?: number;
 };
 
-export default function ProjectBoardView({ project, workflow }: Props) {
+export default function ProjectBoardView({
+  project,
+  workflow,
+  openEpicDialog,
+  onEpicDialogClose,
+  openIterationDialog,
+  onIterationDialogClose,
+  refreshKey = 0,
+}: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -160,6 +173,23 @@ export default function ProjectBoardView({ project, workflow }: Props) {
   const [isEpicDialogOpen, setIsEpicDialogOpen] = useState(false);
   const [selectedEpicForEdit, setSelectedEpicForEdit] =
     useState<ProjectEpicDTO | null>(null);
+
+  // Sync external open signals
+  useEffect(() => {
+    if (openEpicDialog) {
+      setSelectedEpicForEdit(null);
+      setIsEpicDialogOpen(true);
+      onEpicDialogClose?.();
+    }
+  }, [openEpicDialog]);
+
+  useEffect(() => {
+    if (openIterationDialog) {
+      setSelectedIterationForEdit(null);
+      setIsIterationDialogOpen(true);
+      onIterationDialogClose?.();
+    }
+  }, [openIterationDialog]);
 
   /* ── Data fetching ── */
   const fetchTasks = useCallback(async () => {
@@ -227,7 +257,7 @@ export default function ProjectBoardView({ project, workflow }: Props) {
     fetchIterations();
     fetchEpics();
     fetchMembers();
-  }, [fetchTasks, fetchIterations, fetchEpics, fetchMembers]);
+  }, [fetchTasks, fetchIterations, fetchEpics, fetchMembers, refreshKey]);
 
   /* ── Filter effect ── */
   useEffect(() => {

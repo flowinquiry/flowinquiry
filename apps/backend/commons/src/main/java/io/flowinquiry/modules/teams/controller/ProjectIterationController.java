@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -83,7 +84,8 @@ public class ProjectIterationController {
             })
     @PostMapping
     public ProjectIterationDTO createIteration(
-            @Parameter(description = "Iteration data to create", required = true) @RequestBody
+            @Parameter(description = "Iteration data to create", required = true)
+                    @Valid @RequestBody
                     ProjectIterationDTO iteration) {
         return iterationService.save(iteration);
     }
@@ -116,7 +118,7 @@ public class ProjectIterationController {
     public ProjectIterationDTO updateIteration(
             @Parameter(description = "ID of the iteration to update", required = true) @PathVariable
                     Long id,
-            @Parameter(description = "Updated iteration data", required = true) @RequestBody
+            @Parameter(description = "Updated iteration data", required = true) @Valid @RequestBody
                     ProjectIterationDTO updatedIteration) {
         return iterationService.updateIteration(id, updatedIteration);
     }

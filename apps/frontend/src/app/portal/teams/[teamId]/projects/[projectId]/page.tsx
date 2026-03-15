@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import React, { Suspense } from "react";
 
-import { ContentLayout } from "@/components/admin-panel/content-layout";
+import { SimpleContentView } from "@/components/admin-panel/simple-content-view";
 import ProjectView from "@/components/projects/project-view";
 import { getAppTranslations } from "@/lib/translation";
 
@@ -19,11 +19,11 @@ const ProjectDetailPage = async (props: ProjectDetailPageProps) => {
   const t = await getAppTranslations();
 
   return (
-    <ContentLayout title={t.common.navigation("projects")}>
+    <SimpleContentView title={t.common.navigation("projects")}>
       <Suspense>
         <ProjectView projectShortName={params.projectId} />
       </Suspense>
-    </ContentLayout>
+    </SimpleContentView>
   );
 };
 

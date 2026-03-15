@@ -177,6 +177,7 @@
       "title": "Dashboard",
       "description": "Overview of your team's performance and activities. Monitor team tickets, progress, and key metrics at a glance",
       "edit_team": "Edit Team",
+      "actions": "Actions",
       "last_7_days": "Last 7 Days",
       "last_14_days": "Last 14 Days",
       "last_30_days": "Last 30 Days",
@@ -485,6 +486,8 @@
       "view": {
         "add_new_task_to_state": "Add new task to {stateName}",
         "new_task": "Add task",
+        "add_task": "Add task",
+        "actions": "Actions",
         "project_not_found": "Project not found",
         "edit_project": "Edit project",
         "duration": "Duration",

@@ -6,6 +6,7 @@ import {
   Calendar,
   CheckCircle,
   Clock,
+  ExternalLink,
   Eye,
   FileText,
   MessageSquare,
@@ -363,6 +364,31 @@ const TaskDetailSheet: React.FC<TaskDetailSheetProps> = ({
                 )}
               </div>
             </SheetTitle>
+
+            {/* ── Action bar ── right-aligned */}
+            <div className="flex items-center justify-end gap-2 mt-1">
+              <Button variant="outline" size="sm" onClick={handleFocusComments}>
+                <MessageSquare className="h-4 w-4 mr-1.5" />
+                {t.teams.tickets.detail("add_comment")}
+              </Button>
+              <TooltipProvider delayDuration={200}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" size="sm" asChild>
+                      <Link
+                        href={`/portal/teams/${obfuscate(task.teamId)}/projects/${task.projectShortName}/${task.projectTicketNumber}`}
+                      >
+                        <ExternalLink className="h-4 w-4 mr-1.5" />
+                        {t.teams.tickets.detail("open_full_view")}
+                      </Link>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    {t.teams.tickets.detail("open_full_view")}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
           </div>
         </SheetHeader>
 
