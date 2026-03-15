@@ -28,7 +28,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -40,6 +39,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/tickets")
@@ -197,7 +197,7 @@ public class TicketController {
                         content = @Content)
             })
     @GetMapping("/{currentId}/next")
-    public ResponseEntity<TicketDTO> getNextEntity(
+    public TicketDTO getNextEntity(
             @Parameter(description = "ID of the current ticket", required = true)
                     @PathVariable("currentId")
                     Long currentId,
@@ -206,8 +206,10 @@ public class TicketController {
                     Long projectId) {
         return ticketService
                 .getNextTicket(currentId, projectId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .orElseThrow(
+                        () ->
+                                new ResponseStatusException(
+                                        HttpStatus.NOT_FOUND, "No next ticket found"));
     }
 
     @Operation(
@@ -228,7 +230,7 @@ public class TicketController {
                         content = @Content)
             })
     @GetMapping("/{currentId}/previous")
-    public ResponseEntity<TicketDTO> getPreviousEntity(
+    public TicketDTO getPreviousEntity(
             @Parameter(description = "ID of the current ticket", required = true)
                     @PathVariable("currentId")
                     Long currentId,
@@ -237,8 +239,10 @@ public class TicketController {
                     Long projectId) {
         return ticketService
                 .getPreviousTicket(currentId, projectId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .orElseThrow(
+                        () ->
+                                new ResponseStatusException(
+                                        HttpStatus.NOT_FOUND, "No previous ticket found"));
     }
 
     @Operation(
@@ -358,12 +362,10 @@ public class TicketController {
                         content = @Content)
             })
     @GetMapping("/{ticketId}/states-history")
-    public ResponseEntity<TransitionItemCollectionDTO> getTicketStateChangesHistory(
+    public TransitionItemCollectionDTO getTicketStateChangesHistory(
             @Parameter(description = "ID of the ticket", required = true) @PathVariable("ticketId")
                     Long ticketId) {
-        TransitionItemCollectionDTO ticketHistory =
-                workflowTransitionHistoryService.getTransitionHistoryByTicketId(ticketId);
-        return ResponseEntity.ok(ticketHistory);
+        return workflowTransitionHistoryService.getTransitionHistoryByTicketId(ticketId);
     }
 
     @Operation(

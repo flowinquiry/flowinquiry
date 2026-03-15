@@ -1,4 +1,5 @@
 import { ArrowRight, Mail, ShieldCheck, Shuffle } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import React from "react";
 
@@ -14,6 +15,11 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { getAppTranslations } from "@/lib/translation";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getAppTranslations();
+  return { title: t.common.navigation("settings") };
+}
 
 const Page = async () => {
   const t = await getAppTranslations();

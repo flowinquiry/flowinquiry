@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
 import React from "react";
 
 import { SimpleContentView } from "@/components/admin-panel/simple-content-view";
 import { MailSettings } from "@/components/mail/mail-settings";
 import { getAppTranslations } from "@/lib/translation";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getAppTranslations();
+  return { title: t.common.navigation("mail") };
+}
 
 const Page = async () => {
   const t = await getAppTranslations();

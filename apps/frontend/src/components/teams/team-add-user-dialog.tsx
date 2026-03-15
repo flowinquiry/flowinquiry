@@ -47,7 +47,7 @@ const optionSchema = z.object({
 
 const FormSchema = z.object({
   users: z.array(optionSchema).min(1),
-  role: z.string(),
+  role: z.string().min(1, { message: "Role is required" }),
 });
 
 const AddUserToTeamDialog: React.FC<AddUserToTeamDialogProps> = ({
@@ -61,7 +61,7 @@ const AddUserToTeamDialog: React.FC<AddUserToTeamDialogProps> = ({
   const t = useAppClientTranslations();
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
-    defaultValues: { users: [], role: "" },
+    defaultValues: { users: [], role: "member" },
   });
 
   const [dialogKey, setDialogKey] = React.useState(0);
@@ -69,7 +69,7 @@ const AddUserToTeamDialog: React.FC<AddUserToTeamDialogProps> = ({
   // Reset form and force remount of inner components every time the dialog opens
   useEffect(() => {
     if (open) {
-      form.reset({ users: [], role: "" });
+      form.reset({ users: [], role: "member" });
       setDialogKey((k) => k + 1);
     }
   }, [open, form]);

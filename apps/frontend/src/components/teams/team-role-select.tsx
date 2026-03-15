@@ -38,9 +38,11 @@ const TeamRoleSelectField = () => {
         <FormItem>
           <FormLabel>{t.teams.common("role")}</FormLabel>
           <FormControl>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <Select onValueChange={field.onChange} value={field.value || ""}>
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue
+                  placeholder={t.teams.common("select_role_placeholder")}
+                />
               </SelectTrigger>
               <SelectContent>
                 {roles.map((role) => (

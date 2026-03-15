@@ -10,9 +10,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.ByteArrayOutputStream;
 import java.util.concurrent.TimeUnit;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.MediaTypeFactory;
 import org.springframework.http.ResponseEntity;
@@ -50,7 +51,7 @@ public class FileDownloadController {
                         content = @Content)
             })
     @GetMapping(value = "/**")
-    public ResponseEntity<byte[]> downloadFile(
+    public ResponseEntity<Resource> downloadFile(
             @Parameter(description = "HTTP request containing the file path", required = true)
                     HttpServletRequest request)
             throws Exception {
@@ -62,17 +63,21 @@ public class FileDownloadController {
         String fileName = requestUrl.substring(fileIndex + 1);
         String container = requestUrl.substring("/api/files".length() + 1, fileIndex);
 
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        storageService.downloadFile(container, fileName, byteArrayOutputStream);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        storageService.downloadFile(container, fileName, out);
+        byte[] data = out.toByteArray();
 
-        final HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setContentType(
-                MediaTypeFactory.getMediaType(fileName).orElse(MediaType.APPLICATION_OCTET_STREAM));
-        httpHeaders.setCacheControl(CacheControl.maxAge(1, TimeUnit.DAYS).cachePublic());
-        httpHeaders.setExpires(System.currentTimeMillis() + 3600 * 1000 * 24);
-        httpHeaders.setETag("\"" + byteArrayOutputStream.size() + "\""); // ETag for revalidation
+        MediaType mediaType =
+                MediaTypeFactory.getMediaType(fileName).orElse(MediaType.APPLICATION_OCTET_STREAM);
 
-        return new ResponseEntity<>(
-                byteArrayOutputStream.toByteArray(), httpHeaders, HttpStatus.OK);
+        return ResponseEntity.ok()
+                .contentType(mediaType)
+                .contentLength(data.length)
+                .cacheControl(CacheControl.maxAge(1, TimeUnit.DAYS).cachePublic())
+                .eTag(String.valueOf(data.length))
+                .header(
+                        HttpHeaders.EXPIRES,
+                        String.valueOf(System.currentTimeMillis() + 3600 * 1000 * 24))
+                .body(new ByteArrayResource(data));
     }
 }

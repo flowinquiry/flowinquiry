@@ -13,19 +13,22 @@ import java.util.List;
 import lombok.Data;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/notifications")
 @Tag(name = "Notifications", description = "API for managing user notifications")
 public class NotificationController {
+
     private final NotificationService notificationService;
 
     public NotificationController(NotificationService notificationService) {
@@ -44,10 +47,10 @@ public class NotificationController {
                                 @Content(schema = @Schema(implementation = NotificationDTO.class)))
             })
     @GetMapping("/user/{userId}")
-    public ResponseEntity<Page<NotificationDTO>> getUserNotifications(
+    public Page<NotificationDTO> getUserNotifications(
             @PathVariable @Parameter(description = "ID of the user", required = true) Long userId,
             @Parameter(description = "Pagination parameters") Pageable pageable) {
-        return ResponseEntity.ok(notificationService.getNotificationsForUser(userId, pageable));
+        return notificationService.getNotificationsForUser(userId, pageable);
     }
 
     @Operation(
@@ -63,16 +66,16 @@ public class NotificationController {
                         description = "Invalid request (empty notification IDs)")
             })
     @PostMapping("/mark-read")
-    public ResponseEntity<Void> markNotificationsAsRead(
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void markNotificationsAsRead(
             @Parameter(description = "List of notification IDs to mark as read", required = true)
                     @RequestBody
                     MarkReadRequest request) {
         if (request.getNotificationIds() == null || request.getNotificationIds().isEmpty()) {
-            return ResponseEntity.badRequest().build();
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Notification IDs must not be empty");
         }
-
         notificationService.markNotificationsAsRead(request.getNotificationIds());
-        return ResponseEntity.noContent().build();
     }
 
     @Operation(
@@ -87,12 +90,10 @@ public class NotificationController {
                                 @Content(schema = @Schema(implementation = NotificationDTO.class)))
             })
     @GetMapping("/unread")
-    public ResponseEntity<List<NotificationDTO>> getUnreadNotifications(
+    public List<NotificationDTO> getUnreadNotifications(
             @Parameter(description = "ID of the user", required = true) @RequestParam("userId")
                     Long userId) {
-        List<NotificationDTO> notifications =
-                notificationService.getUnreadNotificationsForUser(userId);
-        return ResponseEntity.ok(notifications);
+        return notificationService.getUnreadNotificationsForUser(userId);
     }
 
     @Data

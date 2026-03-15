@@ -1,16 +1,16 @@
 "use client";
 
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ArrowDownUp } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import useSWR from "swr";
 
 import { UserAvatar } from "@/components/shared/avatar-display";
+import CollapsibleCard from "@/components/shared/collapsible-card";
 import PaginationExt from "@/components/shared/pagination-ext";
-import TruncatedHtmlLabel from "@/components/shared/truncate-html-label";
 import { TicketPriorityDisplay } from "@/components/teams/ticket-priority-display";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import {
   Tooltip,
@@ -28,16 +28,13 @@ const TeamOverdueTickets = ({ teamId }: { teamId: number }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy] = useState("priority");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-  const [collapsed, setCollapsed] = useState(false);
   const { setError } = useError();
   const t = useAppClientTranslations();
 
-  // Reset to page 1 when sort direction changes
   useEffect(() => {
     setCurrentPage(1);
   }, [sortDirection]);
 
-  // **SWR Fetcher Function**
   const fetchTickets = async () => {
     return getOverdueTicketsByTeam(
       teamId,
@@ -50,227 +47,177 @@ const TeamOverdueTickets = ({ teamId }: { teamId: number }) => {
     );
   };
 
-  // **Use SWR for Fetching**
-  const { data, error, isLoading, mutate } = useSWR(
-    [
-      `/api/team/${teamId}/overdue-tickets`,
-      currentPage,
-      sortBy,
-      sortDirection,
-      "modifiedAt",
-      "desc",
-    ],
+  const { data, error, isLoading } = useSWR(
+    [`/api/team/${teamId}/overdue-tickets`, currentPage, sortBy, sortDirection],
     fetchTickets,
-    {
-      revalidateOnFocus: false,
-    },
+    { revalidateOnFocus: false },
   );
 
   const tickets = data?.content ?? [];
   const totalPages = data?.totalPages ?? 0;
   const totalTickets = data?.totalElements ?? 0;
 
-  // **Safe Page Change Handler**
   const handlePageChange = (page: number) => {
     if (page < 1) page = 1;
     if (totalPages > 0 && page > totalPages) page = totalPages;
     setCurrentPage(page);
   };
 
-  // **Toggle Sorting**
   const toggleSortDirection = () =>
     setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
 
   return (
-    <Card>
-      {/* Header Row */}
-      <CardHeader>
-        <div className="flex items-center justify-between w-full">
-          {/* Left: Chevron Icon and Title */}
-          <div className="flex items-center gap-2">
+    <CollapsibleCard
+      icon={<AlertTriangle className="h-4 w-4 text-muted-foreground" />}
+      title={t.teams.dashboard("overdue_tickets.title", { totalTickets })}
+      headerAction={
+        <Tooltip>
+          <TooltipTrigger asChild>
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setCollapsed(!collapsed)}
-              className="p-0"
+              onClick={toggleSortDirection}
+              className="h-7 w-7"
             >
-              {collapsed ? (
-                <ChevronRight className="w-5 h-5" />
-              ) : (
-                <ChevronDown className="w-5 h-5" />
-              )}
+              <ArrowDownUp className="h-3.5 w-3.5" />
             </Button>
-            <CardTitle className="text-left">
-              {t.teams.dashboard("overdue_tickets.title", { totalTickets })}
-            </CardTitle>
-          </div>
-
-          {/* Right: Sort Button */}
-          <div>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  onClick={toggleSortDirection}
-                  className="p-2 flex items-center gap-1"
-                >
-                  {sortDirection === "desc" ? (
-                    <ChevronDown className="w-4 h-4" />
-                  ) : (
-                    <ChevronRight className="w-4 h-4" />
-                  )}
-                  <span className="text-sm">
-                    {t.teams.tickets.form.base("priority")}
-                  </span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                {sortDirection === "asc"
-                  ? t.teams.common("priority_sort_ascending")
-                  : t.teams.common("priority_sort_descending")}
-              </TooltipContent>
-            </Tooltip>
-          </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            {sortDirection === "asc"
+              ? t.teams.common("priority_sort_ascending")
+              : t.teams.common("priority_sort_descending")}
+          </TooltipContent>
+        </Tooltip>
+      }
+    >
+      {isLoading ? (
+        <div className="flex justify-center items-center h-32">
+          <Spinner className="h-8 w-8">
+            <span>{t.common.misc("loading_data")}</span>
+          </Spinner>
         </div>
-      </CardHeader>
+      ) : error ? (
+        <p className="text-sm text-red-500">
+          {t.common.misc("fail_to_load_data")}
+        </p>
+      ) : tickets.length === 0 ? (
+        <p className="text-sm text-muted-foreground py-6 text-center">
+          {t.teams.dashboard("overdue_tickets.no_data")}
+        </p>
+      ) : (
+        <div className="flex flex-col">
+          {tickets.map((ticket, index) => (
+            <div
+              key={ticket.id}
+              className={`py-2.5 px-2 rounded-md transition-all ${
+                index % 2 === 0
+                  ? "bg-muted/30 hover:bg-muted/50"
+                  : "hover:bg-muted/40"
+              }`}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex flex-col min-w-0 flex-1">
+                  {/* Title */}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Link
+                        href={
+                          ticket.projectId && ticket.projectId > 0
+                            ? `/portal/teams/${obfuscate(ticket.teamId)}/projects/${ticket.projectShortName}/${ticket.projectTicketNumber}`
+                            : `/portal/teams/${obfuscate(ticket.teamId)}/tickets/${obfuscate(ticket.id)}`
+                        }
+                        className="text-sm font-medium hover:text-primary hover:underline underline-offset-4 transition-colors truncate"
+                      >
+                        {ticket.requestTitle}
+                      </Link>
+                    </TooltipTrigger>
+                    <TooltipContent>{ticket.requestTitle}</TooltipContent>
+                  </Tooltip>
 
-      {/* Collapsible Content */}
-      {!collapsed && (
-        <CardContent>
-          {isLoading ? (
-            <div className="flex justify-center items-center h-[200px]">
-              <Spinner className="h-8 w-8">
-                <span>{t.common.misc("loading_data")}</span>
-              </Spinner>
-            </div>
-          ) : error ? (
-            <p className="text-sm text-red-500">
-              {t.common.misc("fail_to_load_data")}
-            </p>
-          ) : (
-            <div className="space-y-4">
-              {tickets.length > 0 ? (
-                tickets.map((ticket, index) => (
-                  <div
-                    key={ticket.id}
-                    className={`py-4 px-4 rounded-md shadow-xs ${
-                      index % 2 === 0
-                        ? "bg-gray-50 dark:bg-gray-800"
-                        : "bg-white dark:bg-gray-900"
-                    }`}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex flex-col">
-                        <div className="flex items-center gap-2">
-                          <Button variant="link" className="px-0 h-auto">
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Link
-                                  href={
-                                    ticket.projectId && ticket.projectId > 0
-                                      ? `/portal/teams/${obfuscate(ticket.teamId)}/projects/${ticket.projectShortName}/${ticket.projectTicketNumber}`
-                                      : `/portal/teams/${obfuscate(ticket.teamId)}/tickets/${obfuscate(ticket.id)}`
-                                  }
-                                  className="truncate max-w-xs"
-                                >
-                                  {ticket.requestTitle}
-                                </Link>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <span>{ticket.requestTitle}</span>
-                              </TooltipContent>
-                            </Tooltip>
-                          </Button>
-                        </div>
-
-                        {/* Project Info */}
-                        {ticket.projectId &&
-                          ticket.projectId > 0 &&
-                          ticket.projectName && (
-                            <div className="mt-1 ml-4 flex items-center gap-2">
-                              <span className="text-xs bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded">
-                                Project
-                              </span>
-                              <Link
-                                href={`/portal/teams/${obfuscate(ticket.teamId)}/projects/${ticket.projectShortName}`}
-                                className="text-xs font-medium text-blue-600 hover:underline"
-                              >
-                                {ticket.projectName}
-                              </Link>
-                            </div>
-                          )}
-
-                        {/* Assigned To Info */}
-                        {ticket.assignUserId && (
-                          <div className="mt-1 ml-4 flex items-center gap-2">
-                            <span className="text-xs text-gray-500">
-                              {t.teams.common("assigned_to")}:
-                            </span>
-                            <UserAvatar imageUrl={ticket.assignUserImageUrl} />
-                            <span className="text-xs font-medium">
-                              <Button variant="link" className="p-0">
-                                <Link
-                                  href={`/portal/users/${obfuscate(ticket.assignUserId)}`}
-                                >
-                                  {" "}
-                                  {ticket.assignUserName}
-                                </Link>
-                              </Button>
-                            </span>
-                          </div>
-                        )}
+                  {/* Project badge */}
+                  {ticket.projectId &&
+                    ticket.projectId > 0 &&
+                    ticket.projectName && (
+                      <div className="mt-0.5 flex items-center gap-1.5">
+                        <span className="text-xs bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 px-1.5 py-0.5 rounded">
+                          Project
+                        </span>
+                        <Link
+                          href={`/portal/teams/${obfuscate(ticket.teamId)}/projects/${ticket.projectShortName}`}
+                          className="text-xs text-primary hover:underline underline-offset-4"
+                        >
+                          {ticket.projectName}
+                        </Link>
                       </div>
+                    )}
 
-                      <div className="flex flex-col items-end">
-                        <TicketPriorityDisplay
-                          priority={ticket.priority as TicketPriority}
-                        />
-                      </div>
+                  {/* Assignee */}
+                  {ticket.assignUserId && (
+                    <div className="mt-0.5 flex items-center gap-1.5">
+                      <span className="text-xs text-muted-foreground">
+                        {t.teams.common("assigned_to")}:
+                      </span>
+                      <UserAvatar
+                        imageUrl={ticket.assignUserImageUrl}
+                        size="w-4 h-4"
+                      />
+                      <Link
+                        href={`/portal/users/${obfuscate(ticket.assignUserId)}`}
+                        className="text-xs hover:text-primary hover:underline underline-offset-4 transition-colors"
+                      >
+                        {ticket.assignUserName}
+                      </Link>
                     </div>
+                  )}
+                </div>
 
-                    <TruncatedHtmlLabel
-                      htmlContent={ticket.requestDescription || ""}
-                      wordLimit={100}
-                    />
+                {/* Priority */}
+                <div className="shrink-0">
+                  <TicketPriorityDisplay
+                    priority={ticket.priority as TicketPriority}
+                  />
+                </div>
+              </div>
 
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                      {t.teams.common("modified_at")}::{" "}
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="cursor-pointer">
-                            {ticket.modifiedAt
-                              ? formatDateTimeDistanceToNow(ticket.modifiedAt)
-                              : "N/A"}
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          {ticket.modifiedAt
-                            ? new Date(ticket.modifiedAt).toLocaleString()
-                            : "N/A"}
-                        </TooltipContent>
-                      </Tooltip>
-                    </p>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {t.teams.dashboard("overdue_tickets.no_data")}
-                </p>
+              {/* Description */}
+              {ticket.requestDescription && (
+                <div
+                  className="prose prose-sm max-w-none dark:prose-invert text-muted-foreground **:my-0 mt-1"
+                  dangerouslySetInnerHTML={{
+                    __html: ticket.requestDescription,
+                  }}
+                />
               )}
-            </div>
-          )}
 
-          {totalPages > 0 && (
-            <PaginationExt
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-              className="pt-2"
-            />
-          )}
-        </CardContent>
+              {/* Modified at */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <p className="text-xs text-muted-foreground/70 mt-1 cursor-default">
+                    {ticket.modifiedAt
+                      ? formatDateTimeDistanceToNow(ticket.modifiedAt)
+                      : "N/A"}
+                  </p>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {ticket.modifiedAt
+                    ? new Date(ticket.modifiedAt).toLocaleString()
+                    : "N/A"}
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          ))}
+        </div>
       )}
-    </Card>
+
+      {totalPages > 0 && (
+        <PaginationExt
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          className="pt-2"
+        />
+      )}
+    </CollapsibleCard>
   );
 };
 

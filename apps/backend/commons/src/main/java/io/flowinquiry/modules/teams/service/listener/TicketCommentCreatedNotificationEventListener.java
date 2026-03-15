@@ -2,10 +2,12 @@ package io.flowinquiry.modules.teams.service.listener;
 
 import static io.flowinquiry.modules.collab.domain.EntityType.Team;
 import static io.flowinquiry.modules.shared.domain.EventPayloadType.NOTIFICATION;
-import static io.flowinquiry.modules.teams.utils.PathUtils.buildTicketPath;
+import static io.flowinquiry.utils.HtmlUtils.NOTIFICATION_CONTAINER_STYLE;
+import static io.flowinquiry.utils.HtmlUtils.buildTicketPath;
+import static io.flowinquiry.utils.HtmlUtils.userAvatarLink;
 import static j2html.TagCreator.a;
-import static j2html.TagCreator.p;
-import static j2html.TagCreator.text;
+import static j2html.TagCreator.div;
+import static j2html.TagCreator.span;
 
 import io.flowinquiry.exceptions.ResourceNotFoundException;
 import io.flowinquiry.modules.collab.domain.ActivityLog;
@@ -22,7 +24,6 @@ import io.flowinquiry.modules.teams.service.event.TicketCommentCreatedEvent;
 import io.flowinquiry.modules.usermanagement.domain.User;
 import io.flowinquiry.modules.usermanagement.repository.UserRepository;
 import io.flowinquiry.modules.usermanagement.service.dto.UserWithTeamRoleDTO;
-import io.flowinquiry.utils.Obfuscator;
 import io.flowinquiry.utils.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
@@ -65,15 +66,12 @@ public class TicketCommentCreatedNotificationEventListener {
                         : commentContent;
 
         String html =
-                p(
-                                a(createdUser.getFirstName() + " " + createdUser.getLastName())
-                                        .withHref(
-                                                "/portal/users/"
-                                                        + Obfuscator.obfuscate(
-                                                                createdUser.getId())),
-                                text(" has created a new comment for the ticket "),
-                                a(buildTicketPath(ticket)),
-                                text(": " + truncatedContent))
+                div().withStyle(NOTIFICATION_CONTAINER_STYLE)
+                        .with(
+                                userAvatarLink(createdUser),
+                                span(" has created a new comment for the ticket "),
+                                a(ticket.getRequestTitle()).withHref(buildTicketPath(ticket)),
+                                span(": " + truncatedContent))
                         .render();
 
         List<UserWithTeamRoleDTO> usersInTeam =

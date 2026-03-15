@@ -23,13 +23,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -38,7 +35,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -50,8 +46,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/users")
@@ -86,12 +84,12 @@ public class PublicUserController {
             description = "Get all users including PENDING ones - requires ADMIN authority")
     @PostMapping("/search-all")
     @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
-    public ResponseEntity<Page<UserDTO>> searchAllUsers(
+    public Page<UserDTO> searchAllUsers(
             @Valid @RequestBody Optional<QueryDTO> queryDTO, Pageable pageable) {
         log.debug("REST request to get all users (admin)");
 
         if (!onlyContainsAllowedProperties(pageable)) {
-            return ResponseEntity.badRequest().build();
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid sort property");
         }
 
         if (queryDTO.isPresent()) {
@@ -104,14 +102,12 @@ public class PublicUserController {
                     .add(new Filter("isDeleted", FilterOperator.EQ, Boolean.FALSE));
         } else {
             QueryDTO defaultQuery = new QueryDTO();
-            List<Filter> filters =
-                    List.of(new Filter("isDeleted", FilterOperator.EQ, Boolean.FALSE));
-            defaultQuery.setFilters(filters);
+            defaultQuery.setFilters(
+                    List.of(new Filter("isDeleted", FilterOperator.EQ, Boolean.FALSE)));
             queryDTO = Optional.of(defaultQuery);
         }
 
-        final Page<UserDTO> page = userService.findAllUsers(queryDTO, pageable);
-        return new ResponseEntity<>(page, HttpStatus.OK);
+        return userService.findAllUsers(queryDTO, pageable);
     }
 
     /**
@@ -119,7 +115,6 @@ public class PublicUserController {
      * is allowed for anyone.
      *
      * @param pageable the pagination information.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all users.
      */
     @Operation(
             summary = "Search all public users",
@@ -137,18 +132,16 @@ public class PublicUserController {
                 @ApiResponse(responseCode = "400", description = "Bad request", content = @Content)
             })
     @PostMapping("/search")
-    public ResponseEntity<Page<UserDTO>> searchAllPublicUsers(
+    public Page<UserDTO> searchAllPublicUsers(
             @Parameter(description = "Query parameters for filtering users") @Valid @RequestBody
                     Optional<QueryDTO> queryDTO,
             @Parameter(description = "Pagination information") Pageable pageable) {
         log.debug("REST request to get all public User names");
 
-        // Check for allowed properties in pageable
         if (!onlyContainsAllowedProperties(pageable)) {
-            return ResponseEntity.badRequest().build();
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid sort property");
         }
 
-        // Handle queryDTO presence and filters
         if (queryDTO.isPresent()) {
             QueryDTO existingQuery = queryDTO.get();
             if (existingQuery.getFilters() == null) {
@@ -159,23 +152,18 @@ public class PublicUserController {
                     .add(new Filter("isDeleted", FilterOperator.EQ, Boolean.FALSE));
         } else {
             QueryDTO defaultQuery = new QueryDTO();
-            List<Filter> filters =
-                    List.of(new Filter("isDeleted", FilterOperator.EQ, Boolean.FALSE));
-            defaultQuery.setFilters(filters);
+            defaultQuery.setFilters(
+                    List.of(new Filter("isDeleted", FilterOperator.EQ, Boolean.FALSE)));
             queryDTO = Optional.of(defaultQuery);
         }
 
-        // Fetch public users and generate pagination headers
-        final Page<UserDTO> page = userService.findAllPublicUsers(queryDTO, pageable);
-        return new ResponseEntity<>(page, HttpStatus.OK);
+        return userService.findAllPublicUsers(queryDTO, pageable);
     }
 
     /**
      * {@code PUT /users} : Updates an existing User.
      *
      * @param userDTO the user to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated
-     *     user.
      * @throws EmailAlreadyUsedException {@code 400 (Bad Request)} if the email is already in use.
      */
     @Operation(
@@ -200,7 +188,7 @@ public class PublicUserController {
                         content = @Content)
             })
     @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UserDTO> updateUser(
+    public UserDTO updateUser(
             @Parameter(description = "User data to update") @RequestPart("userDTO") UserDTO userDTO,
             @Parameter(description = "Optional avatar file to upload")
                     @RequestParam(value = "file", required = false)
@@ -216,21 +204,25 @@ public class PublicUserController {
                 userRepository
                         .findById(userDTO.getId())
                         .orElseThrow(() -> new ResourceNotFoundException("Can not find user"));
-        Optional<String> fileRemovedPath = Optional.empty();
 
-        // Handle the avatar file upload, if present
+        Optional<String> fileRemovedPath = Optional.empty();
         if (avatarFile != null && !avatarFile.isEmpty()) {
-            fileRemovedPath = Optional.ofNullable(existingUser.getImageUrl());
+            String existingImageUrl = existingUser.getImageUrl();
             String avatarPath =
                     storageService.uploadImage(
-                            "avatar", UUID.randomUUID().toString(), avatarFile.getInputStream());
+                            "avatar", avatarFile.getInputStream(), existingImageUrl);
             userDTO.setImageUrl(avatarPath);
+            if (existingImageUrl != null
+                    && !existingImageUrl.isBlank()
+                    && !existingImageUrl.equals(avatarPath)) {
+                fileRemovedPath = Optional.of(existingImageUrl);
+            }
         }
 
         UserDTO updatedUser = userService.updateUser(userDTO);
         fileRemovedPath.ifPresent(
                 s -> eventPublisher.publishEvent(new ResourceRemoveEvent(this, s)));
-        return ResponseEntity.ok(updatedUser);
+        return updatedUser;
     }
 
     @Operation(summary = "Get user by ID", description = "Retrieves a user by their ID")
@@ -249,10 +241,14 @@ public class PublicUserController {
                         content = @Content)
             })
     @GetMapping("/{userId}")
-    public ResponseEntity<UserDTO> getUser(
-            @Parameter(description = "ID of the user to retrieve") @PathVariable("userId")
-                    Long userId) {
-        return ResponseEntity.of(userService.getUserWithManagerById(userId));
+    public UserDTO getUser(
+            @PathVariable @Parameter(description = "ID of the user to retrieve") Long userId) {
+        return userService
+                .getUserWithManagerById(userId)
+                .orElseThrow(
+                        () ->
+                                new ResponseStatusException(
+                                        HttpStatus.NOT_FOUND, "User not found with id: " + userId));
     }
 
     @Operation(
@@ -276,13 +272,11 @@ public class PublicUserController {
                         content = @Content)
             })
     @GetMapping("/permissions/{userId}")
-    public ResponseEntity<List<ResourcePermissionDTO>> getUserResourcesWithPermissions(
+    public List<ResourcePermissionDTO> getUserResourcesWithPermissions(
             @Parameter(description = "ID of the user to retrieve permissions for")
                     @PathVariable("userId")
                     Long userId) {
-        List<ResourcePermissionDTO> resourcesWithPermissions =
-                userService.getResourcesWithPermissionsByUserId(userId);
-        return ResponseEntity.ok(resourcesWithPermissions);
+        return userService.getResourcesWithPermissionsByUserId(userId);
     }
 
     @Operation(
@@ -303,12 +297,11 @@ public class PublicUserController {
                         content = @Content)
             })
     @GetMapping("/{managerId}/direct-reports")
-    public ResponseEntity<List<UserDTO>> getDirectReports(
+    public List<UserDTO> getDirectReports(
             @Parameter(description = "ID of the manager to retrieve direct reports for")
                     @PathVariable("managerId")
                     Long managerId) {
-        List<UserDTO> directReports = userService.getDirectReports(managerId);
-        return ResponseEntity.ok(directReports);
+        return userService.getDirectReports(managerId);
     }
 
     private boolean onlyContainsAllowedProperties(Pageable pageable) {
@@ -324,9 +317,6 @@ public class PublicUserController {
      * activation link. The user needs to be activated on creation.
      *
      * @param userDTO the user to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new
-     *     user, or with status {@code 400 (Bad Request)} if the login or email is already in use.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
      * @throws IllegalArgumentException {@code 400 (Bad Request)} if the login or email is already
      *     in use.
      */
@@ -353,24 +343,21 @@ public class PublicUserController {
             })
     @PostMapping
     @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
-    public ResponseEntity<UserDTO> createUser(
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserDTO createUser(
             @Parameter(description = "User data to create", required = true) @Valid @RequestBody
-                    UserDTO userDTO)
-            throws URISyntaxException {
+                    UserDTO userDTO) {
         log.debug("REST request to save User : {}", userDTO);
-
         if (userDTO.getId() != null) {
             throw new IllegalArgumentException("A new user cannot already have an ID");
         }
-        UserDTO newUser = userService.createUser(userDTO);
-        return ResponseEntity.created(new URI("/api/users/" + newUser.getEmail())).body(newUser);
+        return userService.createUser(userDTO);
     }
 
     /**
      * {@code DELETE /admin/users/:email} : delete the "email" User.
      *
      * @param userId the userId of the user to delete.
-     * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @Operation(summary = "Delete a user", description = "Deletes a user by their ID")
     @ApiResponses(
@@ -382,13 +369,13 @@ public class PublicUserController {
                         content = @Content)
             })
     @DeleteMapping("/{userId}")
-    public ResponseEntity<Void> deleteUser(
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteUser(
             @Parameter(description = "ID of the user to delete", required = true)
                     @PathVariable("userId")
                     Long userId) {
         log.debug("REST request to delete User: {}", userId);
         userService.softDeleteUserById(userId);
-        return ResponseEntity.noContent().build();
     }
 
     @Operation(
@@ -410,11 +397,11 @@ public class PublicUserController {
                         content = @Content)
             })
     @GetMapping("/{userId}/hierarchy")
-    public ResponseEntity<UserHierarchyDTO> getUserHierarchy(
+    public UserHierarchyDTO getUserHierarchy(
             @Parameter(description = "ID of the user to retrieve hierarchy for", required = true)
                     @PathVariable("userId")
                     Long userId) {
-        return ResponseEntity.ok(userService.getUserHierarchyWithSubordinates(userId));
+        return userService.getUserHierarchyWithSubordinates(userId);
     }
 
     @Operation(
@@ -431,8 +418,8 @@ public class PublicUserController {
                                         schema = @Schema(implementation = UserHierarchyDTO.class)))
             })
     @GetMapping("/orgChart")
-    public ResponseEntity<UserHierarchyDTO> getOrgChart() {
-        return ResponseEntity.ok(userService.getOrgChart());
+    public UserHierarchyDTO getOrgChart() {
+        return userService.getOrgChart();
     }
 
     /**

@@ -1,7 +1,10 @@
 package io.flowinquiry.modules.teams.service.listener;
 
+import static io.flowinquiry.utils.HtmlUtils.NOTIFICATION_CONTAINER_STYLE;
+import static io.flowinquiry.utils.HtmlUtils.userAvatarLink;
 import static j2html.TagCreator.a;
 import static j2html.TagCreator.div;
+import static j2html.TagCreator.span;
 
 import io.flowinquiry.modules.collab.domain.ActivityLog;
 import io.flowinquiry.modules.collab.domain.EntityType;
@@ -56,20 +59,15 @@ public class RemoveUserOutOfTeamNotificationEventListener {
                                                 "Not found user id " + event.getUserId()));
 
         String content =
-                div().withText("User ")
+                div().withStyle(NOTIFICATION_CONTAINER_STYLE)
                         .with(
-                                a(user.getFirstName() + " " + user.getLastName())
-                                        .withHref(
-                                                "/portal/users/"
-                                                        + Obfuscator.obfuscate(user.getId()))
-                                        .withTarget("_blank"))
-                        .withText(" is no longer part of the ")
-                        .with(
+                                userAvatarLink(user),
+                                span(" is no longer part of the "),
                                 a(team.getName())
                                         .withHref(
                                                 "/portal/teams/"
-                                                        + Obfuscator.obfuscate(team.getId())))
-                        .withText(" team.")
+                                                        + Obfuscator.obfuscate(team.getId())),
+                                span(" team."))
                         .render();
 
         ActivityLog activityLog =

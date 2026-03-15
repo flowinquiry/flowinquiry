@@ -3,6 +3,7 @@ package io.flowinquiry.modules.teams.utils;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.flowinquiry.modules.teams.service.dto.TicketDTO;
+import io.flowinquiry.utils.HtmlUtils;
 import io.flowinquiry.utils.Obfuscator;
 import org.junit.jupiter.api.Test;
 
@@ -26,7 +27,7 @@ public class PathUtilsTest {
                         .build();
 
         // When
-        String path = PathUtils.buildTicketPath(ticketDTO);
+        String path = HtmlUtils.buildTicketPath(ticketDTO);
 
         // Then
         String expectedPath =
@@ -50,7 +51,7 @@ public class PathUtilsTest {
                         .build();
 
         // When
-        String path = PathUtils.buildTicketPath(ticketDTO);
+        String path = HtmlUtils.buildTicketPath(ticketDTO);
 
         // Then
         String expectedPath =

@@ -130,6 +130,7 @@
     "common": {
       "default_slogan": "Plus forts ensemble",
       "role": "Rôle",
+      "select_role_placeholder": "Sélectionner un rôle",
       "project": "Projet",
       "team": "Équipe",
       "modified_at": "Modifié le",
@@ -274,7 +275,8 @@
       "sort_a_z": "Trier par nom : A → Z",
       "sort_z_a": "Trier par nom : Z → A",
       "my_teams_only": "Mes équipes uniquement",
-      "new_team": "Nouvelle équipe"
+      "new_team": "Nouvelle équipe",
+      "no_teams": "Aucune équipe trouvée. Créez-en une pour commencer."
     },
     "tickets": {
       "list": {
@@ -315,6 +317,7 @@
         "changes_history": "Historique des modifications",
         "timeline": "Chronologie",
         "click_to_edit": "Cliquez pour modifier",
+        "open_full_view": "Ouvrir la vue complète",
         "people_assignment": "Personnes et attribution",
         "state_priority": "Statut et priorité"
       },
@@ -376,6 +379,9 @@
       "description": "Parcourez et gérez les membres de votre équipe. Consultez les rôles, les coordonnées et plus encore.",
       "add_user": "Ajouter un utilisateur",
       "remove_user": "Supprimer l'utilisateur",
+      "change_role": "Changer le rôle",
+      "change_role_only_manager_error": "Impossible de changer le rôle : cet utilisateur est le seul manager de l'équipe.",
+      "no_members": "Aucun membre pour l'instant",
       "remove_user_from_team": "Cette action supprimera l'utilisateur <b>{firstName} {lastName}</b> de l'équipe <b>{teamName}</b>.",
       "remove_only_manager_dialog_error_title": "Rôle de manager requis",
       "remove_only_manager_dialog_error_description": "Vous ne pouvez pas supprimer le seul manager de l'équipe"
@@ -398,6 +404,11 @@
         "search_place_holder": "Rechercher des projets...",
         "new_project": "Nouveau projet",
         "no_projects_found": "Aucun projet trouvé",
+        "create_project_dialog_title": "Créer un nouveau projet",
+        "create_project_select_team_title": "Sélectionner une équipe",
+        "create_project_select_team_description": "Choisissez l'équipe à laquelle ce projet appartient. Seules les équipes dont vous êtes manager sont affichées.",
+        "create_project_no_manager_teams": "Vous n'êtes manager d'aucune équipe. Demandez à un manager d'équipe de créer le projet pour vous.",
+        "create_project_back": "Retour à la sélection d'équipe",
         "close_project": "Clôturer le projet",
         "reopen_project": "Rouvrir le projet",
         "delete_project_dialog_title": "Confirmer la suppression du projet",
@@ -515,7 +526,11 @@
       "delete_dialog_title": "Confirmer la suppression",
       "delete_confirmation": "Êtes-vous sûr de vouloir supprimer <strong>{name}</strong> ? Cette action est irréversible.",
       "activation_email_sent": "Un e-mail d'activation a été envoyé à {email}",
-      "resend_activation_email": "Renvoyer l'e-mail d'activation"
+      "resend_activation_email": "Renvoyer l'e-mail d'activation",
+      "status_all": "Tous",
+      "status_active": "Actif",
+      "status_pending": "En attente",
+      "no_users": "Aucun utilisateur trouvé. Invitez quelqu'un pour commencer."
     },
     "detail": {},
     "common": {

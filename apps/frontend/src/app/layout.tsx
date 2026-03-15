@@ -16,8 +16,12 @@ import { ThemeProvider } from "@/providers/theme-provider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "FlowInquiry",
-  description: "FlowInquiry dashboard",
+  title: {
+    default: "FlowInquiry",
+    template: "%s – FlowInquiry",
+  },
+  description:
+    "FlowInquiry - The Ultimate Project and Ticket Management Solution for Teams",
 };
 
 const RootLayout = async ({ children }: { children: React.ReactNode }) => {
@@ -27,13 +31,11 @@ const RootLayout = async ({ children }: { children: React.ReactNode }) => {
     <html suppressHydrationWarning={true} lang={locale}>
       <head>
         <PublicEnvScript />
-        <title>
-          FlowInquiry - The Ultimate Project and Ticket Management Solution for
-          Teams
-        </title>
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
+        {/* Fallback title — overridden per-page via generateMetadata */}
+        <title>FlowInquiry</title>
       </head>
       <body className={inter.className}>
         <ErrorProvider>

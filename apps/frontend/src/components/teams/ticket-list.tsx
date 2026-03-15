@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
 import { UserAvatar } from "@/components/shared/avatar-display";
-import TruncatedHtmlLabel from "@/components/shared/truncate-html-label";
 import TicketDetailSheet from "@/components/teams/ticket-detail-sheet";
 import TicketHealthLevelDisplay from "@/components/teams/ticket-health-level-display";
 import { TicketPriorityDisplay } from "@/components/teams/ticket-priority-display";
@@ -98,7 +97,7 @@ const TicketList = ({ tickets, instantView = true }: TicketListProps) => {
   }
 
   return (
-    <div className="space-y-3" data-testid="ticket-list-container">
+    <div className="space-y-2" data-testid="ticket-list-container">
       {tickets.map((request) => {
         const workflowColor = getSpecifiedColor(request.workflowRequestName!);
         const statusDetails = getStatusDetails(request);
@@ -107,12 +106,12 @@ const TicketList = ({ tickets, instantView = true }: TicketListProps) => {
           <Card
             key={request.id}
             className={cn(
-              "group transition-all hover:shadow-md hover:bg-muted/50",
+              "group transition-all hover:shadow-md hover:bg-muted/50 gap-0 py-0",
               request.isCompleted && "opacity-60",
             )}
             data-testid={`ticket-item-${request.id}`}
           >
-            <CardHeader className="pb-2 flex flex-row items-start gap-3">
+            <CardHeader className="py-2 px-4 flex flex-row items-start gap-3">
               {/* Status icon */}
               <TooltipProvider>
                 <Tooltip>
@@ -132,53 +131,32 @@ const TicketList = ({ tickets, instantView = true }: TicketListProps) => {
 
               {/* Workflow badge + title + priority */}
               <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                  <Badge
-                    style={{
-                      backgroundColor: workflowColor.background,
-                      color: workflowColor.text,
-                    }}
-                    data-testid={`ticket-workflow-badge-${request.id}`}
-                  >
-                    {request.workflowRequestName}
-                  </Badge>
-                  <Badge
-                    variant="outline"
-                    data-testid={`state-badge-${request.id}`}
-                  >
-                    {request.currentStateName}
-                  </Badge>
-                  {request.channel && (
+                {/* Badges row — priority on the right */}
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge
+                      style={{
+                        backgroundColor: workflowColor.background,
+                        color: workflowColor.text,
+                      }}
+                      data-testid={`ticket-workflow-badge-${request.id}`}
+                    >
+                      {request.workflowRequestName}
+                    </Badge>
                     <Badge
                       variant="outline"
-                      data-testid={`channel-badge-${request.id}`}
+                      data-testid={`state-badge-${request.id}`}
                     >
-                      {t.teams.tickets.form.channels(request.channel)}
+                      {request.currentStateName}
                     </Badge>
-                  )}
-                </div>
-
-                {/* Title row */}
-                <div className="flex items-start justify-between gap-2">
-                  <div
-                    className="flex-1 cursor-pointer"
-                    onClick={() => handleRequestClick(request)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ")
-                        handleRequestClick(request);
-                    }}
-                    data-testid={`ticket-title-${request.id}`}
-                  >
-                    <h3
-                      className={cn(
-                        "text-base font-semibold leading-snug hover:text-primary hover:underline underline-offset-4 transition-colors",
-                        request.isCompleted && "line-through",
-                      )}
-                    >
-                      {request.requestTitle}
-                    </h3>
+                    {request.channel && (
+                      <Badge
+                        variant="outline"
+                        data-testid={`channel-badge-${request.id}`}
+                      >
+                        {t.teams.tickets.form.channels(request.channel)}
+                      </Badge>
+                    )}
                   </div>
                   <div
                     className="shrink-0"
@@ -187,14 +165,36 @@ const TicketList = ({ tickets, instantView = true }: TicketListProps) => {
                     <TicketPriorityDisplay priority={request.priority} />
                   </div>
                 </div>
+
+                {/* Title row */}
+                <div
+                  className="flex-1 cursor-pointer"
+                  onClick={() => handleRequestClick(request)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ")
+                      handleRequestClick(request);
+                  }}
+                  data-testid={`ticket-title-${request.id}`}
+                >
+                  <h3
+                    className={cn(
+                      "text-base font-semibold leading-snug hover:text-primary hover:underline underline-offset-4 transition-colors",
+                      request.isCompleted && "line-through",
+                    )}
+                  >
+                    {request.requestTitle}
+                  </h3>
+                </div>
               </div>
             </CardHeader>
 
-            <CardContent className="pb-3 pl-10">
+            <CardContent className="p-0 py-1 pb-2 pl-10 pr-4">
               {/* Health */}
               {request.conversationHealth?.healthLevel && (
                 <div
-                  className="mb-3"
+                  className="mb-2"
                   data-testid={`ticket-health-${request.id}`}
                 >
                   <TicketHealthLevelDisplay
@@ -207,20 +207,20 @@ const TicketList = ({ tickets, instantView = true }: TicketListProps) => {
               )}
 
               {/* Description */}
-              <div
-                className="text-sm text-muted-foreground"
-                data-testid={`ticket-description-${request.id}`}
-              >
-                <TruncatedHtmlLabel
-                  htmlContent={request.requestDescription!}
-                  wordLimit={200}
+              {request.requestDescription && (
+                <div
+                  className="text-sm text-muted-foreground leading-snug [&>div]:m-0 [&>div]:p-0"
+                  data-testid={`ticket-description-${request.id}`}
+                  dangerouslySetInnerHTML={{
+                    __html: request.requestDescription,
+                  }}
                 />
-              </div>
+              )}
             </CardContent>
 
             {/* Metadata footer */}
             <CardFooter
-              className="border-t pt-3 pl-10 flex flex-wrap gap-x-6 gap-y-2"
+              className="p-0 border-t py-2 pl-10 pr-4 flex flex-wrap gap-x-6 gap-y-1 [&.border-t]:pt-2"
               data-testid={`ticket-metadata-${request.id}`}
             >
               {/* Requester */}

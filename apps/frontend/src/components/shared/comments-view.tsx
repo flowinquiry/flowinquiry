@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
 
@@ -42,9 +43,7 @@ const CommentsView: React.FC<CommentsViewProps> = ({
     if (entityId) {
       setLoading(true);
       getCommentsForEntity(entityType, entityId, setError)
-        .then((data) => {
-          setComments(data);
-        })
+        .then((data) => setComments(data))
         .finally(() => setLoading(false));
     }
   }, [entityType, entityId]);
@@ -54,17 +53,15 @@ const CommentsView: React.FC<CommentsViewProps> = ({
     const newCommentObj: CommentDTO = {
       content: newComment,
       createdById: Number(session?.user?.id!),
-      entityType: entityType,
-      entityId: entityId,
+      entityType,
+      entityId,
     };
-
     setSubmitting(true);
-
     try {
       const savedComment = await createNewComment(newCommentObj, setError);
       savedComment.createdByName =
         `${session?.user?.firstName ?? ""} ${session?.user?.lastName ?? ""}`.trim();
-      setComments((prevComments) => [savedComment, ...prevComments]);
+      setComments((prev) => [savedComment, ...prev]);
       setNewComment("");
     } finally {
       setSubmitting(false);
@@ -72,92 +69,92 @@ const CommentsView: React.FC<CommentsViewProps> = ({
   };
 
   return (
-    <div>
-      <div className="pt-4">
-        <h3 className="text-lg font-semibold mb-2">
-          {t.common.misc("add_comment")}
-        </h3>
-
-        <RichTextEditor
-          value={newComment}
-          onChange={(value) => setNewComment(value)}
-        />
-        <Button
-          className="mt-2"
-          onClick={handleAddComment}
-          disabled={submitting || !newComment.trim()}
-        >
-          {submitting
-            ? t.common.buttons("submitting")
-            : t.common.buttons("add_comment")}
-        </Button>
+    <div className="flex flex-col gap-6">
+      {/* ── Compose ── */}
+      <div className="flex gap-3 items-start">
+        <div className="shrink-0 pt-1">
+          <UserAvatar imageUrl={session?.user?.imageUrl} size="w-8 h-8" />
+        </div>
+        <div className="flex-1 flex flex-col gap-2">
+          <RichTextEditor
+            value={newComment}
+            onChange={(value) => setNewComment(value)}
+          />
+          <div className="flex justify-end">
+            <Button
+              size="sm"
+              onClick={handleAddComment}
+              disabled={submitting || !newComment.trim()}
+            >
+              {submitting
+                ? t.common.buttons("submitting")
+                : t.common.buttons("add_comment")}
+            </Button>
+          </div>
+        </div>
       </div>
 
-      <div className="pt-4">
-        <h3 className="text-lg font-semibold mb-2">
-          {t.common.misc("comments")}
-        </h3>
-        {loading ? (
-          <div>{t.common.misc("loading_data")}</div>
-        ) : comments.length > 0 ? (
-          <ul className="space-y-4">
-            {comments.map((comment) => (
-              <li key={comment.id} className="flex items-start gap-4">
-                <div className="pt-3">
-                  <UserAvatar imageUrl={comment.createdByImageUrl} />
-                </div>
+      {/* ── Comment list ── */}
+      {loading ? (
+        <div className="flex flex-col gap-4">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <div key={i} className="flex gap-3 animate-pulse">
+              <div className="w-8 h-8 rounded-full bg-muted shrink-0" />
+              <div className="flex-1 space-y-2">
+                <div className="h-3 w-1/4 rounded bg-muted" />
+                <div className="h-16 rounded-lg bg-muted" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : comments.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-8 gap-2 text-sm text-muted-foreground">
+          <span className="text-2xl">💬</span>
+          <p>{t.common.misc("no_comments")}.</p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {comments.map((comment) => (
+            <div key={comment.id} className="flex gap-3 items-start group">
+              {/* Avatar */}
+              <div className="shrink-0">
+                <UserAvatar
+                  imageUrl={comment.createdByImageUrl}
+                  size="w-8 h-8"
+                />
+              </div>
 
+              {/* Bubble */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <Link
+                    href={`/portal/users/${obfuscate(comment.createdById)}`}
+                    className="text-sm font-semibold hover:text-primary hover:underline underline-offset-4 transition-colors"
+                  >
+                    {comment.createdByName}
+                  </Link>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="text-xs text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
+                        {formatDateTimeDistanceToNow(
+                          new Date(comment.createdAt!),
+                        )}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {new Date(comment.createdAt!).toLocaleString()}
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
                 <div
-                  className="relative bg-gray-100 dark:bg-gray-800 p-4 rounded-lg shadow-xs flex-1
-                                before:absolute before:-left-3 before:top-6 before:w-0 before:h-0
-                                before:border-t-[6px] before:border-b-[6px] before:border-r-12
-                                before:border-t-transparent before:border-b-transparent
-                                before:border-r-gray-100 dark:before:border-r-gray-800"
-                >
-                  <div className="flex items-baseline gap-2 mb-2 pb-2">
-                    <Button
-                      variant="link"
-                      className="px-0 h-6 text-sm font-medium"
-                    >
-                      <a
-                        href={`/portal/users/${obfuscate(comment.createdById)}`}
-                      >
-                        {comment.createdByName}
-                      </a>
-                    </Button>
-
-                    <div className=" text-xs">
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <span>
-                            {formatDateTimeDistanceToNow(
-                              new Date(comment.createdAt!),
-                            )}
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <span>
-                            {new Date(comment.createdAt!).toLocaleString()}
-                          </span>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                  </div>
-
-                  <div
-                    className="prose dark:prose-invert max-w-none"
-                    dangerouslySetInnerHTML={{
-                      __html: comment.content!,
-                    }}
-                  />
-                </div>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <div>{t.common.misc("no_comments")}.</div>
-        )}
-      </div>
+                  className="rounded-lg border bg-muted/30 px-4 py-3 text-sm prose prose-sm dark:prose-invert max-w-none group-hover:bg-muted/50 transition-colors"
+                  dangerouslySetInnerHTML={{ __html: comment.content! }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

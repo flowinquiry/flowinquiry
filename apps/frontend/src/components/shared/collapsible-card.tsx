@@ -4,6 +4,7 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import React, { useState } from "react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 interface CollapsibleCardProps {
   /** Icon shown left of the title in the card header */
@@ -31,8 +32,8 @@ const CollapsibleCard = ({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <Card className={className} data-testid={testId}>
-      <CardHeader className="border-b pb-4">
+    <Card className={cn("gap-0 py-0", className)} data-testid={testId}>
+      <CardHeader className="p-0 border-b pt-2 pb-1! px-4">
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="flex items-center gap-2 text-sm font-medium">
             {icon}
@@ -55,7 +56,7 @@ const CollapsibleCard = ({
           </div>
         </div>
       </CardHeader>
-      {open && <CardContent className="pt-4">{children}</CardContent>}
+      {open && <CardContent className="p-0 px-2 py-1">{children}</CardContent>}
     </Card>
   );
 };

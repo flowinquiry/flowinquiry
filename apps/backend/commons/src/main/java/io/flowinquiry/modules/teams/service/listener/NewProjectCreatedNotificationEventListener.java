@@ -1,8 +1,10 @@
 package io.flowinquiry.modules.teams.service.listener;
 
+import static io.flowinquiry.utils.HtmlUtils.NOTIFICATION_CONTAINER_STYLE;
+import static io.flowinquiry.utils.HtmlUtils.userAvatarLink;
 import static j2html.TagCreator.a;
-import static j2html.TagCreator.p;
-import static j2html.TagCreator.text;
+import static j2html.TagCreator.div;
+import static j2html.TagCreator.span;
 
 import io.flowinquiry.exceptions.ResourceNotFoundException;
 import io.flowinquiry.modules.collab.domain.ActivityLog;
@@ -57,20 +59,17 @@ public class NewProjectCreatedNotificationEventListener {
                                                 "User not found: " + projectDTO.getCreatedBy()));
 
         String html =
-                p(
-                                a(requestUser.getFirstName() + " " + requestUser.getLastName())
-                                        .withHref(
-                                                "/portal/users/"
-                                                        + Obfuscator.obfuscate(
-                                                                projectDTO.getCreatedBy())),
-                                text(" has created a new project "),
+                div().withStyle(NOTIFICATION_CONTAINER_STYLE)
+                        .with(
+                                userAvatarLink(requestUser),
+                                span(" has created a new project "),
                                 a(projectDTO.getName())
                                         .withHref(
                                                 "/portal/teams/"
                                                         + Obfuscator.obfuscate(
                                                                 projectDTO.getTeamId())
                                                         + "/projects/"
-                                                        + Obfuscator.obfuscate(projectDTO.getId())))
+                                                        + projectDTO.getShortName()))
                         .render();
 
         List<Notification> notifications = new ArrayList<>();

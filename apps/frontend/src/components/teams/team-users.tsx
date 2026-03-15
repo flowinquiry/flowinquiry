@@ -1,6 +1,6 @@
 "use client";
 
-import { Ellipsis, Mail, Plus, Trash, Users } from "lucide-react";
+import { Ellipsis, Mail, Plus, Trash, UserCog, Users } from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
 import useSWR from "swr";
@@ -24,6 +24,12 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -37,6 +43,7 @@ import { useAppClientTranslations } from "@/hooks/use-translations";
 import {
   deleteUserFromTeam,
   findMembersByTeamId,
+  updateUserRoleInTeam,
 } from "@/lib/actions/teams.action";
 import { obfuscate } from "@/lib/endecode";
 import { BreadcrumbProvider } from "@/providers/breadcrumb-provider";
@@ -44,7 +51,9 @@ import { useError } from "@/providers/error-provider";
 import { useTeam } from "@/providers/team-provider";
 import { useUserTeamRole } from "@/providers/user-team-role-provider";
 import { PermissionUtils } from "@/types/resources";
-import { UserWithTeamRoleDTO } from "@/types/teams";
+import { TeamRole, UserWithTeamRoleDTO } from "@/types/teams";
+
+const ROLES: TeamRole[] = ["manager", "member", "guest"];
 
 const TeamUsersView = () => {
   const team = useTeam();
@@ -55,6 +64,8 @@ const TeamUsersView = () => {
 
   const [open, setOpen] = useState(false);
   const [notDeleteOnlyManagerDialogOpen, setNotDeleteOnlyManagerDialogOpen] =
+    useState(false);
+  const [onlyManagerRoleChangeDialogOpen, setOnlyManagerRoleChangeDialogOpen] =
     useState(false);
 
   const {
@@ -84,6 +95,36 @@ const TeamUsersView = () => {
 
     await deleteUserFromTeam(team.id!, user.id!, setError);
     await mutate();
+  };
+
+  const changeUserRole = async (
+    user: UserWithTeamRoleDTO,
+    newRole: TeamRole,
+  ) => {
+    if (newRole === user.teamRole) return;
+
+    // Frontend guard: prevent demoting only manager
+    const isOnlyManager =
+      user.teamRole === "manager" &&
+      items.filter((u) => u.teamRole === "manager").length === 1;
+
+    if (isOnlyManager && newRole !== "manager") {
+      setOnlyManagerRoleChangeDialogOpen(true);
+      return;
+    }
+
+    // Optimistic update
+    await mutate(
+      items.map((u) => (u.id === user.id ? { ...u, teamRole: newRole } : u)),
+      false,
+    );
+
+    try {
+      await updateUserRoleInTeam(team.id!, user.id!, newRole, setError);
+    } finally {
+      // Revalidate to sync with server
+      await mutate();
+    }
   };
 
   const canManage =
@@ -242,6 +283,42 @@ const TeamUsersView = () => {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end" className="w-48">
+                                {/* Change role submenu */}
+                                <DropdownMenuSub>
+                                  <DropdownMenuSubTrigger
+                                    data-testid={`team-user-change-role-${user.id}`}
+                                  >
+                                    <UserCog className="mr-2 h-4 w-4" />
+                                    {t.teams.users("change_role")}
+                                  </DropdownMenuSubTrigger>
+                                  <DropdownMenuPortal>
+                                    <DropdownMenuSubContent>
+                                      <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">
+                                        {t.teams.common("role")}
+                                      </DropdownMenuLabel>
+                                      <DropdownMenuSeparator />
+                                      {ROLES.map((r) => (
+                                        <DropdownMenuItem
+                                          key={r}
+                                          onClick={() =>
+                                            changeUserRole(user, r)
+                                          }
+                                          className="flex items-center justify-between"
+                                          data-testid={`team-user-role-option-${user.id}-${r}`}
+                                        >
+                                          {t.teams.roles(r)}
+                                          {user.teamRole === r && (
+                                            <span className="ml-2 h-1.5 w-1.5 rounded-full bg-primary" />
+                                          )}
+                                        </DropdownMenuItem>
+                                      ))}
+                                    </DropdownMenuSubContent>
+                                  </DropdownMenuPortal>
+                                </DropdownMenuSub>
+
+                                <DropdownMenuSeparator />
+
+                                {/* Remove */}
                                 <TooltipProvider>
                                   <Tooltip>
                                     <TooltipTrigger asChild>
@@ -317,6 +394,28 @@ const TeamUsersView = () => {
               <AlertDialogAction
                 onClick={() => setNotDeleteOnlyManagerDialogOpen(false)}
                 data-testid="close-manager-error-dialog"
+              >
+                {t.common.buttons("close")}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* ── Cannot-change-only-manager-role dialog ── */}
+        <AlertDialog open={onlyManagerRoleChangeDialogOpen}>
+          <AlertDialogContent data-testid="cannot-change-manager-role-dialog">
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                {t.teams.users("remove_only_manager_dialog_error_title")}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {t.teams.users("change_role_only_manager_error")}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogAction
+                onClick={() => setOnlyManagerRoleChangeDialogOpen(false)}
+                data-testid="close-role-change-error-dialog"
               >
                 {t.common.buttons("close")}
               </AlertDialogAction>

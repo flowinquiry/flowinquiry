@@ -1,7 +1,5 @@
 "use client";
 
-import sanitizeHtml from "sanitize-html";
-
 const TruncatedHtmlLabel = ({
   htmlContent,
   wordLimit,
@@ -15,18 +13,16 @@ const TruncatedHtmlLabel = ({
     ? htmlContent.substring(0, wordLimit) + " ..."
     : htmlContent;
 
+  // Strip all HTML tags to get plain text for the title tooltip
+  const plainText = isTruncated
+    ? htmlContent
+        .replace(/<[^>]*>/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+    : undefined;
+
   return (
-    <div className="px-4">
-      <div
-        className="prose prose-blue dark:prose-invert max-w-none"
-        dangerouslySetInnerHTML={{ __html: content }}
-        title={
-          isTruncated
-            ? sanitizeHtml(htmlContent, { allowedTags: [] })
-            : undefined
-        }
-      />
-    </div>
+    <div dangerouslySetInnerHTML={{ __html: content }} title={plainText} />
   );
 };
 

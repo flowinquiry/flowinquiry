@@ -10,8 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
-import java.util.Optional;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -19,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/settings")
@@ -43,11 +43,15 @@ public class AppSettingController {
                 @ApiResponse(responseCode = "404", description = "Setting not found")
             })
     @GetMapping("/{key}")
-    public ResponseEntity<AppSettingDTO> getSetting(
+    public AppSettingDTO getSetting(
             @Parameter(description = "Setting key", required = true) @PathVariable String key) {
-        Optional<String> value = appSettingService.getValue(key);
-        return value.map(v -> ResponseEntity.ok(new AppSettingDTO(key, v, null, null, null)))
-                .orElse(ResponseEntity.notFound().build());
+        return appSettingService
+                .getValue(key)
+                .map(v -> new AppSettingDTO(key, v, null, null, null))
+                .orElseThrow(
+                        () ->
+                                new ResponseStatusException(
+                                        HttpStatus.NOT_FOUND, "Setting not found: " + key));
     }
 
     @Operation(
@@ -101,7 +105,13 @@ public class AppSettingController {
             @Parameter(description = "Setting details", required = true) @RequestBody
                     AppSettingDTO dto) {
         if (!key.equals(dto.getKey())) {
-            return;
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Key mismatch: path key '"
+                            + key
+                            + "' does not match body key '"
+                            + dto.getKey()
+                            + "'");
         }
         appSettingService.updateValue(dto.getKey(), dto.getValue());
     }

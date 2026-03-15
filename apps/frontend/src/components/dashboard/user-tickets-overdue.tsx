@@ -9,7 +9,6 @@ import React, { useEffect, useState } from "react";
 import { UserAvatar } from "@/components/shared/avatar-display";
 import CollapsibleCard from "@/components/shared/collapsible-card";
 import PaginationExt from "@/components/shared/pagination-ext";
-import TruncatedHtmlLabel from "@/components/shared/truncate-html-label";
 import { TicketPriorityDisplay } from "@/components/teams/ticket-priority-display";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -103,7 +102,7 @@ const UserTeamsOverdueTickets = () => {
           {tickets.map((ticket, index) => (
             <div
               key={ticket.id}
-              className={`py-2.5 px-2 rounded-md border-l-2 border-transparent hover:border-primary transition-all ${
+              className={`py-2.5 px-2 rounded-md transition-all ${
                 index % 2 === 0
                   ? "bg-muted/30 hover:bg-muted/50"
                   : "hover:bg-muted/40"
@@ -134,12 +133,12 @@ const UserTeamsOverdueTickets = () => {
               </div>
 
               {/* Description */}
-              <div className="text-xs text-muted-foreground mb-2">
-                <TruncatedHtmlLabel
-                  htmlContent={ticket.requestDescription!}
-                  wordLimit={60}
-                />
-              </div>
+              <div
+                className="prose prose-sm max-w-none dark:prose-invert text-muted-foreground **:my-0 mb-2"
+                dangerouslySetInnerHTML={{
+                  __html: ticket.requestDescription ?? "",
+                }}
+              />
 
               {/* Assignee + timestamp */}
               <div className="flex items-center justify-between gap-2 flex-wrap">

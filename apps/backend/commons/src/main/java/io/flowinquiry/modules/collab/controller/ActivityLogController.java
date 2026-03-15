@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,15 +41,13 @@ public class ActivityLogController {
                 @ApiResponse(responseCode = "401", description = "Unauthorized"),
                 @ApiResponse(responseCode = "403", description = "Forbidden")
             })
-    public ResponseEntity<Page<ActivityLogDTO>> getActivityLogs(
+    public Page<ActivityLogDTO> getActivityLogs(
             @Parameter(description = "Type of entity to get activity logs for")
                     @RequestParam("entityType")
                     EntityType entityType,
             @Parameter(description = "ID of the entity") @RequestParam("entityId") Long entityId,
             @Parameter(description = "Pagination information") Pageable pageable) {
-        Page<ActivityLogDTO> activityLogs =
-                activityLogService.getActivityLogs(entityType, entityId, pageable);
-        return ResponseEntity.ok(activityLogs);
+        return activityLogService.getActivityLogs(entityType, entityId, pageable);
     }
 
     @GetMapping("/user/{userId}")
@@ -69,10 +66,9 @@ public class ActivityLogController {
                 @ApiResponse(responseCode = "403", description = "Forbidden"),
                 @ApiResponse(responseCode = "404", description = "User not found")
             })
-    public ResponseEntity<Page<ActivityLogDTO>> getUserActivities(
-            @Parameter(description = "ID of the user") @PathVariable("userId") Long userId,
+    public Page<ActivityLogDTO> getUserActivities(
+            @PathVariable @Parameter(description = "ID of the user") Long userId,
             @Parameter(description = "Pagination information") Pageable pageable) {
-        Page<ActivityLogDTO> activities = activityLogService.getActivitiesForUser(userId, pageable);
-        return ResponseEntity.ok(activities);
+        return activityLogService.getActivitiesForUser(userId, pageable);
     }
 }

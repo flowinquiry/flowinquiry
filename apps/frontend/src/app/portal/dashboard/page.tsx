@@ -1,9 +1,16 @@
+import type { Metadata } from "next";
+
 import { ContentLayout } from "@/components/admin-panel/content-layout";
 import RecentUserTeamActivities from "@/components/dashboard/global-dashboard-recent-activities";
 import UserNotifications from "@/components/dashboard/notifications-user";
 import TeamUnresolvedTicketsPriorityDistributionChart from "@/components/dashboard/team-unresolved-tickets-priority-distribution";
 import UserTeamsOverdueTickets from "@/components/dashboard/user-tickets-overdue";
 import { getAppTranslations } from "@/lib/translation";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getAppTranslations();
+  return { title: t.common.navigation("dashboard") };
+}
 
 const Page = async () => {
   const t = await getAppTranslations();

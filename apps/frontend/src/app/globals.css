@@ -270,3 +270,19 @@ h3.tiptap-heading + h2.tiptap-heading {
     @apply bg-background text-foreground;
   }
 }
+
+/* Kanban board — always-visible horizontal scrollbar */
+.kanban-board-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+.kanban-board-scroll::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+  border-radius: 4px;
+}
+.kanban-board-scroll::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.4);
+  border-radius: 4px;
+}
+.kanban-board-scroll::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.7);
+}

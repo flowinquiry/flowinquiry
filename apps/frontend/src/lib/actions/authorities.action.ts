@@ -3,6 +3,7 @@ import { HttpError } from "@/lib/errors";
 import {
   AuthorityDTO,
   AuthorityResourcePermissionDTO,
+  AuthorityWithPermissionsDTO,
 } from "@/types/authorities";
 import { PageableResult } from "@/types/commons";
 import { createQueryParams, Pagination } from "@/types/query";
@@ -32,6 +33,26 @@ export const createAuthority = async (
   return post<AuthorityDTO, AuthorityDTO>(
     `/api/authorities`,
     authority,
+    setError,
+  );
+};
+
+export const createAuthorityWithPermissions = async (
+  payload: AuthorityWithPermissionsDTO,
+  setError?: (error: HttpError | string | null) => void,
+) => {
+  return post<AuthorityWithPermissionsDTO, AuthorityWithPermissionsDTO>(
+    `/api/authorities/with-permissions`,
+    payload,
+    setError,
+  );
+};
+
+export const getResources = async (
+  setError?: (error: HttpError | string | null) => void,
+) => {
+  return get<Array<{ name: string; description: string }>>(
+    `/api/resources`,
     setError,
   );
 };

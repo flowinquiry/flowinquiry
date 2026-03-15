@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/versions")
@@ -103,10 +104,10 @@ public class VersionController {
                                         schema = @Schema(type = "string")))
             })
     @GetMapping("/check")
-    public ResponseEntity<?> checkVersion() {
+    public Map<String, Object> checkVersion() {
         if (flowInquiryProperties.getEdition() == EditionType.CLOUD) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("Not applicable for cloud-hosted users.");
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN, "Not applicable for cloud-hosted users.");
         }
         try {
             String currentVersion = flowInquiryProperties.getVersion();
@@ -122,10 +123,12 @@ public class VersionController {
             result.put("isOutdated", isOutdated);
             result.putAll(latestVersionInfo);
 
-            return ResponseEntity.ok(result);
+            return result;
+        } catch (ResponseStatusException e) {
+            throw e;
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-                    .body("Unable to fetch latest version info.");
+            throw new ResponseStatusException(
+                    HttpStatus.SERVICE_UNAVAILABLE, "Unable to fetch latest version info.");
         }
     }
 

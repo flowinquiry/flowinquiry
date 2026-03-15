@@ -5,6 +5,8 @@ import io.flowinquiry.modules.usermanagement.domain.User;
 import io.flowinquiry.modules.usermanagement.repository.AuthorityRepository;
 import io.flowinquiry.modules.usermanagement.repository.UserRepository;
 import io.flowinquiry.modules.usermanagement.service.dto.AuthorityDTO;
+import io.flowinquiry.modules.usermanagement.service.dto.AuthorityResourcePermissionDTO;
+import io.flowinquiry.modules.usermanagement.service.dto.AuthorityWithPermissionsDTO;
 import io.flowinquiry.modules.usermanagement.service.dto.UserDTO;
 import io.flowinquiry.modules.usermanagement.service.mapper.AuthorityMapper;
 import io.flowinquiry.modules.usermanagement.service.mapper.UserMapper;
@@ -27,15 +29,19 @@ public class AuthorityService {
 
     private final UserMapper userMapper;
 
+    private final AuthorityResourcePermissionService authorityResourcePermissionService;
+
     public AuthorityService(
             AuthorityRepository authorityRepository,
             UserRepository userRepository,
             UserMapper userMapper,
-            AuthorityMapper authorityMapper) {
+            AuthorityMapper authorityMapper,
+            AuthorityResourcePermissionService authorityResourcePermissionService) {
         this.authorityRepository = authorityRepository;
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.authorityMapper = authorityMapper;
+        this.authorityResourcePermissionService = authorityResourcePermissionService;
     }
 
     /**
@@ -46,6 +52,29 @@ public class AuthorityService {
      */
     public AuthorityDTO createAuthority(Authority authority) {
         return authorityMapper.toDto(authorityRepository.save(authority));
+    }
+
+    /**
+     * Create a new authority together with its resource permissions atomically.
+     *
+     * @param request the authority and its permissions
+     * @return the persisted authority with saved permissions
+     */
+    @Transactional
+    public AuthorityWithPermissionsDTO createAuthorityWithPermissions(
+            AuthorityWithPermissionsDTO request) {
+        AuthorityDTO savedAuthority =
+                authorityMapper.toDto(
+                        authorityRepository.save(authorityMapper.toEntity(request.getAuthority())));
+
+        List<AuthorityResourcePermissionDTO> permissions = request.getPermissions();
+        List<AuthorityResourcePermissionDTO> savedPermissions = List.of();
+        if (permissions != null && !permissions.isEmpty()) {
+            permissions.forEach(p -> p.setAuthorityName(savedAuthority.getName()));
+            savedPermissions = authorityResourcePermissionService.saveAllPermissions(permissions);
+        }
+
+        return new AuthorityWithPermissionsDTO(savedAuthority, savedPermissions);
     }
 
     /**

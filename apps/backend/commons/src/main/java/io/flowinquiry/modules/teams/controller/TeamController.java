@@ -4,6 +4,8 @@ import io.flowinquiry.modules.fss.service.StorageService;
 import io.flowinquiry.modules.fss.service.event.ResourceRemoveEvent;
 import io.flowinquiry.modules.teams.service.TeamService;
 import io.flowinquiry.modules.teams.service.dto.TeamDTO;
+import io.flowinquiry.modules.teams.service.dto.UserTeamsContextDTO;
+import io.flowinquiry.modules.usermanagement.AuthoritiesConstants;
 import io.flowinquiry.modules.usermanagement.service.dto.UserDTO;
 import io.flowinquiry.modules.usermanagement.service.dto.UserWithTeamRoleDTO;
 import io.flowinquiry.query.QueryDTO;
@@ -19,7 +21,6 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.context.ApplicationEventPublisher;
@@ -28,7 +29,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,8 +39,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/teams")
@@ -78,7 +81,8 @@ public class TeamController {
                         content = @Content)
             })
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<TeamDTO> createTeam(
+    @ResponseStatus(HttpStatus.CREATED)
+    public TeamDTO createTeam(
             @Parameter(description = "Team data to create", required = true) @RequestPart("teamDTO")
                     TeamDTO team,
             @Parameter(description = "Team logo image file (optional)")
@@ -87,13 +91,10 @@ public class TeamController {
             throws Exception {
         if (file != null && !file.isEmpty()) {
             String avatarPath =
-                    storageService.uploadImage(
-                            "teams", UUID.randomUUID().toString(), file.getInputStream());
+                    storageService.uploadImage("teams", file.getInputStream(), team.getLogoUrl());
             team.setLogoUrl(avatarPath);
         }
-        TeamDTO createdTeam = teamService.createTeam(team);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdTeam);
+        return teamService.createTeam(team);
     }
 
     @Operation(
@@ -119,7 +120,7 @@ public class TeamController {
                         content = @Content)
             })
     @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<TeamDTO> updateTeam(
+    public TeamDTO updateTeam(
             @Parameter(description = "Updated team data", required = true) @RequestPart("teamDTO")
                     TeamDTO team,
             @Parameter(description = "New team logo image file (optional)")
@@ -127,19 +128,16 @@ public class TeamController {
                     MultipartFile file)
             throws Exception {
         Optional<String> fileRemovedPath = Optional.empty();
-
         if (file != null && !file.isEmpty()) {
             fileRemovedPath = Optional.ofNullable(team.getLogoUrl());
             String teamLogoPath =
-                    storageService.uploadImage(
-                            "teams", UUID.randomUUID().toString(), file.getInputStream());
+                    storageService.uploadImage("teams", team.getLogoUrl(), file.getInputStream());
             team.setLogoUrl(teamLogoPath);
         }
         TeamDTO updatedTeam = teamService.updateTeam(team);
-        // Remove the old logo
         fileRemovedPath.ifPresent(
                 s -> eventPublisher.publishEvent(new ResourceRemoveEvent(this, s)));
-        return ResponseEntity.ok(updatedTeam);
+        return updatedTeam;
     }
 
     @Operation(summary = "Delete a team", description = "Deletes a team by its ID")
@@ -153,8 +151,7 @@ public class TeamController {
             })
     @DeleteMapping("/{id}")
     public void deleteTeam(
-            @Parameter(description = "ID of the team to delete", required = true)
-                    @PathVariable("id")
+            @PathVariable @Parameter(description = "ID of the team to delete", required = true)
                     Long id) {
         teamService.deleteTeam(id);
     }
@@ -193,14 +190,15 @@ public class TeamController {
                         content = @Content)
             })
     @GetMapping("/{id}")
-    public ResponseEntity<TeamDTO> findTeamById(
-            @Parameter(description = "ID of the team to retrieve", required = true)
-                    @PathVariable("id")
+    public TeamDTO findTeamById(
+            @PathVariable @Parameter(description = "ID of the team to retrieve", required = true)
                     Long id) {
         return teamService
                 .findTeamById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .orElseThrow(
+                        () ->
+                                new ResponseStatusException(
+                                        HttpStatus.NOT_FOUND, "Team not found with id: " + id));
     }
 
     @Operation(
@@ -246,10 +244,9 @@ public class TeamController {
                         content = @Content)
             })
     @GetMapping("/{teamId}/members")
-    public ResponseEntity<List<UserWithTeamRoleDTO>> findUsersByTeamId(
-            @Parameter(description = "ID of the team", required = true) @PathVariable("teamId")
-                    Long teamId) {
-        return new ResponseEntity<>(teamService.getUsersByTeam(teamId), HttpStatus.OK);
+    public List<UserWithTeamRoleDTO> findUsersByTeamId(
+            @PathVariable @Parameter(description = "ID of the team", required = true) Long teamId) {
+        return teamService.getUsersByTeam(teamId);
     }
 
     @Operation(
@@ -270,11 +267,39 @@ public class TeamController {
                         content = @Content)
             })
     @GetMapping("/users/{userId}")
-    public ResponseEntity<List<TeamDTO>> getTeamsByUserId(
-            @Parameter(description = "ID of the user", required = true) @PathVariable("userId")
-                    Long userId) {
-        List<TeamDTO> teams = teamService.findAllTeamsByUserId(userId);
-        return (teams.isEmpty()) ? ResponseEntity.noContent().build() : ResponseEntity.ok(teams);
+    public List<TeamDTO> getTeamsByUserId(
+            @PathVariable @Parameter(description = "ID of the user", required = true) Long userId) {
+        return teamService.findAllTeamsByUserId(userId);
+    }
+
+    @Operation(
+            summary = "Get team-membership context for a user",
+            description =
+                    "Returns all teams the user belongs to together with their role in each team,"
+                            + " in a single query. Admins receive all teams with a synthetic manager"
+                            + " role.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully retrieved team context",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        schema =
+                                                @Schema(
+                                                        implementation =
+                                                                UserTeamsContextDTO.class)))
+            })
+    @GetMapping("/users/{userId}/teams-context")
+    public UserTeamsContextDTO getTeamsContextByUserId(
+            @PathVariable @Parameter(description = "ID of the user", required = true) Long userId,
+            Authentication authentication) {
+        boolean isAdmin =
+                authentication != null
+                        && authentication.getAuthorities().stream()
+                                .anyMatch(a -> AuthoritiesConstants.ADMIN.equals(a.getAuthority()));
+        return teamService.findTeamsContextByUserId(userId, isAdmin);
     }
 
     @Operation(
@@ -296,8 +321,7 @@ public class TeamController {
             })
     @PostMapping("/{teamId}/add-users")
     public void addUsersToTeam(
-            @Parameter(description = "ID of the team", required = true) @PathVariable("teamId")
-                    Long teamId,
+            @PathVariable @Parameter(description = "ID of the team", required = true) Long teamId,
             @Parameter(description = "List of user IDs and role to assign", required = true)
                     @RequestBody
                     ListUserIdsAndRoleDTO userIdsAndRoleDTO) {
@@ -348,12 +372,28 @@ public class TeamController {
             })
     @DeleteMapping("/{teamId}/users/{userId}")
     public void removeUserFromTeam(
-            @Parameter(description = "ID of the user to remove", required = true)
-                    @PathVariable("userId")
+            @PathVariable @Parameter(description = "ID of the user to remove", required = true)
                     Long userId,
-            @Parameter(description = "ID of the team", required = true) @PathVariable("teamId")
-                    Long teamId) {
+            @PathVariable @Parameter(description = "ID of the team", required = true) Long teamId) {
         teamService.removeUserFromTeam(userId, teamId);
+    }
+
+    @Operation(
+            summary = "Update user role in team",
+            description = "Changes the role of a user within a team")
+    @ApiResponses(
+            value = {
+                @ApiResponse(responseCode = "204", description = "Role updated successfully"),
+                @ApiResponse(responseCode = "400", description = "Invalid role or only manager"),
+                @ApiResponse(responseCode = "404", description = "Team or user not found")
+            })
+    @PutMapping("/{teamId}/users/{userId}/role")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateUserRoleInTeam(
+            @PathVariable @Parameter(description = "ID of the team", required = true) Long teamId,
+            @PathVariable @Parameter(description = "ID of the user", required = true) Long userId,
+            @RequestBody Map<String, String> body) {
+        teamService.updateUserRoleInTeam(userId, teamId, body.get("role"));
     }
 
     @Operation(
@@ -374,13 +414,11 @@ public class TeamController {
                         content = @Content)
             })
     @GetMapping("/{teamId}/users/{userId}/role")
-    public ResponseEntity<String> getUserRoleInTeam(
-            @Parameter(description = "ID of the team", required = true) @PathVariable("teamId")
-                    Long teamId,
-            @Parameter(description = "ID of the user", required = true) @PathVariable("userId")
-                    Long userId) {
+    public String getUserRoleInTeam(
+            @PathVariable @Parameter(description = "ID of the team", required = true) Long teamId,
+            @PathVariable @Parameter(description = "ID of the user", required = true) Long userId) {
         String role = teamService.getUserRoleInTeam(userId, teamId);
-        return ResponseEntity.ok(Json.createObjectBuilder().add("role", role).build().toString());
+        return Json.createObjectBuilder().add("role", role).build().toString();
     }
 
     @Operation(
@@ -401,11 +439,10 @@ public class TeamController {
                         content = @Content)
             })
     @GetMapping("/{teamId}/has-manager")
-    public ResponseEntity<Map<String, Boolean>> checkIfTeamHasManager(
+    public Map<String, Boolean> checkIfTeamHasManager(
             @Parameter(description = "ID of the team to check", required = true) @PathVariable
                     Long teamId) {
-        boolean hasManager = teamService.hasManager(teamId);
-        return ResponseEntity.ok(Map.of("result", hasManager));
+        return Map.of("result", teamService.hasManager(teamId));
     }
 
     @Getter

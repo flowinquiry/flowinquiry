@@ -93,7 +93,7 @@ const TeamUnresolvedTicketsPriorityDistributionChart = () => {
           <BarChart
             layout="vertical"
             data={chartData}
-            margin={{ top: 8, right: 16, left: 120, bottom: 8 }}
+            margin={{ top: 8, right: 16, left: 0, bottom: 8 }}
             barSize={28}
           >
             <CartesianGrid strokeDasharray="3 3" horizontal={false} />
@@ -102,7 +102,7 @@ const TeamUnresolvedTicketsPriorityDistributionChart = () => {
               type="category"
               dataKey="teamName"
               tick={{ fontSize: 12 }}
-              width={115}
+              width={100}
             />
             <Tooltip
               contentStyle={{ fontSize: 12 }}

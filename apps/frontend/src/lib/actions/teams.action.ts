@@ -10,6 +10,7 @@ import { Pagination, QueryDTO } from "@/types/query";
 import {
   TeamDTO,
   TransitionItemCollectionDTO,
+  UserTeamsContextDTO,
   UserWithTeamRoleDTO,
 } from "@/types/teams";
 import { UserDTO } from "@/types/users";
@@ -111,6 +112,19 @@ export const deleteUserFromTeam = async (
   );
 };
 
+export const updateUserRoleInTeam = async (
+  teamId: number,
+  userId: number,
+  role: string,
+  setError?: (error: HttpError | string | null) => void,
+) => {
+  return put<{ role: string }, void>(
+    `/api/teams/${teamId}/users/${userId}/role`,
+    { role },
+    setError,
+  );
+};
+
 export const getUserRoleInTeam = async (
   userId: number,
   teamId: number,
@@ -137,4 +151,14 @@ export const checkTeamHasAnyManager = async (
   setError?: (error: HttpError | string | null) => void,
 ) => {
   return get<{ result: boolean }>(`/api/teams/${teamId}/has-manager`, setError);
+};
+
+export const getTeamsContextByUserId = async (
+  userId: number,
+  setError?: (error: HttpError | string | null) => void,
+) => {
+  return get<UserTeamsContextDTO>(
+    `/api/teams/users/${userId}/teams-context`,
+    setError,
+  );
 };

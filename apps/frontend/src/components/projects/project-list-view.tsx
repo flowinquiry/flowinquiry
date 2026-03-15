@@ -1,14 +1,22 @@
 "use client";
 
-import { CalendarDays, FolderOpen, LayoutList, Users } from "lucide-react";
+import {
+  CalendarDays,
+  FolderOpen,
+  LayoutList,
+  Plus,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
 
 import { Heading } from "@/components/heading";
+import ProjectCreateDialog from "@/components/projects/project-create-dialog";
 import LoadingPlaceHolder from "@/components/shared/loading-place-holder";
 import PaginationExt from "@/components/shared/pagination-ext";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -41,6 +49,7 @@ const ProjectListView = () => {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<ProjectStatus>("Active");
   const [viewMode, setViewMode] = useState<ViewMode>("flat");
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const { setError } = useError();
 
   useEffect(() => {
@@ -191,32 +200,38 @@ const ProjectListView = () => {
           title={t.teams.projects.list("title", { totalElements })}
           description={t.teams.projects.list("description")}
         />
-        <ToggleGroup
-          type="single"
-          value={viewMode}
-          onValueChange={(v) => {
-            if (v === "flat" || v === "grouped") setViewMode(v as ViewMode);
-          }}
-          className="shrink-0 rounded-lg border bg-muted p-1 gap-1"
-          data-testid="project-view-mode-toggle"
-        >
-          <ToggleGroupItem
-            value="flat"
-            className="rounded-md px-3 data-[state=on]:bg-background data-[state=on]:shadow-sm data-[state=on]:text-foreground text-muted-foreground"
-            data-testid="project-view-flat"
+        <div className="flex shrink-0 items-center gap-2">
+          <Button onClick={() => setCreateDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            {t.teams.projects.list("new_project")}
+          </Button>
+          <ToggleGroup
+            type="single"
+            value={viewMode}
+            onValueChange={(v) => {
+              if (v === "flat" || v === "grouped") setViewMode(v as ViewMode);
+            }}
+            className="shrink-0 rounded-lg border bg-muted p-1 gap-1"
+            data-testid="project-view-mode-toggle"
           >
-            <LayoutList className="mr-1.5 h-4 w-4" />
-            {t.teams.projects.list("flat_view")}
-          </ToggleGroupItem>
-          <ToggleGroupItem
-            value="grouped"
-            className="rounded-md px-3 data-[state=on]:bg-background data-[state=on]:shadow-sm data-[state=on]:text-foreground text-muted-foreground"
-            data-testid="project-view-grouped"
-          >
-            <Users className="mr-1.5 h-4 w-4" />
-            {t.teams.projects.list("group_by_team")}
-          </ToggleGroupItem>
-        </ToggleGroup>
+            <ToggleGroupItem
+              value="flat"
+              className="rounded-md px-3 data-[state=on]:bg-background data-[state=on]:shadow-sm data-[state=on]:text-foreground text-muted-foreground"
+              data-testid="project-view-flat"
+            >
+              <LayoutList className="mr-1.5 h-4 w-4" />
+              {t.teams.projects.list("flat_view")}
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="grouped"
+              className="rounded-md px-3 data-[state=on]:bg-background data-[state=on]:shadow-sm data-[state=on]:text-foreground text-muted-foreground"
+              data-testid="project-view-grouped"
+            >
+              <Users className="mr-1.5 h-4 w-4" />
+              {t.teams.projects.list("group_by_team")}
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
       </div>
 
       <Separator />
@@ -333,6 +348,11 @@ const ProjectListView = () => {
           )}
         </div>
       )}
+      <ProjectCreateDialog
+        open={createDialogOpen}
+        setOpen={setCreateDialogOpen}
+        onCreated={fetchProjects}
+      />
     </div>
   );
 };

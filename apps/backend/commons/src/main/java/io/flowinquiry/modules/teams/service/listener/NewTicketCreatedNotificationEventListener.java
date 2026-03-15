@@ -1,10 +1,12 @@
 package io.flowinquiry.modules.teams.service.listener;
 
 import static io.flowinquiry.modules.shared.domain.EventPayloadType.NOTIFICATION;
-import static io.flowinquiry.modules.teams.utils.PathUtils.buildTicketPath;
+import static io.flowinquiry.utils.HtmlUtils.NOTIFICATION_CONTAINER_STYLE;
+import static io.flowinquiry.utils.HtmlUtils.buildTicketPath;
+import static io.flowinquiry.utils.HtmlUtils.userAvatarLink;
 import static j2html.TagCreator.a;
-import static j2html.TagCreator.p;
-import static j2html.TagCreator.text;
+import static j2html.TagCreator.div;
+import static j2html.TagCreator.span;
 
 import io.flowinquiry.exceptions.ResourceNotFoundException;
 import io.flowinquiry.modules.collab.domain.ActivityLog;
@@ -21,7 +23,6 @@ import io.flowinquiry.modules.teams.service.event.NewTicketCreatedEvent;
 import io.flowinquiry.modules.usermanagement.domain.User;
 import io.flowinquiry.modules.usermanagement.repository.UserRepository;
 import io.flowinquiry.modules.usermanagement.service.dto.UserWithTeamRoleDTO;
-import io.flowinquiry.utils.Obfuscator;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -53,13 +54,10 @@ public class NewTicketCreatedNotificationEventListener {
                                         new ResourceNotFoundException(
                                                 "User not found: " + ticketDTO.getRequestUserId()));
         String html =
-                p(
-                                a(requestUser.getFirstName() + " " + requestUser.getLastName())
-                                        .withHref(
-                                                "/portal/users/"
-                                                        + Obfuscator.obfuscate(
-                                                                ticketDTO.getRequestUserId())),
-                                text(" has created a new ticket "),
+                div().withStyle(NOTIFICATION_CONTAINER_STYLE)
+                        .with(
+                                userAvatarLink(requestUser),
+                                span(" has created a new ticket "),
                                 a(ticketDTO.getRequestTitle()).withHref(buildTicketPath(ticketDTO)))
                         .render();
 

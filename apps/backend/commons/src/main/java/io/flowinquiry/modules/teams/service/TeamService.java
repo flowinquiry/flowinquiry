@@ -8,6 +8,8 @@ import io.flowinquiry.modules.teams.domain.TeamRole;
 import io.flowinquiry.modules.teams.repository.TeamRepository;
 import io.flowinquiry.modules.teams.repository.TeamRoleRepository;
 import io.flowinquiry.modules.teams.service.dto.TeamDTO;
+import io.flowinquiry.modules.teams.service.dto.UserTeamDTO;
+import io.flowinquiry.modules.teams.service.dto.UserTeamsContextDTO;
 import io.flowinquiry.modules.teams.service.event.NewTeamCreatedEvent;
 import io.flowinquiry.modules.teams.service.event.NewUsersAddedIntoTeamEvent;
 import io.flowinquiry.modules.teams.service.event.RemoveUserOutOfTeamEvent;
@@ -124,6 +126,18 @@ public class TeamService {
         return teamRepository.findTeamsByUserId(userId).stream().map(teamMapper::toDto).toList();
     }
 
+    /**
+     * Returns the team-membership context for a user in one query. Only teams where the user is a
+     * member are returned together with their role. Admins are treated the same as regular users —
+     * they see only their own teams here. If an admin needs to create a project for a team they
+     * don't belong to, they can do so via the team page.
+     */
+    @Transactional(readOnly = true)
+    public UserTeamsContextDTO findTeamsContextByUserId(Long userId, boolean isAdmin) {
+        List<UserTeamDTO> teams = teamRepository.findTeamsWithRoleByUserId(userId);
+        return new UserTeamsContextDTO(userId, isAdmin, teams);
+    }
+
     public List<UserWithTeamRoleDTO> getUsersByTeam(Long teamId) {
         return teamRepository.findUsersByTeamId(teamId);
     }
@@ -206,6 +220,59 @@ public class TeamService {
     public String getUserRoleInTeam(Long userId, Long teamId) {
         String role = teamRepository.findUserRoleInTeam(userId, teamId);
         return (StringUtils.isNotEmpty(role)) ? role : ROLE_GUEST;
+    }
+
+    @Transactional
+    public void updateUserRoleInTeam(Long userId, Long teamId, String newRoleName) {
+        String currentRole = teamRepository.findUserRoleInTeam(userId, teamId);
+
+        if (newRoleName.equals(currentRole)) return;
+
+        // Guard: cannot demote if this user is the only manager
+        if (ROLE_MANAGER.equals(currentRole)
+                && !ROLE_MANAGER.equals(newRoleName)
+                && !hasOtherManager(teamId, userId)) {
+            throw new IllegalStateException(
+                    "Cannot change role: this user is the only manager in the team.");
+        }
+
+        TeamRole newRole =
+                teamRoleRepository
+                        .findById(newRoleName)
+                        .orElseThrow(
+                                () ->
+                                        new IllegalArgumentException(
+                                                "Invalid role name: " + newRoleName));
+
+        User user =
+                userRepository
+                        .findById(userId)
+                        .orElseThrow(
+                                () -> new IllegalArgumentException("User not found: " + userId));
+
+        Team team =
+                teamRepository
+                        .findById(teamId)
+                        .orElseThrow(
+                                () -> new IllegalArgumentException("Team not found: " + teamId));
+
+        // Role is part of the composite PK — delete old record then insert new one
+        userTeamRepository.deleteById(new UserTeamId(userId, teamId, currentRole));
+        userTeamRepository.flush();
+
+        userTeamRepository.save(
+                UserTeam.builder()
+                        .id(new UserTeamId(userId, teamId, newRoleName))
+                        .user(user)
+                        .team(team)
+                        .role(newRole)
+                        .tenantId(user.getTenantId())
+                        .build());
+    }
+
+    private boolean hasOtherManager(Long teamId, Long excludeUserId) {
+        return teamRepository.findManagersByTeamId(teamId).stream()
+                .anyMatch(u -> !u.getId().equals(excludeUserId));
     }
 
     @Transactional(readOnly = true)
