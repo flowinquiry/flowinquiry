@@ -1,36 +1,21 @@
 "use client";
 
-import { CaretDownIcon } from "@radix-ui/react-icons";
-import Link from "next/link";
 import React, { useEffect, useState } from "react";
 
 import { Heading } from "@/components/heading";
 import LoadingPlaceHolder from "@/components/shared/loading-place-holder";
 import PaginationExt from "@/components/shared/pagination-ext";
-import NewTicketToTeamDialog from "@/components/teams/team-new-ticket-dialog";
 import TicketAdvancedSearch from "@/components/teams/ticket-advanced-search";
 import TicketList from "@/components/teams/ticket-list";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
-import { usePagePermission } from "@/hooks/use-page-permission";
 import { useAppClientTranslations } from "@/hooks/use-translations";
 import { searchTickets } from "@/lib/actions/tickets.action";
-import { getWorkflowsByTeam } from "@/lib/actions/workflows.action";
 import { obfuscate } from "@/lib/endecode";
 import { BreadcrumbProvider } from "@/providers/breadcrumb-provider";
 import { useError } from "@/providers/error-provider";
 import { useTeam } from "@/providers/team-provider";
-import { useUserTeamRole } from "@/providers/user-team-role-provider";
 import { QueryDTO } from "@/types/query";
-import { PermissionUtils } from "@/types/resources";
 import { TicketDTO } from "@/types/tickets";
-import { WorkflowDTO } from "@/types/workflows";
 
 export type Pagination = {
   page: number;
@@ -49,16 +34,8 @@ const TicketListView = () => {
     { title: t.common.navigation("tickets"), link: "#" },
   ];
 
-  const permissionLevel = usePagePermission();
-  const teamRole = useUserTeamRole().role;
-
-  const [open, setOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [isAscending, setIsAscending] = useState(false);
-  const [workflows, setWorkflows] = useState<WorkflowDTO[]>([]);
-  const [selectedWorkflow, setSelectedWorkflow] = useState<WorkflowDTO | null>(
-    null,
-  );
   const [requests, setRequests] = useState<TicketDTO[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
@@ -80,12 +57,6 @@ const TicketListView = () => {
       sort: [{ field: "createdAt", direction: isAscending ? "asc" : "desc" }],
     }));
   }, [isAscending]);
-
-  useEffect(() => {
-    getWorkflowsByTeam(team.id!, false, setError).then((data) =>
-      setWorkflows(data),
-    );
-  }, [team.id]);
 
   const handleFilterChange = (query: QueryDTO) => {
     setFullQuery(query);
@@ -130,14 +101,6 @@ const TicketListView = () => {
     fetchTickets();
   }, [fullQuery, currentPage, pagination.sort]);
 
-  const onCreatedTicketSuccess = () => fetchTickets();
-
-  const canCreateTicket =
-    PermissionUtils.canWrite(permissionLevel) ||
-    teamRole === "manager" ||
-    teamRole === "member" ||
-    teamRole === "guest";
-
   return (
     <BreadcrumbProvider items={breadcrumbItems}>
       <div
@@ -146,7 +109,6 @@ const TicketListView = () => {
       >
         {/* ── Toolbar ── */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          {/* Heading */}
           <div className="flex items-center gap-3 min-w-0">
             <Heading
               title={t.teams.tickets.list("title", { count: totalElements })}
@@ -154,90 +116,6 @@ const TicketListView = () => {
               data-testid="ticket-list-heading"
             />
           </div>
-
-          {/* New ticket split-button */}
-          {canCreateTicket && (
-            <div
-              className="flex shrink-0 items-center"
-              data-testid="new-ticket-container"
-            >
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button data-testid="new-ticket-button">
-                    {t.common.buttons("new")}
-                    <CaretDownIcon className="ml-2 h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                {Array.isArray(workflows) && workflows.length > 0 ? (
-                  <DropdownMenuContent
-                    align="end"
-                    data-testid="workflow-dropdown-content"
-                  >
-                    {workflows.map((workflow) => (
-                      <DropdownMenuItem
-                        key={workflow.id}
-                        className="cursor-pointer"
-                        onClick={() => {
-                          setSelectedWorkflow(workflow);
-                          setOpen(true);
-                        }}
-                        data-testid={`workflow-item-${workflow.id}`}
-                      >
-                        {workflow.requestName}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                ) : (
-                  <DropdownMenuContent
-                    align="end"
-                    className="max-w-xs p-3 text-sm"
-                    data-testid="no-workflow-dropdown-content"
-                  >
-                    <p>{t.teams.tickets.list("no_workflow_available")}</p>
-                    {PermissionUtils.canWrite(permissionLevel) ||
-                    teamRole === "manager" ? (
-                      <span data-testid="create-workflow-cta">
-                        {t.teams.tickets.list.rich("create_workflow_cta", {
-                          button: (chunks) => (
-                            <Button
-                              variant="link"
-                              className="h-auto px-0 py-0"
-                              data-testid="create-workflow-button"
-                            >
-                              {chunks}
-                            </Button>
-                          ),
-                          link: (chunks) => (
-                            <Link
-                              href={`/portal/teams/${obfuscate(team.id)}/workflows`}
-                              data-testid="create-workflow-link"
-                            >
-                              {chunks}
-                            </Link>
-                          ),
-                        })}
-                      </span>
-                    ) : (
-                      <span data-testid="contact-manager-message">
-                        {t.teams.tickets.list(
-                          "contact_manager_to_create_workflow",
-                        )}
-                      </span>
-                    )}
-                  </DropdownMenuContent>
-                )}
-              </DropdownMenu>
-
-              <NewTicketToTeamDialog
-                open={open}
-                setOpen={setOpen}
-                teamEntity={team}
-                workflow={selectedWorkflow!}
-                onSaveSuccess={onCreatedTicketSuccess}
-                data-testid="new-ticket-dialog"
-              />
-            </div>
-          )}
         </div>
 
         <Separator />

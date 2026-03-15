@@ -85,7 +85,7 @@ const TaskEditorSheet = ({
       teamId: teamId,
       projectId: projectId,
       workflowId: projectWorkflowId,
-      currentStateId: selectedWorkflowState?.id ?? null,
+      currentStateId: selectedWorkflowState?.id ?? undefined,
       requestUserId: Number(session?.user?.id ?? 0),
       estimatedCompletionDate: null,
       actualCompletionDate: null,
@@ -94,24 +94,23 @@ const TaskEditorSheet = ({
 
   // ✅ Ensure default values persist when modal opens
   useEffect(() => {
-    if (isOpen) {
-      // Reset the current state name when the sheet opens
-      setCurrentStateName(selectedWorkflowState?.stateName || null);
+    if (!isOpen) return;
 
-      form.reset({
-        requestTitle: "",
-        requestDescription: "",
-        priority: "Medium" as TicketPriority,
-        assignUserId: null,
-        teamId: teamId,
-        projectId: projectId,
-        workflowId: projectWorkflowId,
-        currentStateId: selectedWorkflowState?.id ?? null,
-        requestUserId: Number(session?.user?.id ?? 0),
-        estimatedCompletionDate: null,
-        actualCompletionDate: null,
-      });
-    }
+    setCurrentStateName(selectedWorkflowState?.stateName ?? null);
+
+    form.reset({
+      requestTitle: "",
+      requestDescription: "",
+      priority: "Medium" as TicketPriority,
+      assignUserId: null,
+      teamId: teamId,
+      projectId: projectId,
+      workflowId: projectWorkflowId,
+      currentStateId: selectedWorkflowState?.id ?? undefined,
+      requestUserId: Number(session?.user?.id ?? 0),
+      estimatedCompletionDate: null,
+      actualCompletionDate: null,
+    });
   }, [isOpen, form, teamId, projectWorkflowId, selectedWorkflowState]);
 
   // Handler for when workflow state changes in the form
@@ -306,7 +305,9 @@ const TaskEditorSheet = ({
                       <FormControl>
                         <WorkflowStateSelect
                           workflowId={projectWorkflowId}
-                          currentStateId={form.getValues("currentStateId") || 0}
+                          currentStateId={
+                            form.watch("currentStateId") ?? undefined
+                          }
                           onChange={handleWorkflowStateChange}
                           data-testid="task-workflow-state-select"
                         />
@@ -340,12 +341,7 @@ const TaskEditorSheet = ({
               </div>
 
               {/* Fixed footer with buttons */}
-              <div className="px-6 py-4 border-t shrink-0 flex gap-4 bg-background">
-                <SubmitButton
-                  label={t.common.buttons("save")}
-                  labelWhileLoading={t.common.buttons("saving")}
-                  data-testid="task-save-button"
-                />
+              <div className="px-6 py-4 border-t shrink-0 flex justify-end gap-4 bg-background">
                 <Button
                   variant="secondary"
                   onClick={() => setIsOpen(false)}
@@ -353,6 +349,11 @@ const TaskEditorSheet = ({
                 >
                   {t.common.buttons("discard")}
                 </Button>
+                <SubmitButton
+                  label={t.common.buttons("save")}
+                  labelWhileLoading={t.common.buttons("saving")}
+                  data-testid="task-save-button"
+                />
               </div>
             </form>
           </Form>

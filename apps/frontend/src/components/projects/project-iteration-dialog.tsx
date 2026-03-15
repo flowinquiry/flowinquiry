@@ -33,6 +33,8 @@ import {
   ProjectDTO,
   ProjectIterationDTO,
   ProjectIterationDTOSchema,
+  ProjectIterationFormSchema,
+  ProjectIterationFormValues,
 } from "@/types/projects";
 
 interface ProjectIterationDialogProps {
@@ -78,8 +80,8 @@ export function ProjectIterationDialog({
 
   const isEditMode = !!iteration?.id;
 
-  const form = useForm<ProjectIterationDTO>({
-    resolver: zodResolver(ProjectIterationDTOSchema),
+  const form = useForm<ProjectIterationFormValues>({
+    resolver: zodResolver(ProjectIterationFormSchema),
     defaultValues: {
       id: iteration?.id,
       projectId: project?.id,
@@ -172,15 +174,28 @@ export function ProjectIterationDialog({
     }
   }, [startDate, endDate, lastChangedField, project, form, isCalculating]);
 
-  const handleSubmit = async (values: ProjectIterationDTO) => {
+  const handleSubmit = async (values: ProjectIterationFormValues) => {
+    // Validate with the strict schema (dates required)
+    const parsed = ProjectIterationDTOSchema.safeParse(values);
+    if (!parsed.success) {
+      parsed.error.issues.forEach((issue) => {
+        form.setError(issue.path[0] as keyof ProjectIterationFormValues, {
+          message: issue.message,
+        });
+      });
+      return;
+    }
+    const dto = parsed.data as unknown as ProjectIterationDTO;
     setIsSubmitting(true);
     try {
-      const result =
-        isEditMode && iteration?.id
-          ? await updateProjectIteration(iteration.id, values, setError)
-          : await createProjectIteration(values, setError);
+      let result: unknown;
+      if (isEditMode && iteration?.id) {
+        result = await updateProjectIteration(iteration.id, dto, setError);
+      } else {
+        result = await createProjectIteration(dto, setError);
+      }
       onOpenChange(false);
-      onSave?.(result);
+      onSave?.(result as ProjectIterationDTO);
     } finally {
       setIsSubmitting(false);
     }

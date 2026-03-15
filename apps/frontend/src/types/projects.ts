@@ -39,16 +39,42 @@ export const ProjectSchema = z.object({
 
 export type ProjectDTO = z.infer<typeof ProjectSchema>;
 
-export const ProjectIterationDTOSchema = z.object({
+export const ProjectIterationDTOSchema = z
+  .object({
+    id: z.number().optional(),
+    projectId: z.number(),
+    name: z.string().min(1, "Name is required"),
+    description: z.string().optional(),
+    status: z.string().optional(),
+    startDate: z.string().min(1, "Start date is required"),
+    endDate: z.string().min(1, "End date is required"),
+    totalTickets: z.number().optional(),
+  })
+  .refine(
+    (data) => {
+      if (!data.startDate || !data.endDate) return true;
+      return new Date(data.startDate) <= new Date(data.endDate);
+    },
+    {
+      message: "End date must be after start date",
+      path: ["endDate"],
+    },
+  );
+
+export const ProjectIterationFormSchema = z.object({
   id: z.number().optional(),
   projectId: z.number(),
-  name: z.string(),
+  name: z.string().min(1, "Name is required"),
   description: z.string().optional(),
   status: z.string().optional(),
   startDate: z.string().optional().nullable(),
   endDate: z.string().optional().nullable(),
   totalTickets: z.number().optional(),
 });
+
+export type ProjectIterationFormValues = z.infer<
+  typeof ProjectIterationFormSchema
+>;
 
 export type ProjectIterationDTO = z.infer<typeof ProjectIterationDTOSchema>;
 

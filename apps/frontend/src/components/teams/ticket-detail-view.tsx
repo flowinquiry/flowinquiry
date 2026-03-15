@@ -168,9 +168,9 @@ const TicketDetailView = ({ ticketId }: { ticketId: number }) => {
   const handleStateChangeRequest = async (state: WorkflowStateDTO) => {
     const updated = {
       ...ticket,
-      currentStateId: state.id,
+      currentStateId: state.id as number,
       currentStateName: state.stateName,
-    };
+    } as unknown as TicketDTO;
     await updateTicket(updated.id!, updated, setError);
     setTicket(updated);
     setCurrentRequestState(state.stateName);

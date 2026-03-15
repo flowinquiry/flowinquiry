@@ -6,7 +6,6 @@ import {
   Ellipsis,
   FolderOpen,
   Pencil,
-  Plus,
   Trash,
 } from "lucide-react";
 import Link from "next/link";
@@ -172,28 +171,6 @@ const TeamProjectListView = () => {
               description={t.teams.projects.list("description")}
             />
           </div>
-
-          {canManage && (
-            <div className="flex shrink-0 items-center">
-              <Button
-                onClick={() => {
-                  setSelectedProject(null);
-                  setOpenDialog(true);
-                }}
-                data-testid="new-project-button"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                {t.teams.projects.list("new_project")}
-              </Button>
-              <ProjectEditDialog
-                open={openDialog}
-                setOpen={setOpenDialog}
-                teamEntity={team}
-                project={selectedProject}
-                onSaveSuccess={fetchProjects}
-              />
-            </div>
-          )}
         </div>
 
         <Separator />
@@ -255,19 +232,6 @@ const TeamProjectListView = () => {
             <p className="text-sm text-muted-foreground">
               {t.teams.projects.list("no_projects_found")}
             </p>
-            {canManage && (
-              <Button
-                onClick={() => {
-                  setSelectedProject(null);
-                  setOpenDialog(true);
-                }}
-                className="mt-1"
-                data-testid="new-project-button-empty"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                {t.teams.projects.list("new_project")}
-              </Button>
-            )}
           </div>
         ) : (
           <>
@@ -454,6 +418,15 @@ const TeamProjectListView = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Edit existing project dialog */}
+      <ProjectEditDialog
+        open={openDialog}
+        setOpen={setOpenDialog}
+        teamEntity={team}
+        project={selectedProject}
+        onSaveSuccess={() => fetchProjects()}
+      />
     </BreadcrumbProvider>
   );
 };

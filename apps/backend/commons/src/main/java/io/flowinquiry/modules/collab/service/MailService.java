@@ -135,7 +135,7 @@ public class MailService {
             String content,
             boolean isMultipart,
             boolean isHtml) {
-        log.debug(
+        log.trace(
                 "Send email[multipart '{}' and html '{}'] to '{}' with subject '{}' and content={}",
                 isMultipart,
                 isHtml,

@@ -156,6 +156,7 @@
       "title": "Tableau de bord",
       "description": "Aperçu des performances et des activités de votre équipe. Surveillez les demandes, la progression et les indicateurs clés d’un coup d’œil",
       "edit_team": "Modifier l'équipe",
+      "actions": "Actions",
       "last_7_days": "7 derniers jours",
       "last_30_days": "30 derniers jours",
       "last_90_days": "90 derniers jours",
@@ -422,6 +423,8 @@
       "view": {
         "add_new_task_to_state": "Ajouter une nouvelle tâche à {stateName}",
         "new_task": "Ajouter une tâche",
+        "add_task": "Ajouter une tâche",
+        "actions": "Actions",
         "project_not_found": "Projet introuvable",
         "edit_project": "Modifier le projet",
         "duration": "Durée",

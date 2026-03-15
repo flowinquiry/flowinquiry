@@ -1,6 +1,6 @@
 "use client";
 
-import { Ellipsis, Mail, Plus, Trash, UserCog, Users } from "lucide-react";
+import { Ellipsis, Mail, Trash, UserCog, Users } from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
 import useSWR from "swr";
@@ -8,7 +8,6 @@ import useSWR from "swr";
 import { Heading } from "@/components/heading";
 import { UserAvatar } from "@/components/shared/avatar-display";
 import LoadingPlaceHolder from "@/components/shared/loading-place-holder";
-import AddUserToTeamDialog from "@/components/teams/team-add-user-dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -62,7 +61,6 @@ const TeamUsersView = () => {
   const { setError } = useError();
   const t = useAppClientTranslations();
 
-  const [open, setOpen] = useState(false);
   const [notDeleteOnlyManagerDialogOpen, setNotDeleteOnlyManagerDialogOpen] =
     useState(false);
   const [onlyManagerRoleChangeDialogOpen, setOnlyManagerRoleChangeDialogOpen] =
@@ -158,23 +156,6 @@ const TeamUsersView = () => {
             title={t.teams.users("title", { count: items.length })}
             description={t.teams.users("description")}
           />
-          {canManage && (
-            <div>
-              <Button
-                onClick={() => setOpen(true)}
-                data-testid="add-user-button"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                {t.teams.users("add_user")}
-              </Button>
-              <AddUserToTeamDialog
-                open={open}
-                setOpen={setOpen}
-                teamEntity={team}
-                onSaveSuccess={() => mutate()}
-              />
-            </div>
-          )}
         </div>
 
         {/* ── Content ── */}
@@ -189,16 +170,6 @@ const TeamUsersView = () => {
             <p className="text-sm text-muted-foreground">
               {t.teams.users("no_members")}
             </p>
-            {canManage && (
-              <Button
-                onClick={() => setOpen(true)}
-                className="mt-1"
-                data-testid="add-user-button-empty"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                {t.teams.users("add_user")}
-              </Button>
-            )}
           </div>
         ) : (
           roleOrder.map(

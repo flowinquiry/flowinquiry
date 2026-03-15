@@ -7,8 +7,11 @@ import {
   ChevronUp,
   Clock,
   Edit,
+  Layers,
   LayoutDashboard,
+  Plus,
   Settings,
+  Timer,
 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React, {
@@ -24,8 +27,16 @@ import ProjectBoardView from "@/components/projects/project-board-view";
 import ProjectEditDialog from "@/components/projects/project-edit-dialog";
 import ProjectSettings from "@/components/projects/project-settings";
 import ProjectReportsView from "@/components/projects/reports/project-reports-view";
+import TaskEditorSheet from "@/components/projects/task-editor-sheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePagePermission } from "@/hooks/use-page-permission";
@@ -64,6 +75,10 @@ export default function ProjectView({
 
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
   const [isProjectEditDialogOpen, setIsProjectEditDialogOpen] = useState(false);
+  const [isTaskEditorOpen, setIsTaskEditorOpen] = useState(false);
+  const [isEpicDialogOpen, setIsEpicDialogOpen] = useState(false);
+  const [isIterationDialogOpen, setIsIterationDialogOpen] = useState(false);
+  const [boardRefreshKey, setBoardRefreshKey] = useState(0);
 
   // Persist active top-level tab in ?tab= param
   const VALID_TABS = ["board", "reports", "settings"] as const;
@@ -168,16 +183,69 @@ export default function ProjectView({
 
               {(PermissionUtils.canWrite(permissionLevel) ||
                 teamRole === "manager") && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1.5"
-                  onClick={() => setIsProjectEditDialogOpen(true)}
-                  testId="project-view-edit-project"
-                >
-                  <Edit className="w-4 h-4" />
-                  {t.teams.projects.view("edit_project")}
-                </Button>
+                <div className="flex items-center">
+                  <Button
+                    size="sm"
+                    className="rounded-r-none gap-1.5"
+                    onClick={() => setIsTaskEditorOpen(true)}
+                    data-testid="project-view-add-task"
+                  >
+                    <Plus className="h-4 w-4" />
+                    {t.teams.projects.view("add_task")}
+                  </Button>
+                  <Separator
+                    orientation="vertical"
+                    className="h-5 bg-primary-foreground/30"
+                  />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        size="sm"
+                        className="rounded-l-none px-2"
+                        data-testid="project-view-actions-dropdown"
+                      >
+                        <ChevronDown className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => setIsTaskEditorOpen(true)}
+                        data-testid="project-view-add-task-menu"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        {t.teams.projects.view("add_task")}
+                      </DropdownMenuItem>
+                      {(PermissionUtils.canWrite(permissionLevel) ||
+                        teamRole === "manager") && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => setIsIterationDialogOpen(true)}
+                            data-testid="project-view-add-iteration"
+                          >
+                            <Timer className="h-4 w-4 mr-2" />
+                            {t.teams.projects.view("add_new_iteration")}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => setIsEpicDialogOpen(true)}
+                            data-testid="project-view-add-epic"
+                          >
+                            <Layers className="h-4 w-4 mr-2" />
+                            {t.teams.projects.view("add_new_epic")}
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => setIsProjectEditDialogOpen(true)}
+                            data-testid="project-view-edit-project"
+                          >
+                            <Edit className="h-4 w-4 mr-2" />
+                            {t.teams.projects.view("edit_project")}
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               )}
             </div>
 
@@ -263,7 +331,15 @@ export default function ProjectView({
             </TabsList>
 
             <TabsContent value="board" className="min-w-0">
-              <ProjectBoardView project={project} workflow={workflow} />
+              <ProjectBoardView
+                project={project}
+                workflow={workflow}
+                openEpicDialog={isEpicDialogOpen}
+                onEpicDialogClose={() => setIsEpicDialogOpen(false)}
+                openIterationDialog={isIterationDialogOpen}
+                onIterationDialogClose={() => setIsIterationDialogOpen(false)}
+                refreshKey={boardRefreshKey}
+              />
             </TabsContent>
 
             <TabsContent value="reports">
@@ -293,6 +369,22 @@ export default function ProjectView({
               await fetchProjectData();
             }}
           />
+
+          {/* ── Add Task Sheet ── */}
+          {workflow && (
+            <TaskEditorSheet
+              isOpen={isTaskEditorOpen}
+              setIsOpen={setIsTaskEditorOpen}
+              selectedWorkflowState={null}
+              setTasks={() => {}}
+              teamId={team.id!}
+              projectId={project.id!}
+              projectWorkflowId={workflow.id!}
+              onTaskCreated={async () => {
+                setBoardRefreshKey((k) => k + 1);
+              }}
+            />
+          )}
         </>
       ) : (
         <p className="text-destructive" data-testid="project-view-not-found">

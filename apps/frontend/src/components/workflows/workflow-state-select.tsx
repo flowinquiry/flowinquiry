@@ -10,7 +10,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAppClientTranslations } from "@/hooks/use-translations";
-import { getValidTargetStates } from "@/lib/actions/workflows.action";
+import {
+  getInitialStates,
+  getValidTargetStates,
+} from "@/lib/actions/workflows.action";
 import { useError } from "@/providers/error-provider";
 import { WorkflowStateDTO } from "@/types/workflows";
 
@@ -39,18 +42,28 @@ const WorkflowStateSelect: React.FC<WorkflowStateSelectProps> = ({
   const t = useAppClientTranslations();
 
   useEffect(() => {
+    if (!workflowId) return;
+
     const loadWorkflowStates = async () => {
       setIsLoading(true);
       try {
-        if (workflowId && currentStateId) {
-          const data = await getValidTargetStates(
+        let data: WorkflowStateDTO[];
+        if (currentStateId) {
+          data = await getValidTargetStates(
             workflowId,
             currentStateId,
-            true, // includeSelf
+            true,
             setError,
           );
-          setWorkflowStates(data);
+        } else {
+          // No current state — always load initial states
+          data = await getInitialStates(workflowId, setError);
+          // Auto-select the first initial state
+          if (data.length > 0) {
+            onChange(data[0].id!, data[0].stateName);
+          }
         }
+        setWorkflowStates(data);
       } catch (error) {
         console.error("Failed to load workflow states:", error);
       } finally {
@@ -59,7 +72,7 @@ const WorkflowStateSelect: React.FC<WorkflowStateSelectProps> = ({
     };
 
     loadWorkflowStates();
-  }, [workflowId, currentStateId, setError]);
+  }, [workflowId, currentStateId, onChange, setError]);
 
   const selectedState = workflowStates.find(
     (state) => state.id === currentStateId,
@@ -68,9 +81,7 @@ const WorkflowStateSelect: React.FC<WorkflowStateSelectProps> = ({
   const handleStateChange = (value: string) => {
     const stateId = Number(value);
     const newState = workflowStates.find((state) => state.id === stateId);
-
     if (newState) {
-      // Pass both the ID and the name to the parent component
       onChange(stateId, newState.stateName);
     }
   };
@@ -85,7 +96,8 @@ const WorkflowStateSelect: React.FC<WorkflowStateSelectProps> = ({
         <SelectValue
           placeholder={t.workflows.common("state_select_place_holder")}
         >
-          {selectedState?.stateName || t.common.misc("loading_data")}
+          {selectedState?.stateName ||
+            t.workflows.common("state_select_place_holder")}
         </SelectValue>
       </SelectTrigger>
       <SelectContent>
