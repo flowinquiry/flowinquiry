@@ -28,12 +28,15 @@ check_docker() {
     echo "✅ Docker and Docker Compose are properly installed and running."
 }
 
-# Function to fetch the latest FlowInquiry version from version.json
+# Run Docker check at the beginning
+check_docker
+
+# ── Resolve release version from remote version.json ────────────────────────
 detect_latest_version() {
     local version_url="https://raw.githubusercontent.com/flowinquiry/flowinquiry/refs/heads/main/version.json"
     local version=""
 
-    echo "🔍 Detecting latest FlowInquiry version..."
+    echo "🔍 Detecting latest FlowInquiry version..." >&2
 
     if command -v curl >/dev/null 2>&1; then
         version=$(curl -sSL "$version_url" | grep '"latestVersion"' | sed 's/.*"latestVersion"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/')
@@ -42,19 +45,15 @@ detect_latest_version() {
     fi
 
     if [ -z "$version" ]; then
-        echo "⚠️  Could not detect latest version automatically. Falling back to 'latest'."
+        echo "⚠️  Could not detect latest version automatically. Falling back to 'latest'." >&2
         version="latest"
     else
-        echo "✅ Latest FlowInquiry version: $version"
+        echo "✅ Latest FlowInquiry version: $version" >&2
     fi
 
     echo "$version"
 }
 
-# Run Docker check at the beginning
-check_docker
-
-# Detect and export the latest version so Docker Compose picks it up
 FLOWINQUIRY_VERSION=$(detect_latest_version)
 export FLOWINQUIRY_VERSION
 
