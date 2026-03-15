@@ -15,9 +15,13 @@ export const TicketPriorityDisplay = ({
   const config = PRIORITY_CONFIG[priorityKey];
 
   return (
-    <div className="flex items-center gap-2">
-      <span className={config.iconColor}>{config.icon}</span>
-      <span className={`${config.textColor} font-medium`}>{priority}</span>
+    <div className="flex items-center gap-1">
+      <span className={`${config.iconColor} [&>svg]:size-3`}>
+        {config.icon}
+      </span>
+      <span className={`${config.textColor} text-xs font-medium`}>
+        {priority}
+      </span>
     </div>
   );
 };

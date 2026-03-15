@@ -15,7 +15,6 @@ import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import TruncatedHtmlLabel from "@/components/shared/truncate-html-label";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -83,7 +82,12 @@ const NotificationsDropdown = () => {
   useEffect(() => {
     if (notificationsSSE.length > 0) {
       notificationsSSE.forEach((notification) => {
-        toast.info(notification.content);
+        // Strip HTML tags for plain text toast
+        const plainText = notification.content
+          .replace(/<[^>]*>/g, " ")
+          .replace(/\s+/g, " ")
+          .trim();
+        toast.info(plainText);
       });
 
       setNotifications((prev) => {
@@ -314,12 +318,10 @@ const NotificationsDropdown = () => {
                             </TooltipContent>
                           </Tooltip>
                         </div>
-                        <div className="text-sm text-muted-foreground prose prose-sm max-w-none dark:prose-invert **:my-0">
-                          <TruncatedHtmlLabel
-                            htmlContent={item.content}
-                            wordLimit={400}
-                          />
-                        </div>
+                        <div
+                          className="text-sm"
+                          dangerouslySetInnerHTML={{ __html: item.content }}
+                        />
                       </div>
                     </div>
                   </motion.div>

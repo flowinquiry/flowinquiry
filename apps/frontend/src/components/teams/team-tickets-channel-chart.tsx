@@ -1,7 +1,7 @@
 "use client";
 
-import { ChevronDown, ChevronRight } from "lucide-react";
-import React, { useMemo, useState } from "react";
+import { ChartPie } from "lucide-react";
+import React, { useMemo } from "react";
 import {
   Cell,
   Legend,
@@ -12,7 +12,7 @@ import {
 } from "recharts";
 import useSWR from "swr";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import CollapsibleCard from "@/components/shared/collapsible-card";
 import { Spinner } from "@/components/ui/spinner";
 import { useAppClientTranslations } from "@/hooks/use-translations";
 import { aggregate } from "@/lib/actions/reports.action";
@@ -46,7 +46,6 @@ const TicketChannelPieChart: React.FC<Props> = ({
   teamId,
   extraFilters = [],
 }) => {
-  const [collapsed, setCollapsed] = useState(false);
   const { setError } = useError();
   const { timeRange, customDates } = useTimeRange();
   const t = useAppClientTranslations();
@@ -137,67 +136,48 @@ const TicketChannelPieChart: React.FC<Props> = ({
   );
 
   return (
-    <Card className="w-full mx-auto">
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setCollapsed((prev) => !prev)}
-            className="flex items-center p-0"
-          >
-            {collapsed ? (
-              <ChevronRight className="w-5 h-5" />
-            ) : (
-              <ChevronDown className="w-5 h-5" />
-            )}
-          </button>
-          <CardTitle>
-            {t.teams.dashboard("channel_distribution.title")}
-          </CardTitle>
+    <CollapsibleCard
+      icon={<ChartPie className="h-4 w-4 text-muted-foreground" />}
+      title={t.teams.dashboard("channel_distribution.title")}
+    >
+      {isValidating ? (
+        <div className="flex flex-col items-center justify-center h-64">
+          <Spinner className="h-8 w-8 mb-4" />
+          <span>{t.common.misc("loading_data")}</span>
         </div>
-      </CardHeader>
-
-      {!collapsed && (
-        <CardContent className="p-4">
-          {isValidating ? (
-            <div className="flex flex-col items-center justify-center h-64">
-              <Spinner className="h-8 w-8 mb-4" />
-              <span>{t.common.misc("loading_data")}</span>
-            </div>
-          ) : chartData.length === 0 ? (
-            <p className="text-center">
-              {t.teams.dashboard("channel_distribution.no_data")}
-            </p>
-          ) : (
-            <div className="w-full h-64 md:h-96">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={chartData}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius="80%"
-                    label={({ name, percent }) =>
-                      `${name} ${(percent * 100).toFixed(0)}%`
-                    }
-                    labelLine={false}
-                  >
-                    {chartData.map((entry) => (
-                      <Cell key={`cell-${entry.channel}`} fill={entry.fill} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={(value: number, name: string) => [value, name]}
-                  />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-        </CardContent>
+      ) : chartData.length === 0 ? (
+        <p className="text-center text-sm text-muted-foreground py-6">
+          {t.teams.dashboard("channel_distribution.no_data")}
+        </p>
+      ) : (
+        <div className="w-full h-64 md:h-96">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={chartData}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius="80%"
+                label={({ name, percent }) =>
+                  `${name} ${(percent * 100).toFixed(0)}%`
+                }
+                labelLine={false}
+              >
+                {chartData.map((entry) => (
+                  <Cell key={`cell-${entry.channel}`} fill={entry.fill} />
+                ))}
+              </Pie>
+              <Tooltip
+                formatter={(value: number, name: string) => [value, name]}
+              />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
       )}
-    </Card>
+    </CollapsibleCard>
   );
 };
 

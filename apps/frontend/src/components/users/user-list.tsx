@@ -257,17 +257,17 @@ export const UserList = () => {
           }}
         >
           <TabsList>
-            <TabsTrigger value="ALL">All</TabsTrigger>
+            <TabsTrigger value="ALL">{t.users.list("status_all")}</TabsTrigger>
             <TabsTrigger value="ACTIVE">
               <span className="flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-full bg-green-500" />
-                Active
+                {t.users.list("status_active")}
               </span>
             </TabsTrigger>
             <TabsTrigger value="PENDING">
               <span className="flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-full bg-yellow-400" />
-                Pending
+                {t.users.list("status_pending")}
               </span>
             </TabsTrigger>
           </TabsList>
@@ -287,7 +287,7 @@ export const UserList = () => {
         <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed py-16 text-center">
           <Users className="h-10 w-10 text-muted-foreground/50" />
           <p className="text-sm text-muted-foreground">
-            No users found. Invite someone to get started.
+            {t.users.list("no_users")}
           </p>
           {PermissionUtils.canWrite(permissionLevel) && (
             <Link

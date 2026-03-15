@@ -90,6 +90,8 @@ const TicketDetailView = ({ ticketId }: { ticketId: number }) => {
   const { setError } = useError();
   const [workflowStates, setWorkflowStates] = useState<WorkflowStateDTO[]>([]);
   const [currentRequestState, setCurrentRequestState] = useState<String>("");
+  const [hasPrevious, setHasPrevious] = useState(true);
+  const [hasNext, setHasNext] = useState(true);
   const [isWorkflowDialogOpen, setWorkflowDialogOpen] = useState(false);
   const t = useAppClientTranslations();
   const commentsViewRef = useRef<HTMLDivElement | null>(null);
@@ -133,18 +135,24 @@ const TicketDetailView = ({ ticketId }: { ticketId: number }) => {
 
   const navigateToPreviousRecord = async () => {
     if (!ticket) return;
-    const prev = await findPreviousTicket(
-      ticket.id!,
-      ticket.projectId,
-      setError,
-    );
-    setTicket(prev);
+    const prev = await findPreviousTicket(ticket.id!, ticket.projectId);
+    if (prev) {
+      setTicket(prev);
+      setHasPrevious(true);
+    } else {
+      setHasPrevious(false);
+    }
   };
 
   const navigateToNextRecord = async () => {
     if (!ticket) return;
-    const next = await findNextTicket(ticket.id!, ticket.projectId, setError);
-    setTicket(next);
+    const next = await findNextTicket(ticket.id!, ticket.projectId);
+    if (next) {
+      setTicket(next);
+      setHasNext(true);
+    } else {
+      setHasNext(false);
+    }
   };
 
   const handleFocusComments = () => {
@@ -266,6 +274,7 @@ const TicketDetailView = ({ ticketId }: { ticketId: number }) => {
                     variant="ghost"
                     size="icon"
                     onClick={navigateToPreviousRecord}
+                    disabled={!hasPrevious}
                     className="shrink-0 mt-0.5"
                     data-testid="previous-ticket-button"
                   >
@@ -328,6 +337,7 @@ const TicketDetailView = ({ ticketId }: { ticketId: number }) => {
                   variant="ghost"
                   size="icon"
                   onClick={navigateToNextRecord}
+                  disabled={!hasNext}
                   className="shrink-0 mt-0.5"
                   data-testid="next-ticket-button"
                 >
@@ -350,11 +360,14 @@ const TicketDetailView = ({ ticketId }: { ticketId: number }) => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() =>
-                router.push(
-                  `/portal/teams/${obfuscate(ticket.teamId)}/tickets/${obfuscate(ticket.id)}/edit?${randomPair()}`,
-                )
-              }
+              onClick={() => {
+                const teamId = obfuscate(ticket.teamId);
+                const ticketId = obfuscate(ticket.id);
+                const editUrl = ticket.projectId
+                  ? `/portal/teams/${teamId}/projects/${ticket.projectShortName}/${ticketId}/edit?${randomPair()}`
+                  : `/portal/teams/${teamId}/tickets/${ticketId}/edit?${randomPair()}`;
+                router.push(editUrl);
+              }}
               data-testid="edit-ticket-button"
             >
               <Edit className="mr-2 h-4 w-4" />
@@ -451,13 +464,13 @@ const TicketDetailView = ({ ticketId }: { ticketId: number }) => {
           <div className="flex flex-col gap-4 lg:col-span-2">
             {/* Description card */}
             <Card data-testid="ticket-description-card">
-              <CardHeader className="border-b pb-4">
+              <CardHeader className="border-b pb-0">
                 <CardTitle className="flex items-center gap-2 text-sm font-medium">
                   <FileText className="h-4 w-4 text-muted-foreground" />
                   {t.teams.tickets.form.base("description")}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-4">
+              <CardContent className="pt-0">
                 <div
                   className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground"
                   dangerouslySetInnerHTML={{

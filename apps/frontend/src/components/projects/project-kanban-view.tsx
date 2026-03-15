@@ -7,7 +7,7 @@ import {
   DragOverlay,
   DragStartEvent,
 } from "@dnd-kit/core";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import StateColumn from "@/components/projects/state-column";
 import TaskBlock from "@/components/projects/task-block";
@@ -18,8 +18,6 @@ import { WorkflowDetailDTO } from "@/types/workflows";
 type Props = {
   workflow: WorkflowDetailDTO;
   filteredTasks: TaskBoard;
-  boardRef: React.RefObject<HTMLDivElement | null>;
-  boardHeight: number;
   onTaskClick: (task: TicketDTO) => void;
   onDragEnd: (event: DragEndEvent) => void;
   onAddTask: (stateId: number) => void;
@@ -37,14 +35,36 @@ const sortedStates = (workflow: WorkflowDetailDTO) =>
 export default function ProjectKanbanView({
   workflow,
   filteredTasks,
-  boardRef,
-  boardHeight,
   onTaskClick,
   onDragEnd,
   onAddTask,
 }: Props) {
   const [activeTask, setActiveTask] = useState<TicketDTO | null>(null);
   const [dragStartTime, setDragStartTime] = useState<number | null>(null);
+
+  // Self-contained height calculation
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState(500);
+
+  useEffect(() => {
+    let rafId: number;
+    const update = () => {
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        const el = containerRef.current;
+        if (!el) return;
+        const top = el.getBoundingClientRect().top;
+        // Fill from this element's top to 16px above the viewport bottom
+        setHeight(Math.max(window.innerHeight - top - 16, 300));
+      });
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener("resize", update);
+    };
+  }, []);
 
   const handleDragStart = (event: DragStartEvent) => {
     setDragStartTime(Date.now());
@@ -80,8 +100,6 @@ export default function ProjectKanbanView({
     onDragEnd(event);
   };
 
-  const [addSheetState, setAddSheetState] = useState<number | null>(null);
-
   return (
     <DndContext
       collisionDetection={closestCorners}
@@ -89,16 +107,19 @@ export default function ProjectKanbanView({
       onDragEnd={handleDragEnd}
     >
       <div
-        ref={boardRef}
-        className="flex items-stretch gap-4 pb-2"
+        ref={containerRef}
+        className="kanban-board-scroll"
         style={{
-          height: boardHeight,
+          display: "flex",
+          alignItems: "stretch",
+          gap: "1rem",
+          height: height,
           minHeight: "300px",
-          overflowX: "auto",
+          overflowX: "scroll",
           overflowY: "hidden",
-          scrollbarWidth: "thin",
-          WebkitOverflowScrolling: "touch",
+          paddingBottom: "12px",
           paddingRight: "1rem",
+          boxSizing: "border-box",
         }}
         data-testid="project-view-board"
       >
@@ -107,10 +128,7 @@ export default function ProjectKanbanView({
             key={state.id}
             workflowState={state}
             tasks={filteredTasks[state.id!.toString()] || []}
-            setIsSheetOpen={() => {
-              setAddSheetState(state.id!);
-              onAddTask(state.id!);
-            }}
+            setIsSheetOpen={() => onAddTask(state.id!)}
             setSelectedWorkflowState={() => {}}
             columnColor="bg-[hsl(var(--card))]"
           />

@@ -1,12 +1,12 @@
 "use client";
 
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { Activity } from "lucide-react";
 import React, { useState } from "react";
 import useSWR from "swr";
 
+import CollapsibleCard from "@/components/shared/collapsible-card";
 import PaginationExt from "@/components/shared/pagination-ext";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Spinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Tooltip,
   TooltipContent,
@@ -19,17 +19,14 @@ import { useError } from "@/providers/error-provider";
 
 const RecentTeamActivities = ({ teamId }: { teamId: number }) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [collapsed, setCollapsed] = useState(false); // Toggle collapse
   const { setError } = useError();
   const t = useAppClientTranslations();
 
-  // **SWF Fetcher Function**
   const fetchActivityLogs = async () => {
     return getActivityLogs("Team", teamId, currentPage, 5, setError);
   };
 
-  // **Use SWR for Fetching**
-  const { data, error, isLoading, mutate } = useSWR(
+  const { data, error, isLoading } = useSWR(
     [`/api/team/${teamId}/activities`, currentPage],
     fetchActivityLogs,
   );
@@ -38,82 +35,63 @@ const RecentTeamActivities = ({ teamId }: { teamId: number }) => {
   const totalPages = data?.totalPages ?? 0;
 
   return (
-    <Card>
-      <CardHeader
-        className="cursor-pointer"
-        onClick={() => setCollapsed((prev) => !prev)}
-      >
-        <div className="flex items-center space-x-2">
-          {collapsed ? (
-            <ChevronRight className="w-5 h-5" />
-          ) : (
-            <ChevronDown className="w-5 h-5" />
-          )}
-          <CardTitle>{t.teams.dashboard("recent_activities.title")}</CardTitle>
+    <CollapsibleCard
+      icon={<Activity className="h-4 w-4 text-muted-foreground" />}
+      title={t.teams.dashboard("recent_activities.title")}
+    >
+      {isLoading ? (
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="space-y-1.5">
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-3 w-2/3" />
+              <Skeleton className="h-3 w-16" />
+            </div>
+          ))}
         </div>
-      </CardHeader>
-
-      {!collapsed && (
-        <CardContent>
-          {isLoading ? (
-            <div className="flex justify-center items-center h-[150px]">
-              <Spinner className="h-8 w-8">
-                <span>{t.common.misc("loading_data")}</span>
-              </Spinner>
-            </div>
-          ) : error ? (
-            <p className="text-sm text-red-500">
-              {t.teams.dashboard("recent_activities.no_data")}
-            </p>
-          ) : activityLogs.length > 0 ? (
-            <div className="space-y-2">
-              {activityLogs.map((activityLog, index) => (
-                <div
-                  key={activityLog.id}
-                  className={`py-4 px-4 rounded-md ${
-                    index % 2 === 0
-                      ? "bg-gray-50 dark:bg-gray-800"
-                      : "bg-white dark:bg-gray-900"
-                  }`}
-                >
-                  <div
-                    className="prose max-w-none dark:prose-invert"
-                    dangerouslySetInnerHTML={{
-                      __html: activityLog.content!,
-                    }}
-                  />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                    Modified at:{" "}
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="cursor-pointer">
-                          {formatDateTimeDistanceToNow(
-                            new Date(activityLog.createdAt),
-                          )}
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        {new Date(activityLog.createdAt).toLocaleString()}{" "}
-                      </TooltipContent>
-                    </Tooltip>
+      ) : error || activityLogs.length === 0 ? (
+        <p className="text-sm text-muted-foreground py-6 text-center">
+          {t.teams.dashboard("recent_activities.no_data")}
+        </p>
+      ) : (
+        <div className="flex flex-col">
+          {activityLogs.map((activityLog, index) => (
+            <div
+              key={activityLog.id}
+              className={`py-2.5 px-2 rounded-md transition-all ${
+                index % 2 === 0
+                  ? "bg-muted/30 hover:bg-muted/50"
+                  : "hover:bg-muted/40"
+              }`}
+            >
+              <div
+                className="prose prose-sm max-w-none dark:prose-invert text-muted-foreground **:my-0"
+                dangerouslySetInnerHTML={{ __html: activityLog.content! }}
+              />
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <p className="text-xs text-muted-foreground/70 mt-1 cursor-default">
+                    {formatDateTimeDistanceToNow(
+                      new Date(activityLog.createdAt),
+                    )}
                   </p>
-                </div>
-              ))}
+                </TooltipTrigger>
+                <TooltipContent>
+                  {new Date(activityLog.createdAt).toLocaleString()}
+                </TooltipContent>
+              </Tooltip>
             </div>
-          ) : (
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {t.teams.dashboard("recent_activities.no_data")}
-            </p>
-          )}
-          <PaginationExt
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={(page) => setCurrentPage(page)}
-            className="pt-2"
-          />
-        </CardContent>
+          ))}
+        </div>
       )}
-    </Card>
+
+      <PaginationExt
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={(page) => setCurrentPage(page)}
+        className="pt-2"
+      />
+    </CollapsibleCard>
   );
 };
 

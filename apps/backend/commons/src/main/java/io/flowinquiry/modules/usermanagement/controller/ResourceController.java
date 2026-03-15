@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -49,14 +48,9 @@ public class ResourceController {
                 @ApiResponse(responseCode = "401", description = "Unauthorized"),
                 @ApiResponse(responseCode = "403", description = "Forbidden")
             })
-    public ResponseEntity<List<ResourceDTO>> getAllResources() {
-        List<ResourceDTO> resources =
-                resourceRepository.findAll().stream()
-                        .map(
-                                resource ->
-                                        new ResourceDTO(
-                                                resource.getName(), resource.getDescription()))
-                        .collect(Collectors.toList());
-        return ResponseEntity.ok(resources);
+    public List<ResourceDTO> getAllResources() {
+        return resourceRepository.findAll().stream()
+                .map(resource -> new ResourceDTO(resource.getName(), resource.getDescription()))
+                .collect(Collectors.toList());
     }
 }

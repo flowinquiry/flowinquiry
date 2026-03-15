@@ -1,6 +1,6 @@
 package io.flowinquiry.modules.teams.service.listener;
 
-import static io.flowinquiry.modules.teams.utils.PathUtils.buildTicketPath;
+import static io.flowinquiry.utils.HtmlUtils.buildTicketPath;
 
 import io.flowinquiry.modules.collab.EmailContext;
 import io.flowinquiry.modules.collab.domain.EntityType;

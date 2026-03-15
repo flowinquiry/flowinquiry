@@ -5,6 +5,7 @@ import {
   Calendar,
   CheckCircle,
   Clock,
+  ExternalLink,
   Eye,
   FileText,
   MessageSquare,
@@ -233,6 +234,28 @@ const TicketDetailSheet: React.FC<TicketDetailsProps> = ({
                 <TicketPriorityDisplay
                   priority={ticket.priority ?? initialTicket.priority}
                 />
+                {/* Full view link */}
+                <TooltipProvider delayDuration={200}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Link
+                        href={
+                          initialTicket.projectId
+                            ? `/portal/teams/${obfuscate(ticket.teamId)}/projects/${initialTicket.projectShortName}/${obfuscate(ticket.id)}`
+                            : `/portal/teams/${obfuscate(ticket.teamId)}/tickets/${obfuscate(ticket.id)}`
+                        }
+                        className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
+                        data-testid="open-full-view-link"
+                      >
+                        <ExternalLink className="h-3.5 w-3.5" />
+                        {t.teams.tickets.detail("open_full_view")}
+                      </Link>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      {t.teams.tickets.detail("open_full_view")}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
 
               {/* Title */}

@@ -79,23 +79,29 @@ const UserNotifications = () => {
           {notifications.map((notification, index) => (
             <div
               key={notification.id}
-              className={`py-2.5 px-2 rounded-md border-l-2 transition-all ${
+              className={`py-1.5 px-2 rounded-md transition-all ${
                 !notification.isRead
-                  ? "bg-primary/5 hover:bg-primary/10 border-primary"
+                  ? "bg-primary/5 hover:bg-primary/10"
                   : index % 2 === 0
-                    ? "bg-muted/30 border-transparent hover:bg-muted/50 hover:border-primary"
-                    : "border-transparent hover:bg-muted/40 hover:border-primary"
+                    ? "bg-muted/30 hover:bg-muted/50"
+                    : "hover:bg-muted/40"
               }`}
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-start gap-2 min-w-0 flex-1">
-                  {!notification.isRead && (
-                    <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
-                  )}
-                  <div
-                    className="prose prose-sm max-w-none dark:prose-invert text-muted-foreground"
-                    dangerouslySetInnerHTML={{ __html: notification.content! }}
-                  />
+                  <div className="min-w-0 flex-1">
+                    <div
+                      className="text-sm leading-snug [&>div]:m-0 [&>div]:p-0"
+                      dangerouslySetInnerHTML={{
+                        __html: notification.content!,
+                      }}
+                    />
+                    <p className="text-xs text-muted-foreground/70 mt-1">
+                      {formatDateTimeDistanceToNow(
+                        new Date(notification.createdAt),
+                      )}
+                    </p>
+                  </div>
                 </div>
                 {!notification.isRead && (
                   <Button
@@ -109,9 +115,6 @@ const UserNotifications = () => {
                   </Button>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground/70 mt-1 ml-4">
-                {formatDateTimeDistanceToNow(new Date(notification.createdAt))}
-              </p>
             </div>
           ))}
         </div>

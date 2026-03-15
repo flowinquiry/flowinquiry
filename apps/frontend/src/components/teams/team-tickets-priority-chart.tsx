@@ -1,5 +1,6 @@
 "use client";
 
+import { ChartPie } from "lucide-react";
 import React, { useMemo } from "react";
 import {
   Cell,
@@ -11,7 +12,7 @@ import {
 } from "recharts";
 import useSWR from "swr";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import CollapsibleCard from "@/components/shared/collapsible-card";
 import { Spinner } from "@/components/ui/spinner";
 import { useAppClientTranslations } from "@/hooks/use-translations";
 import { aggregate } from "@/lib/actions/reports.action";
@@ -118,50 +119,48 @@ const TicketPriorityPieChart: React.FC<Props> = ({
   );
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>
-          {t.teams.dashboard("priority_tickets_distribution.title")}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="p-4">
-        {isValidating ? (
-          <div className="flex flex-col items-center justify-center h-64">
-            <Spinner className="h-8 w-8 mb-4" />
-            <span>{t.common.misc("loading_data")}</span>
-          </div>
-        ) : chartData.length === 0 ? (
-          <p className="text-center">{t.common.misc("no_data_available")}</p>
-        ) : (
-          <div className="w-full h-64 md:h-96">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={chartData}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius="80%"
-                  label={({ name, percent }) =>
-                    `${name} ${(percent * 100).toFixed(0)}%`
-                  }
-                  labelLine={false}
-                >
-                  {chartData.map((entry) => (
-                    <Cell key={`cell-${entry.name}`} fill={entry.fill} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  formatter={(value: number, name: string) => [value, name]}
-                />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    <CollapsibleCard
+      icon={<ChartPie className="h-4 w-4 text-muted-foreground" />}
+      title={t.teams.dashboard("priority_tickets_distribution.title")}
+    >
+      {isValidating ? (
+        <div className="flex flex-col items-center justify-center h-64">
+          <Spinner className="h-8 w-8 mb-4" />
+          <span>{t.common.misc("loading_data")}</span>
+        </div>
+      ) : chartData.length === 0 ? (
+        <p className="text-center text-sm text-muted-foreground py-6">
+          {t.common.misc("no_data_available")}
+        </p>
+      ) : (
+        <div className="w-full h-64 md:h-96">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={chartData}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius="80%"
+                label={({ name, percent }) =>
+                  `${name} ${(percent * 100).toFixed(0)}%`
+                }
+                labelLine={false}
+              >
+                {chartData.map((entry) => (
+                  <Cell key={`cell-${entry.name}`} fill={entry.fill} />
+                ))}
+              </Pie>
+              <Tooltip
+                formatter={(value: number, name: string) => [value, name]}
+              />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+    </CollapsibleCard>
   );
 };
 

@@ -12,8 +12,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -69,7 +70,7 @@ public class EntityAttachmentController {
                         content = @Content)
             })
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<List<EntityAttachment>> uploadAttachments(
+    public List<EntityAttachment> uploadAttachments(
             @Parameter(description = "Type of entity (e.g., 'ticket', 'comment')", required = true)
                     @RequestParam("entityType")
                     String entityType,
@@ -78,9 +79,7 @@ public class EntityAttachmentController {
             @Parameter(description = "Files to upload", required = true) @RequestPart("files")
                     MultipartFile[] files)
             throws Exception {
-        List<EntityAttachment> attachments =
-                attachmentService.uploadAttachments(entityType, entityId, files);
-        return ResponseEntity.ok(attachments);
+        return attachmentService.uploadAttachments(entityType, entityId, files);
     }
 
     /**
@@ -114,22 +113,19 @@ public class EntityAttachmentController {
                         content = @Content)
             })
     @GetMapping
-    public ResponseEntity<List<EntityAttachmentDTO>> getAttachments(
+    public List<EntityAttachmentDTO> getAttachments(
             @Parameter(description = "Type of entity (e.g., 'ticket', 'comment')", required = true)
                     @RequestParam("entityType")
                     String entityType,
             @Parameter(description = "ID of the entity", required = true) @RequestParam("entityId")
                     Long entityId) {
-        List<EntityAttachmentDTO> attachments =
-                attachmentService.getAttachments(entityType, entityId);
-        return ResponseEntity.ok(attachments);
+        return attachmentService.getAttachments(entityType, entityId);
     }
 
     /**
      * Deletes an attachment by its ID.
      *
      * @param attachmentId The ID of the attachment to delete.
-     * @return A ResponseEntity indicating the result of the deletion.
      */
     @Operation(summary = "Delete attachment", description = "Deletes a file attachment by its ID")
     @ApiResponses(
@@ -145,11 +141,11 @@ public class EntityAttachmentController {
                         content = @Content)
             })
     @DeleteMapping("/{attachmentId}")
-    public ResponseEntity<Void> deleteAttachment(
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteAttachment(
             @Parameter(description = "ID of the attachment to delete", required = true)
                     @PathVariable("attachmentId")
                     Long attachmentId) {
         attachmentService.deleteAttachment(attachmentId);
-        return ResponseEntity.noContent().build();
     }
 }

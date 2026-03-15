@@ -16,7 +16,6 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,6 +23,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -59,11 +59,11 @@ public class OrganizationController {
                         content = @Content)
             })
     @PostMapping
-    public ResponseEntity<Organization> createOrganization(
+    @ResponseStatus(HttpStatus.CREATED)
+    public Organization createOrganization(
             @Parameter(description = "Organization data to create", required = true) @RequestBody
                     Organization organization) {
-        Organization createdOrganization = organizationService.createOrganization(organization);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdOrganization);
+        return organizationService.createOrganization(organization);
     }
 
     @Operation(
@@ -88,14 +88,13 @@ public class OrganizationController {
                         content = @Content)
             })
     @PutMapping("/{id}")
-    public ResponseEntity<Organization> updateOrganization(
+    public Organization updateOrganization(
             @Parameter(description = "ID of the organization to update", required = true)
                     @PathVariable("id")
                     Long id,
             @Parameter(description = "Updated organization data", required = true) @RequestBody
                     Organization organization) {
-        Organization updatedOrganization = organizationService.updateOrganization(id, organization);
-        return ResponseEntity.ok(updatedOrganization);
+        return organizationService.updateOrganization(id, organization);
     }
 
     @Operation(
@@ -112,12 +111,12 @@ public class OrganizationController {
                         content = @Content)
             })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteOrganization(
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteOrganization(
             @Parameter(description = "ID of the organization to delete", required = true)
                     @PathVariable("id")
                     Long id) {
         organizationService.deleteOrganization(id);
-        return ResponseEntity.noContent().build();
     }
 
     @Operation(
@@ -138,12 +137,11 @@ public class OrganizationController {
                         content = @Content)
             })
     @GetMapping("/{id}")
-    public ResponseEntity<Organization> findOrganizationById(
+    public Organization findOrganizationById(
             @Parameter(description = "ID of the organization to retrieve", required = true)
                     @PathVariable("id")
                     Long id) {
-        Organization organization = organizationService.findOrganizationById(id);
-        return ResponseEntity.ok(organization);
+        return organizationService.findOrganizationById(id);
     }
 
     @Operation(
@@ -161,11 +159,12 @@ public class OrganizationController {
                 @ApiResponse(responseCode = "400", description = "Bad request", content = @Content)
             })
     @PostMapping("/search")
-    public ResponseEntity<Page<OrganizationDTO>> findOrganizations(
+    public Page<OrganizationDTO> findOrganizations(
             @Parameter(description = "Query parameters for filtering organizations") @RequestBody
                     Optional<QueryDTO> queryDTO,
             @Parameter(description = "Pagination information") Pageable pageable) {
-        Page<Organization> teams = organizationService.findOrganizations(queryDTO, pageable);
-        return new ResponseEntity<>(teams.map(organizationMapper::toDto), HttpStatus.OK);
+        return organizationService
+                .findOrganizations(queryDTO, pageable)
+                .map(organizationMapper::toDto);
     }
 }

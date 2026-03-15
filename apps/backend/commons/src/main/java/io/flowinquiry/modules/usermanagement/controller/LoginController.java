@@ -11,12 +11,11 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.time.Instant;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -66,9 +65,10 @@ public class LoginController {
                 @ApiResponse(responseCode = "401", description = "Bad credentials"),
                 @ApiResponse(responseCode = "400", description = "Invalid input")
             })
-    public ResponseEntity<UserDTO> authorize(
+    public UserDTO authorize(
             @Parameter(description = "Login credentials", required = true) @Valid @RequestBody
-                    LoginVM loginVM) {
+                    LoginVM loginVM,
+            HttpServletResponse response) {
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(loginVM.getEmail(), loginVM.getPassword());
 
@@ -79,11 +79,10 @@ public class LoginController {
                 userService.getUserWithAuthorities().orElseThrow(InvalidLoginException::new);
 
         String jwt = jwtService.generateToken(authentication);
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setBearerAuth(jwt);
+        response.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
 
         // Update last login time for user
         userRepository.updateLastLoginTime(loginVM.getEmail(), Instant.now());
-        return new ResponseEntity<>(adminUserDTO, httpHeaders, HttpStatus.OK);
+        return adminUserDTO;
     }
 }

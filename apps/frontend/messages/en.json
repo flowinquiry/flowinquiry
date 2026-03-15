@@ -145,6 +145,7 @@
     "common": {
       "default_slogan": "Stronger Together",
       "role": "Role",
+      "select_role_placeholder": "Select a role",
       "project": "Project",
       "team": "Team",
       "modified_at": "Modified at",
@@ -299,7 +300,8 @@
       "sort_a_z": "Sort by name: A → Z",
       "sort_z_a": "Sort by name: Z → A",
       "my_teams_only": "My Teams Only",
-      "new_team": "New team"
+      "new_team": "New team",
+      "no_teams": "No teams found. Create one to get started."
     },
     "tickets": {
       "list": {
@@ -340,6 +342,7 @@
         "changes_history": "Changes history",
         "timeline": "Timeline",
         "click_to_edit": "Click to edit",
+        "open_full_view": "Open full view",
         "people_assignment": "People and Assignment",
         "state_priority": "State and Priority"
       },
@@ -401,6 +404,9 @@
       "description": "Browse and manage the members of your team. View roles, contact information, and more",
       "add_user": "Add User",
       "remove_user": "Remove User",
+      "change_role": "Change Role",
+      "change_role_only_manager_error": "Cannot change role: this user is the only manager in the team.",
+      "no_members": "No members yet",
       "remove_user_from_team": "This action will remove user <b>{firstName} {lastName}</b> from team <b>{teamName}</b>.",
       "remove_only_manager_dialog_error_title": "Manager Role Require",
       "remove_only_manager_dialog_error_description": "You cannot remove the only Manager from the team"
@@ -412,6 +418,11 @@
         "search_place_holder": "Search projects...",
         "new_project": "New project",
         "no_projects_found": "No projects found",
+        "create_project_dialog_title": "Create new project",
+        "create_project_select_team_title": "Select a team",
+        "create_project_select_team_description": "Choose the team this project belongs to. Only teams where you are a manager are shown.",
+        "create_project_no_manager_teams": "You are not a manager of any team. Ask a team manager to create the project for you.",
+        "create_project_back": "Back to team selection",
         "no_description": "No description provided.",
         "status_active": "Active",
         "status_closed": "Closed",
@@ -547,7 +558,11 @@
       "delete_dialog_title": "Confirm Deletion",
       "delete_confirmation": "Are you sure you want to delete <strong>{name}</strong>? This action cannot be undone.",
       "activation_email_sent": "An activation email has been sent to {email}",
-      "resend_activation_email": "Resend Activation Email"
+      "resend_activation_email": "Resend Activation Email",
+      "status_all": "All",
+      "status_active": "Active",
+      "status_pending": "Pending",
+      "no_users": "No users found. Invite someone to get started."
     },
     "detail": {},
     "common": {

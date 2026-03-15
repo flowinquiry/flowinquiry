@@ -25,3 +25,12 @@ export const AuthorityResourcePermissionDTOSchema = z.object({
 export type AuthorityResourcePermissionDTO = z.infer<
   typeof AuthorityResourcePermissionDTOSchema
 >;
+
+export const AuthorityWithPermissionsDTOSchema = z.object({
+  authority: AuthorityDTOSchema,
+  permissions: z.array(AuthorityResourcePermissionDTOSchema),
+});
+
+export type AuthorityWithPermissionsDTO = z.infer<
+  typeof AuthorityWithPermissionsDTOSchema
+>;

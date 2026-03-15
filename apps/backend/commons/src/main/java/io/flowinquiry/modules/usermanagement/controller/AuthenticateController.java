@@ -9,12 +9,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -58,18 +57,18 @@ public class AuthenticateController {
                 @ApiResponse(responseCode = "401", description = "Bad credentials"),
                 @ApiResponse(responseCode = "400", description = "Invalid input")
             })
-    public ResponseEntity<JWTToken> authorize(
+    public JWTToken authorize(
             @Parameter(description = "Login credentials", required = true) @Valid @RequestBody
-                    LoginVM loginVM) {
+                    LoginVM loginVM,
+            HttpServletResponse response) {
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(loginVM.getEmail(), loginVM.getPassword());
 
         Authentication authentication = appAuthenticationManager.authenticate(authenticationToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtService.generateToken(authentication);
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setBearerAuth(jwt);
-        return new ResponseEntity<>(new JWTToken(jwt), httpHeaders, HttpStatus.OK);
+        response.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
+        return new JWTToken(jwt);
     }
 
     /**

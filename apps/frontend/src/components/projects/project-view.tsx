@@ -8,7 +8,6 @@ import {
   Clock,
   Edit,
   LayoutDashboard,
-  Plus,
   Settings,
 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -21,21 +20,12 @@ import React, {
 } from "react";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
-import ProjectBoardView, {
-  BoardViewHandle,
-} from "@/components/projects/project-board-view";
+import ProjectBoardView from "@/components/projects/project-board-view";
 import ProjectEditDialog from "@/components/projects/project-edit-dialog";
 import ProjectSettings from "@/components/projects/project-settings";
 import ProjectReportsView from "@/components/projects/reports/project-reports-view";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePagePermission } from "@/hooks/use-page-permission";
@@ -92,44 +82,7 @@ export default function ProjectView({
   };
 
   // Board height — measured dynamically
-  const boardRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
-  const boardViewRef = useRef<BoardViewHandle>(null);
-  const [boardHeight, setBoardHeight] = useState(500);
-
-  useEffect(() => {
-    let rafId: number;
-    const updateHeight = () => {
-      cancelAnimationFrame(rafId);
-      rafId = requestAnimationFrame(() => {
-        if (boardRef.current) {
-          const main = boardRef.current.closest("main");
-          if (main) {
-            const mainRect = main.getBoundingClientRect();
-            const boardRect = boardRef.current.getBoundingClientRect();
-            const offsetFromMainTop = boardRect.top - mainRect.top;
-            setBoardHeight(
-              Math.max(main.clientHeight - offsetFromMainTop - 32, 300),
-            );
-          } else {
-            const top = boardRef.current.getBoundingClientRect().top;
-            setBoardHeight(Math.max(window.innerHeight - top - 128, 300));
-          }
-        }
-      });
-    };
-
-    updateHeight();
-    window.addEventListener("resize", updateHeight);
-    const observer = new ResizeObserver(updateHeight);
-    if (headerRef.current) observer.observe(headerRef.current);
-
-    return () => {
-      cancelAnimationFrame(rafId);
-      window.removeEventListener("resize", updateHeight);
-      observer.disconnect();
-    };
-  }, [loading, currentView]);
 
   const fetchProjectData = useCallback(async () => {
     setLoading(true);
@@ -159,10 +112,7 @@ export default function ProjectView({
   ];
 
   return (
-    <div
-      className="min-w-0 overflow-x-hidden"
-      data-testid="project-view-container"
-    >
+    <div className="min-w-0" data-testid="project-view-container">
       {loading ? (
         <p className="text-lg font-semibold" data-testid="project-view-loading">
           {t.common.misc("loading_data")}
@@ -218,52 +168,16 @@ export default function ProjectView({
 
               {(PermissionUtils.canWrite(permissionLevel) ||
                 teamRole === "manager") && (
-                <div className="flex items-center shrink-0">
-                  {/* Primary action: Add task */}
-                  <Button
-                    variant="default"
-                    size="sm"
-                    className="gap-1.5 rounded-r-none border-r-0"
-                    onClick={() => boardViewRef.current?.openAddTask()}
-                    testId="project-view-add-task-button"
-                  >
-                    <Plus className="w-4 h-4" />
-                    {t.teams.projects.view("add_task")}
-                  </Button>
-
-                  {/* Chevron: opens more actions */}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="default"
-                        size="sm"
-                        className="rounded-l-none px-2 border-l border-primary-foreground/30"
-                        testId="project-view-more-actions"
-                      >
-                        <ChevronDown className="w-3.5 h-3.5" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                      <DropdownMenuItem
-                        className="cursor-pointer gap-2"
-                        onClick={() => boardViewRef.current?.openAddTask()}
-                        data-testid="project-view-add-task"
-                      >
-                        <Plus className="h-4 w-4" />
-                        {t.teams.projects.view("add_task")}
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        className="cursor-pointer gap-2"
-                        onClick={() => setIsProjectEditDialogOpen(true)}
-                        data-testid="project-view-edit-project"
-                      >
-                        <Edit className="h-4 w-4" />
-                        {t.teams.projects.view("edit_project")}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5"
+                  onClick={() => setIsProjectEditDialogOpen(true)}
+                  testId="project-view-edit-project"
+                >
+                  <Edit className="w-4 h-4" />
+                  {t.teams.projects.view("edit_project")}
+                </Button>
               )}
             </div>
 
@@ -348,14 +262,8 @@ export default function ProjectView({
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="board" className="min-w-0 overflow-x-hidden">
-              <ProjectBoardView
-                ref={boardViewRef}
-                project={project}
-                workflow={workflow}
-                boardRef={boardRef}
-                boardHeight={boardHeight}
-              />
+            <TabsContent value="board" className="min-w-0">
+              <ProjectBoardView project={project} workflow={workflow} />
             </TabsContent>
 
             <TabsContent value="reports">

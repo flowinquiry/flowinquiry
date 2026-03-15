@@ -58,3 +58,15 @@ export const UserWithTeamRoleDTOSchema = z.object({
 });
 
 export type UserWithTeamRoleDTO = z.infer<typeof UserWithTeamRoleDTOSchema>;
+
+export interface UserTeamDTO {
+  teamId: number;
+  teamName: string;
+  roleName: string;
+}
+
+export interface UserTeamsContextDTO {
+  userId: number;
+  isAdmin: boolean;
+  teams: UserTeamDTO[];
+}

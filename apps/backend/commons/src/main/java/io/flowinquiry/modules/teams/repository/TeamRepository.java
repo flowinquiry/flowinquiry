@@ -1,6 +1,7 @@
 package io.flowinquiry.modules.teams.repository;
 
 import io.flowinquiry.modules.teams.domain.Team;
+import io.flowinquiry.modules.teams.service.dto.UserTeamDTO;
 import io.flowinquiry.modules.usermanagement.domain.User;
 import io.flowinquiry.modules.usermanagement.service.dto.UserWithTeamRoleDTO;
 import jakarta.persistence.QueryHint;
@@ -101,4 +102,18 @@ public interface TeamRepository extends JpaRepository<Team, Long>, JpaSpecificat
         WHERE ut.team.id = :teamId AND ut.role.name = 'manager'
     """)
     List<User> findManagersByTeamId(@Param("teamId") Long teamId);
+
+    /**
+     * Fetches every team a user belongs to together with the user's role in that team in a single
+     * query — avoids the N+1 problem.
+     */
+    @Query(
+            """
+        SELECT new io.flowinquiry.modules.teams.service.dto.UserTeamDTO(
+            ut.team.id, ut.team.name, ut.role.name)
+        FROM UserTeam ut
+        WHERE ut.user.id = :userId
+        ORDER BY ut.team.name ASC
+    """)
+    List<UserTeamDTO> findTeamsWithRoleByUserId(@Param("userId") Long userId);
 }

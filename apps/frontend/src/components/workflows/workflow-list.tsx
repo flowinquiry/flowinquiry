@@ -247,9 +247,9 @@ const WorkflowsView = () => {
             return (
               <Card
                 key={workflow.id}
-                className="group flex flex-col transition-shadow hover:shadow-md"
+                className="group flex flex-col transition-shadow hover:shadow-md gap-0 py-0"
               >
-                <CardHeader className="flex flex-row items-start justify-between gap-2 pb-2">
+                <CardHeader className="px-4 flex flex-row items-start justify-between gap-2 pb-2 pt-3">
                   <CardTitle className="text-base leading-snug">
                     <Link
                       href={getWorkflowViewRoute(workflow)}
@@ -297,7 +297,7 @@ const WorkflowsView = () => {
                     )}
                 </CardHeader>
 
-                <CardContent className="flex-1">
+                <CardContent className="p-0 px-4 py-2 flex-1">
                   {workflow.description ? (
                     <p className="line-clamp-3 text-sm text-muted-foreground">
                       {workflow.description}
@@ -309,7 +309,7 @@ const WorkflowsView = () => {
                   )}
                 </CardContent>
 
-                <CardFooter className="flex items-center justify-between gap-2 pt-3 border-t">
+                <CardFooter className="p-0 px-4 flex items-center justify-between gap-2 py-2 border-t [&.border-t]:pt-2">
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <span>Ticket type:</span>
                     <Badge variant="secondary" className="text-xs">

@@ -31,9 +31,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAppClientTranslations } from "@/hooks/use-translations";
 import {
   batchSavePermissions,
-  createAuthority,
+  createAuthorityWithPermissions,
   findAuthorityByName,
   findPermissionsByAuthorityName,
+  getResources,
 } from "@/lib/actions/authorities.action";
 import { obfuscate } from "@/lib/endecode";
 import { useError } from "@/providers/error-provider";
@@ -63,7 +64,7 @@ const AuthorityForm = ({
   authorityId: string | undefined;
 }) => {
   const router = useRouter();
-  const [loading, setLoading] = useState(!!authorityId);
+  const [loading, setLoading] = useState(true);
   const [authorityResourcePermissions, setAuthorityResourcePermissions] =
     useState<Array<AuthorityResourcePermissionDTO>>([]);
   const [authority, setAuthority] = useState<AuthorityDTO | undefined>();
@@ -88,62 +89,78 @@ const AuthorityForm = ({
   const { reset } = form;
 
   useEffect(() => {
-    async function fetchAuthorityAndPermissions() {
-      if (!authorityId) return; // Skip fetching if authorityId is undefined
-
+    async function fetchData() {
       try {
-        const fetchedAuthority = await findAuthorityByName(
-          authorityId,
-          setError,
-        );
-
-        if (fetchedAuthority) {
-          setAuthority(fetchedAuthority);
-
-          const fetchedPermissions = await findPermissionsByAuthorityName(
-            fetchedAuthority.name,
+        if (authorityId) {
+          // Edit mode — load existing authority + its permissions
+          const fetchedAuthority = await findAuthorityByName(
+            authorityId,
             setError,
           );
 
-          setAuthorityResourcePermissions(
-            fetchedPermissions.map((perm) => ({
-              ...perm,
-              permission: perm.permission || "NONE",
-            })),
-          );
+          if (fetchedAuthority) {
+            setAuthority(fetchedAuthority);
 
-          // Reset form values to reflect the fetched authority and permissions
-          reset({
-            authority: fetchedAuthority,
-            permissions: fetchedPermissions.map((perm) => ({
+            const fetchedPermissions = await findPermissionsByAuthorityName(
+              fetchedAuthority.name,
+              setError,
+            );
+
+            const perms = fetchedPermissions.map((perm) => ({
               ...perm,
               permission: perm.permission || "NONE",
-            })),
-          });
+            }));
+
+            setAuthorityResourcePermissions(perms);
+            reset({ authority: fetchedAuthority, permissions: perms });
+          }
+        } else {
+          // Create mode — load all resources with NONE defaults
+          const resources = await getResources(setError);
+          const perms: AuthorityResourcePermissionDTO[] = (resources ?? []).map(
+            (r) => ({
+              authorityName: "",
+              resourceName: r.name,
+              permission: "NONE",
+            }),
+          );
+          setAuthorityResourcePermissions(perms);
+          reset((prev) => ({ ...prev, permissions: perms }));
         }
       } finally {
         setLoading(false);
       }
     }
 
-    fetchAuthorityAndPermissions();
+    fetchData();
   }, [authorityId, reset]);
 
   const onSubmit = async (formData: FormInput) => {
-    const transformed = {
-      ...formData,
-      authority: {
-        ...formData.authority,
-        name:
-          formData.authority.name?.trim() || formData.authority.descriptiveName,
-      },
-    };
+    const authorityName =
+      formData.authority.name?.trim() || formData.authority.descriptiveName;
 
-    await createAuthority(transformed.authority, setError);
-    await batchSavePermissions(transformed.permissions, setError);
-    router.push(
-      `/portal/settings/authorities/${obfuscate(transformed.authority.name)}`,
-    );
+    const authority = { ...formData.authority, name: authorityName };
+
+    if (!authorityId) {
+      // Create mode — single atomic call
+      const permissions = formData.permissions.map((p) => ({
+        ...p,
+        authorityName,
+      }));
+      await createAuthorityWithPermissions(
+        { authority, permissions },
+        setError,
+      );
+    } else {
+      // Edit mode — permissions are saved separately (existing behaviour)
+      const permissions = formData.permissions.map((p) => ({
+        ...p,
+        authorityName,
+      }));
+      await batchSavePermissions(permissions, setError);
+    }
+
+    router.push(`/portal/settings/authorities/${obfuscate(authorityName)}`);
   };
 
   const isSystemRole = authority?.systemRole;
@@ -245,7 +262,7 @@ const AuthorityForm = ({
               </CardContent>
             </Card>
 
-            {/* Permissions card */}
+            {/* Permissions card — always shown (create: all resources with NONE; edit: current values) */}
             {authorityResourcePermissions.length > 0 && (
               <Card data-testid="authority-form-permissions-section">
                 <CardHeader className="border-b pb-4">

@@ -1,7 +1,7 @@
 "use client";
 
-import { ChevronDown, ChevronRight } from "lucide-react";
-import React, { useState } from "react";
+import { ChartBar } from "lucide-react";
+import React from "react";
 import {
   Bar,
   BarChart,
@@ -15,7 +15,7 @@ import {
 } from "recharts";
 import useSWR from "swr";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import CollapsibleCard from "@/components/shared/collapsible-card";
 import { Spinner } from "@/components/ui/spinner";
 import { useAppClientTranslations } from "@/hooks/use-translations";
 import { getTicketsAssignmentDistributionByTeam } from "@/lib/actions/tickets.action";
@@ -49,7 +49,6 @@ const COLORS = [
 const TicketDistributionChart: React.FC<TicketDistributionChartProps> = ({
   teamId,
 }) => {
-  const [collapsed, setCollapsed] = useState(false);
   const { setError } = useError();
   const { timeRange, customDates } = useTimeRange();
   const t = useAppClientTranslations();
@@ -116,69 +115,48 @@ const TicketDistributionChart: React.FC<TicketDistributionChartProps> = ({
   };
 
   return (
-    <Card className="w-full max-w-[800px] mx-auto">
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="flex items-center p-0"
-          >
-            {collapsed ? (
-              <ChevronRight className="w-5 h-5" />
-            ) : (
-              <ChevronDown className="w-5 h-5" />
-            )}
-          </button>
-          <CardTitle>
-            {t.teams.dashboard("assigned_tickets_per_user.title")}
-          </CardTitle>
+    <CollapsibleCard
+      icon={<ChartBar className="h-4 w-4 text-muted-foreground" />}
+      title={t.teams.dashboard("assigned_tickets_per_user.title")}
+    >
+      {isValidating ? (
+        <div className="flex flex-col items-center justify-center h-64">
+          <Spinner className="h-8 w-8 mb-4" />
+          <span>{t.common.misc("loading_data")}</span>
         </div>
-      </CardHeader>
-
-      {/* Collapsible Content */}
-      {!collapsed && (
-        <CardContent className="p-4">
-          {isValidating ? (
-            <div className="flex flex-col items-center justify-center h-64">
-              <Spinner className="h-8 w-8 mb-4" />
-              <span>{t.common.misc("loading_data")}</span>
-            </div>
-          ) : chartData.length === 0 ? (
-            <p className="text-center">{t.common.misc("no_data_available")}</p>
-          ) : (
-            <div className="w-full h-64 md:h-96">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={chartData}
-                  layout="vertical"
-                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                  barSize={40}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" allowDecimals={false} />
-                  <YAxis
-                    type="category"
-                    dataKey="name"
-                    tick={(props) => <CustomYAxisTick {...props} />}
-                    width={150}
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Legend />
-                  <Bar dataKey="value" name="Ticket Count">
-                    {chartData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={COLORS[entry.colorIndex]}
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-        </CardContent>
+      ) : chartData.length === 0 ? (
+        <p className="text-center text-sm text-muted-foreground py-6">
+          {t.common.misc("no_data_available")}
+        </p>
+      ) : (
+        <div className="w-full h-64 md:h-96">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={chartData}
+              layout="vertical"
+              margin={{ top: 8, right: 16, left: 0, bottom: 8 }}
+              barSize={40}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis type="number" allowDecimals={false} />
+              <YAxis
+                type="category"
+                dataKey="name"
+                tick={(props) => <CustomYAxisTick {...props} />}
+                width={100}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend />
+              <Bar dataKey="value" name="Ticket Count">
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[entry.colorIndex]} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       )}
-    </Card>
+    </CollapsibleCard>
   );
 };
 

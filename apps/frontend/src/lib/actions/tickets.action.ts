@@ -63,25 +63,32 @@ export const findPreviousTicket = async (
   ticketId: number,
   projectId?: number | null,
   setError?: (error: HttpError | string | null) => void,
-) => {
+): Promise<TicketDTO | null> => {
   const url =
     projectId != null
       ? `/api/tickets/${ticketId}/previous?projectId=${projectId}`
       : `/api/tickets/${ticketId}/previous`;
-
-  return get<TicketDTO>(url, setError);
+  try {
+    return await get<TicketDTO>(url);
+  } catch {
+    return null;
+  }
 };
 
 export const findNextTicket = async (
   ticketId: number,
   projectId?: number | null,
   setError?: (error: HttpError | string | null) => void,
-) => {
+): Promise<TicketDTO | null> => {
   const url =
     projectId != null
       ? `/api/tickets/${ticketId}/next?projectId=${projectId}`
       : `/api/tickets/${ticketId}/next`;
-  return get<TicketDTO>(url, setError);
+  try {
+    return await get<TicketDTO>(url);
+  } catch {
+    return null;
+  }
 };
 
 export const getTicketsAssignmentDistributionByTeam = async (

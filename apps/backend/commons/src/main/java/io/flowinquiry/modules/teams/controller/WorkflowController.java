@@ -19,7 +19,6 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,7 +27,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/workflows")
@@ -81,14 +82,16 @@ public class WorkflowController {
                         content = @Content)
             })
     @GetMapping("/{id}")
-    public ResponseEntity<WorkflowDTO> getWorkflowById(
+    public WorkflowDTO getWorkflowById(
             @Parameter(description = "ID of the workflow to retrieve", required = true)
                     @PathVariable("id")
                     Long id) {
         return workflowService
                 .getWorkflowById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .orElseThrow(
+                        () ->
+                                new ResponseStatusException(
+                                        HttpStatus.NOT_FOUND, "Workflow not found with id: " + id));
     }
 
     @Operation(
@@ -139,18 +142,18 @@ public class WorkflowController {
                                         schema = @Schema(type = "string")))
             })
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteWorkflow(
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteWorkflow(
             @Parameter(description = "ID of the workflow to delete", required = true)
                     @PathVariable("id")
                     Long id) {
         try {
             workflowService.deleteWorkflow(id);
-            return ResponseEntity.noContent().build();
         } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // 404 Not Found
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body("Workflow cannot be deleted: " + e.getMessage()); // 409 Conflict
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT, "Workflow cannot be deleted: " + e.getMessage());
         }
     }
 
@@ -223,11 +226,10 @@ public class WorkflowController {
                         content = @Content)
             })
     @GetMapping("/teams/{teamId}/global-workflows-not-linked-yet")
-    public ResponseEntity<List<WorkflowDTO>> getGlobalWorkflowsNotLinkedToTeam(
+    public List<WorkflowDTO> getGlobalWorkflowsNotLinkedToTeam(
             @Parameter(description = "ID of the team", required = true) @PathVariable("teamId")
                     Long teamId) {
-        List<WorkflowDTO> workflows = workflowService.listGlobalWorkflowsNotLinkedToTeam(teamId);
-        return ResponseEntity.ok(workflows);
+        return workflowService.listGlobalWorkflowsNotLinkedToTeam(teamId);
     }
 
     @Operation(
@@ -342,14 +344,17 @@ public class WorkflowController {
                         content = @Content)
             })
     @GetMapping("/details/{workflowId}")
-    public ResponseEntity<WorkflowDetailedDTO> getWorkflowDetail(
+    public WorkflowDetailedDTO getWorkflowDetail(
             @Parameter(description = "ID of the workflow to retrieve details for", required = true)
                     @PathVariable("workflowId")
                     Long workflowId) {
         return workflowService
                 .getWorkflowDetail(workflowId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .orElseThrow(
+                        () ->
+                                new ResponseStatusException(
+                                        HttpStatus.NOT_FOUND,
+                                        "Workflow not found with id: " + workflowId));
     }
 
     @Operation(
@@ -374,12 +379,11 @@ public class WorkflowController {
                         content = @Content)
             })
     @PostMapping("/details")
-    public ResponseEntity<WorkflowDetailedDTO> saveWorkflow(
+    public WorkflowDetailedDTO saveWorkflow(
             @Parameter(description = "Detailed workflow data to create", required = true)
                     @RequestBody
                     WorkflowDetailedDTO workflowDetailedDTO) {
-        WorkflowDetailedDTO savedWorkflow = workflowService.saveWorkflow(workflowDetailedDTO);
-        return ResponseEntity.ok(savedWorkflow);
+        return workflowService.saveWorkflow(workflowDetailedDTO);
     }
 
     @Operation(
@@ -443,7 +447,8 @@ public class WorkflowController {
                         content = @Content)
             })
     @PostMapping("/{referencedWorkflowId}/teams/{teamId}/create-workflow-reference")
-    public ResponseEntity<WorkflowDetailedDTO> createWorkflowByReference(
+    @ResponseStatus(HttpStatus.CREATED)
+    public WorkflowDetailedDTO createWorkflowByReference(
             @Parameter(description = "ID of the team", required = true) @PathVariable("teamId")
                     Long teamId,
             @Parameter(description = "ID of the workflow to reference", required = true)
@@ -451,10 +456,7 @@ public class WorkflowController {
                     Long referencedWorkflowId,
             @Parameter(description = "Basic workflow data", required = true) @RequestBody
                     WorkflowDTO workflowDTO) {
-        WorkflowDetailedDTO createdWorkflow =
-                workflowService.createWorkflowByReference(
-                        teamId, referencedWorkflowId, workflowDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdWorkflow);
+        return workflowService.createWorkflowByReference(teamId, referencedWorkflowId, workflowDTO);
     }
 
     @Operation(
@@ -482,7 +484,8 @@ public class WorkflowController {
                         content = @Content)
             })
     @PostMapping("/{workflowToCloneId}/teams/{teamId}/create-workflow-clone")
-    public ResponseEntity<WorkflowDetailedDTO> createWorkflowByCloning(
+    @ResponseStatus(HttpStatus.CREATED)
+    public WorkflowDetailedDTO createWorkflowByCloning(
             @Parameter(description = "ID of the team", required = true) @PathVariable("teamId")
                     Long teamId,
             @Parameter(description = "ID of the workflow to clone", required = true)
@@ -490,8 +493,6 @@ public class WorkflowController {
                     Long workflowToCloneId,
             @Parameter(description = "Basic workflow data", required = true) @RequestBody
                     WorkflowDTO workflowDTO) {
-        WorkflowDetailedDTO clonedWorkflow =
-                workflowService.createWorkflowByCloning(teamId, workflowToCloneId, workflowDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(clonedWorkflow);
+        return workflowService.createWorkflowByCloning(teamId, workflowToCloneId, workflowDTO);
     }
 }

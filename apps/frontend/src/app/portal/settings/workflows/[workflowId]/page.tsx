@@ -1,7 +1,14 @@
+import type { Metadata } from "next";
+
 import { SimpleContentView } from "@/components/admin-panel/simple-content-view";
 import WorkflowDetailView from "@/components/workflows/workflow-detail-view";
 import { deobfuscateToNumber } from "@/lib/endecode";
 import { getAppTranslations } from "@/lib/translation";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getAppTranslations();
+  return { title: t.common.navigation("workflows") };
+}
 
 const Page = async (props: { params: Promise<{ workflowId: string }> }) => {
   const params = await props.params;

@@ -400,7 +400,7 @@ export const AuthorityView = ({ authorityId }: { authorityId: string }) => {
                 {resourcePermissions.map((perm, index) => (
                   <div
                     key={index}
-                    className="flex flex-col gap-0.5 py-3 first:pt-0 last:pb-0"
+                    className="flex flex-col gap-0.5 py-2 first:pt-0 last:pb-0"
                     data-testid={`authority-view-permission-${index}`}
                   >
                     <p

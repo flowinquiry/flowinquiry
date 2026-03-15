@@ -51,7 +51,7 @@ const StateColumn: React.FC<ColumnProps> = ({
   return (
     <motion.div
       ref={setNodeRef}
-      className={`flex flex-col h-full shrink-0 w-96 rounded-xl border transition-colors ${columnColor} ${
+      className={`flex flex-col self-stretch shrink-0 w-96 rounded-xl border transition-colors ${columnColor} ${
         isOver ? "ring-2 ring-primary/40 bg-primary/5" : ""
       }`}
       initial={{ opacity: 0, y: 16 }}
@@ -79,9 +79,24 @@ const StateColumn: React.FC<ColumnProps> = ({
             {workflowState.stateName}
           </h2>
         </div>
-        <Badge variant="secondary" className="text-xs h-5 px-1.5 shrink-0">
-          {tasks.length}
-        </Badge>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <Badge variant="secondary" className="text-xs h-5 px-1.5">
+            {tasks.length}
+          </Badge>
+          {canAdd && (
+            <button
+              onClick={() => {
+                setSelectedWorkflowState(workflowState);
+                setIsSheetOpen(true);
+              }}
+              className="flex items-center justify-center h-5 w-5 rounded hover:bg-primary/10 hover:text-primary text-muted-foreground transition-colors"
+              data-testid={`new-task-button-${workflowState.id}`}
+              title={t.teams.projects.view("new_task")}
+            >
+              <Plus className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Tasks area */}
@@ -110,24 +125,6 @@ const StateColumn: React.FC<ColumnProps> = ({
           ))}
         </motion.div>
       </SortableContext>
-
-      {/* Add task button */}
-      {canAdd && (
-        <div className="px-2 pb-2">
-          <motion.button
-            onClick={() => {
-              setSelectedWorkflowState(workflowState);
-              setIsSheetOpen(true);
-            }}
-            className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold text-muted-foreground bg-muted/60 border border-border hover:bg-primary/10 hover:border-primary hover:text-primary transition-colors cursor-pointer"
-            whileTap={{ scale: 0.97 }}
-            data-testid={`new-task-button-${workflowState.id}`}
-          >
-            <Plus className="h-3.5 w-3.5" />
-            {t.teams.projects.view("new_task")}
-          </motion.button>
-        </div>
-      )}
     </motion.div>
   );
 };

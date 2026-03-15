@@ -88,6 +88,7 @@ public class WebConfigurer
             log.debug("Registering CORS filter");
             source.registerCorsConfiguration("/api/**", config);
             source.registerCorsConfiguration("/management/**", config);
+            source.registerCorsConfiguration("/sse/**", config);
         }
         return new CorsFilter(source);
     }

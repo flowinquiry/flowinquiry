@@ -13,13 +13,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.json.Json;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/files")
@@ -56,7 +57,7 @@ public class FileUploadController {
                         content = @Content(mediaType = "text/plain"))
             })
     @PostMapping(value = "/singleUpload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> submit(
+    public String submit(
             @Parameter(description = "File to upload", required = true) @RequestParam("file")
                     MultipartFile file,
             @Parameter(description = "Type of file (determines storage location)", required = true)
@@ -74,12 +75,12 @@ public class FileUploadController {
                 type);
         String prefixPath = storageService.getRelativePathByType(type);
         if (prefixPath == null) {
-            return ResponseEntity.badRequest().body("Not support upload with type " + type);
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Not support upload with type " + type);
         }
-
         String path =
                 storageService.uploadFile(
                         prefixPath, file.getOriginalFilename(), file.getInputStream());
-        return ResponseEntity.ok(Json.createObjectBuilder().add("path", path).build().toString());
+        return Json.createObjectBuilder().add("path", path).build().toString();
     }
 }

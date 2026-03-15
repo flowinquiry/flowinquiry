@@ -65,7 +65,7 @@ const RecentUserTeamActivities = () => {
           {activityLogs.map((log, index) => (
             <div
               key={log.id}
-              className={`py-2.5 px-2 rounded-md border-l-2 border-transparent hover:border-primary transition-all ${
+              className={`py-2.5 px-2 rounded-md transition-all ${
                 index % 2 === 0
                   ? "bg-muted/30 hover:bg-muted/50"
                   : "hover:bg-muted/40"
@@ -78,7 +78,7 @@ const RecentUserTeamActivities = () => {
                 {log.entityName}
               </Link>
               <div
-                className="prose prose-sm max-w-none dark:prose-invert mt-0.5 text-muted-foreground"
+                className="prose prose-sm max-w-none dark:prose-invert mt-0.5 text-muted-foreground **:my-0"
                 dangerouslySetInnerHTML={{ __html: log.content! }}
               />
               <Tooltip>
