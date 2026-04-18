@@ -22,12 +22,12 @@ update_or_add() {
   # Remove carriage return from value (from read input)
   value=$(printf '%s' "$value" | tr -d '\r')
 
-  # Escape characters that could break sed
+  # Escape characters that could break sed (escape backslash, forward slash, ampersand)
   local escaped_value
-  escaped_value=$(printf '%s' "$value" | sed -e 's/[\/&|]/\\&/g' -e "s/'/\\\'/g")
+  escaped_value=$(printf '%s' "$value" | sed -e 's/[\\&]/\\&/g' -e 's/\//\\\//g')
   printf "🔍 Escaped value = [%s]\n" "$escaped_value"
   if grep -q "^$key=" "$file"; then
-    sed -i "s|^$key=.*|$key='$escaped_value'|" "$file"
+    sed -i '' "s/^$key=.*/$key='$escaped_value'/" "$file"
   else
     echo "$key='$value'" >> "$file"
   fi
