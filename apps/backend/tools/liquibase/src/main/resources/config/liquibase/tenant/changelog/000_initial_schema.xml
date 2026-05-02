@@ -337,5 +337,7 @@
 			<column name="setting_key" />
 		</createIndex>
 
+
 	</changeSet>
+
 </databaseChangeLog>
