@@ -3,6 +3,8 @@ package io.flowinquiry.modules.teams.controller;
 import io.flowinquiry.modules.teams.service.TicketAgingReportService;
 import io.flowinquiry.modules.teams.service.dto.TicketAgingReportDTO;
 import io.flowinquiry.modules.teams.service.dto.TicketQueryParams;
+import io.flowinquiry.modules.teams.service.dto.TicketThroughputQueryDTO;
+import io.flowinquiry.modules.teams.service.dto.TicketThroughputReportDTO;
 import io.flowinquiry.query.AggregationQuery;
 import io.flowinquiry.query.AggregationResult;
 import io.flowinquiry.query.ReportEngine;
@@ -15,6 +17,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -39,6 +44,75 @@ public class TicketAgingReportController {
     @GetMapping("/tickets/ageing")
     public TicketAgingReportDTO getAgeingTickets(@ModelAttribute TicketQueryParams queryParams) {
         return service.getAgingTicketsReport(queryParams);
+    }
+
+    @Operation(
+            summary = "Get ticket throughput report",
+            description =
+                    "Retrieves completed ticket throughput grouped by week, month, or iteration "
+                            + "for a project. Completion is based on actual completion date.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully retrieved tickets' throughput report",
+                        content = @Content(mediaType = "application/json")),
+                @ApiResponse(
+                        responseCode = "400",
+                        description = "Invalid query",
+                        content = @Content)
+            })
+    @GetMapping("/tickets/throughput")
+    public TicketThroughputReportDTO getTicketThroughput(
+            @Valid @ModelAttribute TicketThroughputQueryDTO query) {
+        return service.getThroughputReport(query);
+    }
+
+    @Operation(
+            summary = "Get ticket throughput report",
+            description =
+                    "Retrieves completed ticket throughput using a request body for flexible "
+                            + "filtering without a long query parameter list.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully retrieved tickets' throughput report",
+                        content = @Content(mediaType = "application/json")),
+                @ApiResponse(
+                        responseCode = "400",
+                        description = "Invalid query",
+                        content = @Content)
+            })
+    @PostMapping("/tickets/throughput")
+    public TicketThroughputReportDTO postTicketThroughput(
+            @Valid @RequestBody TicketThroughputQueryDTO query) {
+        return service.getThroughputReport(query);
+    }
+
+    @Operation(
+            summary = "Export ticket throughput report",
+            description = "Exports the ticket throughput table as CSV.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully exported tickets' throughput report",
+                        content = @Content(mediaType = "text/csv")),
+                @ApiResponse(
+                        responseCode = "400",
+                        description = "Invalid query",
+                        content = @Content)
+            })
+    @GetMapping(value = "/tickets/throughput/export", produces = "text/csv")
+    public ResponseEntity<String> exportTicketThroughput(
+            @Valid @ModelAttribute TicketThroughputQueryDTO query) {
+        return ResponseEntity.ok()
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"ticket-throughput.csv\"")
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .body(service.exportThroughputReportCsv(query));
     }
 
     @Operation(
