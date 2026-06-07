@@ -1,7 +1,7 @@
 package io.flowinquiry.modules.teams.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-git import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
