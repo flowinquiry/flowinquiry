@@ -247,14 +247,7 @@ public class TicketAgingReportService {
             query.setTo(Instant.now());
         }
 
-        // Validate date range does not exceed 90 days
-        if (query.getFrom().isAfter(query.getTo())) {
-            throw new IllegalArgumentException("From date cannot be after To date");
-        }
-        long days = ChronoUnit.DAYS.between(query.getFrom(), query.getTo());
-        if (days > 90) {
-            throw new IllegalArgumentException("The date range must not exceed 90 days");
-        }
+        validateDateRange(query.getFrom(), query.getTo());
 
         if (query.getGranularity() == null) {
             query.setGranularity(TicketThroughputGranularity.week);
@@ -262,10 +255,22 @@ public class TicketAgingReportService {
         if (query.getGroupBy() == null) {
             query.setGroupBy(TicketThroughputGroupBy.none);
         }
-        if (query.getStatus() == null || query.getStatus().isEmpty()) {
-            query.setStatus(DEFAULT_COMPLETED_STATUS_ALIASES);
-        }
+        query.setStatus(getOrDefaultStatus(query.getStatus()));
         return query;
+    }
+
+    private void validateDateRange(Instant from, Instant to) {
+        if (from.isAfter(to)) {
+            throw new IllegalArgumentException("From date cannot be after To date");
+        }
+        long days = ChronoUnit.DAYS.between(from, to);
+        if (days > 90) {
+            throw new IllegalArgumentException("The date range must not exceed 90 days");
+        }
+    }
+
+    private List<String> getOrDefaultStatus(List<String> status) {
+        return (status == null || status.isEmpty()) ? DEFAULT_COMPLETED_STATUS_ALIASES : status;
     }
 
     private Specification<Ticket> getTicketsForThroughputReport(TicketThroughputQueryDTO query) {
@@ -282,16 +287,15 @@ public class TicketAgingReportService {
             LocalDate toDate = LocalDate.ofInstant(query.getTo(), ZoneOffset.UTC);
             filters.add(new Filter("actualCompletionDate", FilterOperator.LTE, toDate));
         }
-        if (query.getPriorities() != null && !query.getPriorities().isEmpty()) {
-            filters.add(new Filter("priority", FilterOperator.IN, query.getPriorities()));
-        }
+        
+        addInFilterIfNotEmpty(filters, "priority", query.getPriorities());
 
         if (query.getIterationId() != null) {
             filters.add(new Filter("iteration.id", FilterOperator.EQ, query.getIterationId()));
         }
-        if (query.getAssigneeId() != null && !query.getAssigneeId().isEmpty()) {
-            filters.add(new Filter("assignUser.id", FilterOperator.IN, query.getAssigneeId()));
-        }
+        
+        addInFilterIfNotEmpty(filters, "assignUser.id", query.getAssigneeId());
+        
         if (shouldFilterCurrentState(query.getStatus())) {
             filters.add(new Filter("currentState.stateName", FilterOperator.IN, query.getStatus()));
         }
@@ -302,6 +306,12 @@ public class TicketAgingReportService {
         filter.setFilters(filters);
         queryDTO.setGroups(List.of(filter));
         return createSpecification(queryDTO);
+    }
+
+    private void addInFilterIfNotEmpty(List<Filter> filters, String field, List<?> values) {
+        if (values != null && !values.isEmpty()) {
+            filters.add(new Filter(field, FilterOperator.IN, values));
+        }
     }
 
     private boolean shouldFilterCurrentState(List<String> status) {
