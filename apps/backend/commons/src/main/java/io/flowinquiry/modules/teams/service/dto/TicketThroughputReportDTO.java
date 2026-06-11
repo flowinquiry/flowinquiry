@@ -10,6 +10,6 @@ public class TicketThroughputReportDTO {
     private long peakWeekThroughput;
     private long currentIterationThroughput;
     private List<TicketThroughputBucketDTO> trend;
-    private List<TicketThroughputTableRowDTO> table;
+    private List<TicketThroughputBucketDTO> table;
     private long totalTableRows;
 }

@@ -33,14 +33,7 @@ public class TicketThroughputQueryDTO {
 
     private List<Long> assigneeId;
 
-    private List<String> label;
+    private List<String> labels;
 
-    private List<String> priority;
-
-    @Min(1)
-    @Max(500)
-    private int limit = 50;
-
-    @Min(0)
-    private int offset = 0;
+    private List<String> priorities;
 }

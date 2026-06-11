@@ -201,4 +201,15 @@ public class TicketAgingReportControllerIT {
                 .andExpect(content().contentTypeCompatibleWith("text/csv"))
                 .andExpect(content().string("period,group,count\n2025-W46,All,6\n"));
     }
+
+    @Test
+    @Transactional
+    void testTicketThroughputReportExceeds90DaysLimit() throws Exception {
+        mockMvc.perform(
+                        get("/api/reports/tickets/throughput")
+                                .param("projectId", "3")
+                                .param("from", "2025-09-01T00:00:00Z")
+                                .param("to", "2025-12-05T00:00:00Z"))
+                .andExpect(status().isBadRequest());
+    }
 }

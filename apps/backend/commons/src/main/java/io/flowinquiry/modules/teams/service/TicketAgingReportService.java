@@ -14,7 +14,6 @@ import io.flowinquiry.modules.teams.service.dto.TicketThroughputGranularity;
 import io.flowinquiry.modules.teams.service.dto.TicketThroughputGroupBy;
 import io.flowinquiry.modules.teams.service.dto.TicketThroughputQueryDTO;
 import io.flowinquiry.modules.teams.service.dto.TicketThroughputReportDTO;
-import io.flowinquiry.modules.teams.service.dto.TicketThroughputTableRowDTO;
 import io.flowinquiry.modules.teams.service.mapper.TicketMapper;
 import io.flowinquiry.query.*;
 import java.time.Instant;
@@ -182,41 +181,36 @@ public class TicketAgingReportService {
         List<Ticket> completedTickets =
                 ticketRepository.findAll(getTicketsForThroughputReport(normalizedQuery));
 
-        List<Ticket> filteredTickets =
-                completedTickets.stream()
-                        .filter(ticket -> isInsideCompletionRange(ticket, normalizedQuery))
-                        .filter(ticket -> matchesPriority(ticket, normalizedQuery.getPriority()))
-                        .toList();
-
         Map<String, Long> trendByPeriod =
-                filteredTickets.stream()
+                completedTickets.stream()
                         .collect(
                                 Collectors.groupingBy(
                                         ticket -> resolvePeriod(ticket, normalizedQuery),
                                         TreeMap::new,
                                         Collectors.counting()));
 
-        Map<String, Long> tableCounts =
-                filteredTickets.stream()
-                        .collect(
+        Map<String, Map<String, Long>> tableCounts = completedTickets.stream()
+                .collect(
+                        Collectors.groupingBy(
+                                ticket -> resolvePeriod(ticket, normalizedQuery),
+                                TreeMap::new,
                                 Collectors.groupingBy(
-                                        ticket ->
-                                                resolvePeriod(ticket, normalizedQuery)
-                                                        + "\u0000"
-                                                        + resolveGroup(ticket, normalizedQuery),
+                                        ticket -> resolveGroup(ticket, normalizedQuery),
                                         TreeMap::new,
-                                        Collectors.counting()));
+                                        Collectors.counting())));
 
-        List<TicketThroughputTableRowDTO> tableRows =
-                tableCounts.entrySet().stream()
-                        .map(this::toThroughputTableRow)
-                        .toList();
+        List<TicketThroughputBucketDTO> tableRows = new ArrayList<>();
+        tableCounts.forEach((period, groupMap) ->
+                groupMap.forEach((group, count) ->
+                        tableRows.add(new TicketThroughputBucketDTO(period, group, count))
+                )
+        );
 
         TicketThroughputReportDTO report = new TicketThroughputReportDTO();
-        report.setTotalTicketsCompleted(filteredTickets.size());
-        report.setAverageWeeklyThroughput(calculateAverageWeeklyThroughput(filteredTickets));
-        report.setPeakWeekThroughput(calculatePeakWeekThroughput(filteredTickets));
-        report.setCurrentIterationThroughput(calculateCurrentIterationThroughput(filteredTickets));
+        report.setTotalTicketsCompleted(completedTickets.size());
+        report.setAverageWeeklyThroughput(calculateAverageWeeklyThroughput(completedTickets));
+        report.setPeakWeekThroughput(calculatePeakWeekThroughput(completedTickets));
+        report.setCurrentIterationThroughput(calculateCurrentIterationThroughput(completedTickets));
         report.setTrend(
                 trendByPeriod.entrySet().stream()
                         .map(
@@ -225,8 +219,7 @@ public class TicketAgingReportService {
                                                 entry.getKey(), entry.getValue()))
                         .toList());
         report.setTotalTableRows(tableRows.size());
-        report.setTable(
-                paginate(tableRows, normalizedQuery.getOffset(), normalizedQuery.getLimit()));
+        report.setTable(tableRows);
         return report;
     }
 
@@ -253,6 +246,16 @@ public class TicketAgingReportService {
         if (query.getTo() == null) {
             query.setTo(Instant.now());
         }
+
+        // Validate date range does not exceed 90 days
+        if (query.getFrom().isAfter(query.getTo())) {
+            throw new IllegalArgumentException("From date cannot be after To date");
+        }
+        long days = ChronoUnit.DAYS.between(query.getFrom(), query.getTo());
+        if (days > 90) {
+            throw new IllegalArgumentException("The date range must not exceed 90 days");
+        }
+
         if (query.getGranularity() == null) {
             query.setGranularity(TicketThroughputGranularity.week);
         }
@@ -271,6 +274,18 @@ public class TicketAgingReportService {
         filters.add(new Filter("isDeleted", FilterOperator.EQ, false));
         filters.add(new Filter("isCompleted", FilterOperator.EQ, true));
 
+        if (query.getFrom() != null) {
+            LocalDate fromDate = LocalDate.ofInstant(query.getFrom(), ZoneOffset.UTC);
+            filters.add(new Filter("actualCompletionDate", FilterOperator.GTE, fromDate));
+        }
+        if (query.getTo() != null) {
+            LocalDate toDate = LocalDate.ofInstant(query.getTo(), ZoneOffset.UTC);
+            filters.add(new Filter("actualCompletionDate", FilterOperator.LTE, toDate));
+        }
+        if (query.getPriorities() != null && !query.getPriorities().isEmpty()) {
+            filters.add(new Filter("priority", FilterOperator.IN, query.getPriorities()));
+        }
+
         if (query.getIterationId() != null) {
             filters.add(new Filter("iteration.id", FilterOperator.EQ, query.getIterationId()));
         }
@@ -280,8 +295,6 @@ public class TicketAgingReportService {
         if (shouldFilterCurrentState(query.getStatus())) {
             filters.add(new Filter("currentState.stateName", FilterOperator.IN, query.getStatus()));
         }
-        // The current ticket data model has no label/tag relationship yet. Keep label accepted in
-        // the request DTO for API compatibility, but do not apply it until labels are modeled.
 
         QueryDTO queryDTO = new QueryDTO();
         GroupFilter filter = new GroupFilter();
@@ -295,26 +308,6 @@ public class TicketAgingReportService {
         return status != null
                 && !status.isEmpty()
                 && !new HashSet<>(DEFAULT_COMPLETED_STATUS_ALIASES).containsAll(status);
-    }
-
-    private boolean isInsideCompletionRange(Ticket ticket, TicketThroughputQueryDTO query) {
-        if (ticket.getActualCompletionDate() == null) {
-            return false;
-        }
-        LocalDate completionDate = ticket.getActualCompletionDate();
-        LocalDate from = LocalDate.ofInstant(query.getFrom(), ZoneOffset.UTC);
-        LocalDate to = LocalDate.ofInstant(query.getTo(), ZoneOffset.UTC);
-        return !completionDate.isBefore(from) && !completionDate.isAfter(to);
-    }
-
-    private boolean matchesPriority(Ticket ticket, List<String> priority) {
-        if (priority == null || priority.isEmpty()) {
-            return true;
-        }
-        Set<String> normalizedPriorities =
-                priority.stream().map(String::toLowerCase).collect(Collectors.toSet());
-        return ticket.getPriority() != null
-                && normalizedPriorities.contains(ticket.getPriority().name().toLowerCase());
     }
 
     private String resolvePeriod(Ticket ticket, TicketThroughputQueryDTO query) {
@@ -356,11 +349,6 @@ public class TicketAgingReportService {
                 .trim();
     }
 
-    private TicketThroughputTableRowDTO toThroughputTableRow(Map.Entry<String, Long> entry) {
-        String[] parts = entry.getKey().split("\u0000", 2);
-        return new TicketThroughputTableRowDTO(parts[0], parts[1], entry.getValue());
-    }
-
     private double calculateAverageWeeklyThroughput(List<Ticket> tickets) {
         if (tickets.isEmpty()) {
             return 0;
@@ -394,15 +382,6 @@ public class TicketAgingReportService {
                         Collectors.groupingBy(
                                 ticket -> resolveWeekPeriod(ticket.getActualCompletionDate()),
                                 Collectors.counting()));
-    }
-
-    private List<TicketThroughputTableRowDTO> paginate(
-            List<TicketThroughputTableRowDTO> rows, int offset, int limit) {
-        if (offset >= rows.size()) {
-            return List.of();
-        }
-        int toIndex = Math.min(offset + limit, rows.size());
-        return rows.subList(offset, toIndex);
     }
 
     private String escapeCsv(String value) {
