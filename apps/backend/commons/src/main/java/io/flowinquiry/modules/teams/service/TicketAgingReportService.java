@@ -4,21 +4,30 @@ import static io.flowinquiry.query.QueryUtils.createSpecification;
 import static java.util.Objects.nonNull;
 
 import io.flowinquiry.modules.teams.domain.Ticket;
+import io.flowinquiry.modules.teams.domain.TicketPriority;
 import io.flowinquiry.modules.teams.repository.TicketRepository;
 import io.flowinquiry.modules.teams.service.dto.TicketAgingDTO;
 import io.flowinquiry.modules.teams.service.dto.TicketAgingReportDTO;
 import io.flowinquiry.modules.teams.service.dto.TicketQueryParams;
+import io.flowinquiry.modules.teams.service.dto.TicketThroughputBucketDTO;
+import io.flowinquiry.modules.teams.service.dto.TicketThroughputGranularity;
+import io.flowinquiry.modules.teams.service.dto.TicketThroughputGroupBy;
+import io.flowinquiry.modules.teams.service.dto.TicketThroughputQueryDTO;
+import io.flowinquiry.modules.teams.service.dto.TicketThroughputReportDTO;
 import io.flowinquiry.modules.teams.service.mapper.TicketMapper;
 import io.flowinquiry.query.*;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.WeekFields;
 import java.util.*;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +40,9 @@ public class TicketAgingReportService {
     private final TicketRepository ticketRepository;
 
     private final TicketMapper ticketMapper;
+
+    private static final List<String> DEFAULT_COMPLETED_STATUS_ALIASES =
+            List.of("RESOLVED", "CLOSED");
 
     @Transactional(readOnly = true)
     public TicketAgingReportDTO getAgingTicketsReport(TicketQueryParams queryParams) {
@@ -160,5 +172,235 @@ public class TicketAgingReportService {
         filter.setFilters(filters);
         queryDTO.setGroups(List.of(filter));
         return createSpecification(queryDTO);
+    }
+
+    @Cacheable(value = "ticketThroughputReports", key = "#query")
+    @Transactional(readOnly = true)
+    public TicketThroughputReportDTO getThroughputReport(TicketThroughputQueryDTO query) {
+        TicketThroughputQueryDTO normalizedQuery = normalizeThroughputQuery(query);
+        List<Ticket> completedTickets =
+                ticketRepository.findAll(getTicketsForThroughputReport(normalizedQuery));
+
+        Map<String, Long> trendByPeriod =
+                completedTickets.stream()
+                        .collect(
+                                Collectors.groupingBy(
+                                        ticket -> resolvePeriod(ticket, normalizedQuery),
+                                        TreeMap::new,
+                                        Collectors.counting()));
+
+        Map<String, Map<String, Long>> tableCounts = completedTickets.stream()
+                .collect(
+                        Collectors.groupingBy(
+                                ticket -> resolvePeriod(ticket, normalizedQuery),
+                                TreeMap::new,
+                                Collectors.groupingBy(
+                                        ticket -> resolveGroup(ticket, normalizedQuery),
+                                        TreeMap::new,
+                                        Collectors.counting())));
+
+        List<TicketThroughputBucketDTO> tableRows = new ArrayList<>();
+        tableCounts.forEach((period, groupMap) ->
+                groupMap.forEach((group, count) ->
+                        tableRows.add(new TicketThroughputBucketDTO(period, group, count))
+                )
+        );
+
+        TicketThroughputReportDTO report = new TicketThroughputReportDTO();
+        report.setTotalTicketsCompleted(completedTickets.size());
+        report.setAverageWeeklyThroughput(calculateAverageWeeklyThroughput(completedTickets));
+        report.setPeakWeekThroughput(calculatePeakWeekThroughput(completedTickets));
+        report.setCurrentIterationThroughput(calculateCurrentIterationThroughput(completedTickets));
+        report.setTrend(
+                trendByPeriod.entrySet().stream()
+                        .map(
+                                entry ->
+                                        new TicketThroughputBucketDTO(
+                                                entry.getKey(), entry.getValue()))
+                        .toList());
+        report.setTotalTableRows(tableRows.size());
+        report.setTable(tableRows);
+        return report;
+    }
+
+    @Transactional(readOnly = true)
+    public String exportThroughputReportCsv(TicketThroughputQueryDTO query) {
+        TicketThroughputReportDTO report = getThroughputReport(query);
+        StringBuilder csv = new StringBuilder("period,group,count\n");
+        report.getTable()
+                .forEach(
+                        row ->
+                                csv.append(escapeCsv(row.getPeriod()))
+                                        .append(',')
+                                        .append(escapeCsv(row.getGroup()))
+                                        .append(',')
+                                        .append(row.getCount())
+                                        .append('\n'));
+        return csv.toString();
+    }
+
+    private TicketThroughputQueryDTO normalizeThroughputQuery(TicketThroughputQueryDTO query) {
+        if (query.getFrom() == null) {
+            query.setFrom(Instant.now().minus(90, ChronoUnit.DAYS));
+        }
+        if (query.getTo() == null) {
+            query.setTo(Instant.now());
+        }
+
+        validateDateRange(query.getFrom(), query.getTo());
+
+        if (query.getGranularity() == null) {
+            query.setGranularity(TicketThroughputGranularity.week);
+        }
+        if (query.getGroupBy() == null) {
+            query.setGroupBy(TicketThroughputGroupBy.none);
+        }
+        query.setStatus(getOrDefaultStatus(query.getStatus()));
+        return query;
+    }
+
+    private void validateDateRange(Instant from, Instant to) {
+        if (from.isAfter(to)) {
+            throw new IllegalArgumentException("From date cannot be after To date");
+        }
+        long days = ChronoUnit.DAYS.between(from, to);
+        if (days > 90) {
+            throw new IllegalArgumentException("The date range must not exceed 90 days");
+        }
+    }
+
+    private List<String> getOrDefaultStatus(List<String> status) {
+        return (status == null || status.isEmpty()) ? DEFAULT_COMPLETED_STATUS_ALIASES : status;
+    }
+
+    private Specification<Ticket> getTicketsForThroughputReport(TicketThroughputQueryDTO query) {
+        List<Filter> filters = new ArrayList<>();
+        filters.add(new Filter("project.id", FilterOperator.EQ, query.getProjectId()));
+        filters.add(new Filter("isDeleted", FilterOperator.EQ, false));
+        filters.add(new Filter("isCompleted", FilterOperator.EQ, true));
+
+        if (query.getFrom() != null) {
+            LocalDate fromDate = LocalDate.ofInstant(query.getFrom(), ZoneOffset.UTC);
+            filters.add(new Filter("actualCompletionDate", FilterOperator.GTE, fromDate));
+        }
+        if (query.getTo() != null) {
+            LocalDate toDate = LocalDate.ofInstant(query.getTo(), ZoneOffset.UTC);
+            filters.add(new Filter("actualCompletionDate", FilterOperator.LTE, toDate));
+        }
+        
+        addInFilterIfNotEmpty(filters, "priority", query.getPriorities());
+
+        if (query.getIterationId() != null) {
+            filters.add(new Filter("iteration.id", FilterOperator.EQ, query.getIterationId()));
+        }
+        
+        addInFilterIfNotEmpty(filters, "assignUser.id", query.getAssigneeId());
+        
+        if (shouldFilterCurrentState(query.getStatus())) {
+            filters.add(new Filter("currentState.stateName", FilterOperator.IN, query.getStatus()));
+        }
+
+        QueryDTO queryDTO = new QueryDTO();
+        GroupFilter filter = new GroupFilter();
+        filter.setLogicalOperator(LogicalOperator.AND);
+        filter.setFilters(filters);
+        queryDTO.setGroups(List.of(filter));
+        return createSpecification(queryDTO);
+    }
+
+    private void addInFilterIfNotEmpty(List<Filter> filters, String field, List<?> values) {
+        if (values != null && !values.isEmpty()) {
+            filters.add(new Filter(field, FilterOperator.IN, values));
+        }
+    }
+
+    private boolean shouldFilterCurrentState(List<String> status) {
+        return status != null
+                && !status.isEmpty()
+                && !new HashSet<>(DEFAULT_COMPLETED_STATUS_ALIASES).containsAll(status);
+    }
+
+    private String resolvePeriod(Ticket ticket, TicketThroughputQueryDTO query) {
+        return switch (query.getGranularity()) {
+            case iteration -> resolveIterationPeriod(ticket);
+            case month -> YearMonth.from(ticket.getActualCompletionDate()).toString();
+            case week -> resolveWeekPeriod(ticket.getActualCompletionDate());
+        };
+    }
+
+    private String resolveIterationPeriod(Ticket ticket) {
+        if (ticket.getIteration() == null) {
+            return "No iteration";
+        }
+        return ticket.getIteration().getName();
+    }
+
+    private String resolveWeekPeriod(LocalDate date) {
+        WeekFields weekFields = WeekFields.ISO;
+        int week = date.get(weekFields.weekOfWeekBasedYear());
+        int year = date.get(weekFields.weekBasedYear());
+        return String.format("%d-W%02d", year, week);
+    }
+
+    private String resolveGroup(Ticket ticket, TicketThroughputQueryDTO query) {
+        return switch (query.getGroupBy()) {
+            case assignee -> resolveAssigneeGroup(ticket);
+            case priority ->
+                    Optional.ofNullable(ticket.getPriority()).map(TicketPriority::name).orElse("None");
+            case none -> "All";
+        };
+    }
+
+    private String resolveAssigneeGroup(Ticket ticket) {
+        if (ticket.getAssignUser() == null) {
+            return "Unassigned";
+        }
+        return (ticket.getAssignUser().getFirstName() + " " + ticket.getAssignUser().getLastName())
+                .trim();
+    }
+
+    private double calculateAverageWeeklyThroughput(List<Ticket> tickets) {
+        if (tickets.isEmpty()) {
+            return 0;
+        }
+        Map<String, Long> weeklyCounts = groupByCompletedWeek(tickets);
+        return weeklyCounts.values().stream().mapToLong(Long::longValue).average().orElse(0);
+    }
+
+    private long calculatePeakWeekThroughput(List<Ticket> tickets) {
+        return groupByCompletedWeek(tickets).values().stream()
+                .mapToLong(Long::longValue)
+                .max()
+                .orElse(0);
+    }
+
+    private long calculateCurrentIterationThroughput(List<Ticket> tickets) {
+        Instant now = Instant.now();
+        return tickets.stream()
+                .filter(ticket -> ticket.getIteration() != null)
+                .filter(
+                        ticket ->
+                                !ticket.getIteration().getStartDate().isAfter(now)
+                                        && !ticket.getIteration().getEndDate().isBefore(now))
+                .count();
+    }
+
+    private Map<String, Long> groupByCompletedWeek(List<Ticket> tickets) {
+        return tickets.stream()
+                .filter(ticket -> ticket.getActualCompletionDate() != null)
+                .collect(
+                        Collectors.groupingBy(
+                                ticket -> resolveWeekPeriod(ticket.getActualCompletionDate()),
+                                Collectors.counting()));
+    }
+
+    private String escapeCsv(String value) {
+        if (value == null) {
+            return "";
+        }
+        if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
+            return "\"" + value.replace("\"", "\"\"") + "\"";
+        }
+        return value;
     }
 }

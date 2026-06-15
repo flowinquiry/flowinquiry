@@ -1,11 +1,14 @@
 package io.flowinquiry.modules.teams.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.flowinquiry.it.IntegrationTest;
 import io.flowinquiry.it.WithMockFwUser;
+import io.flowinquiry.modules.teams.service.dto.TicketThroughputGroupBy;
+import io.flowinquiry.modules.teams.service.dto.TicketThroughputQueryDTO;
 import io.flowinquiry.modules.usermanagement.AuthoritiesConstants;
 import java.time.Instant;
 import java.util.Set;
@@ -140,5 +143,73 @@ public class TicketAgingReportControllerIT {
                     .andExpect(jsonPath("$.groupedTickets.Medium.[0].ticketKey").value("TICKET-33"))
                     .andExpect(jsonPath("$.groupedTickets.Medium.[0].assignee").value("John Doe"));
         }
+    }
+
+    @Test
+    @Transactional
+    void testTicketThroughputReport() throws Exception {
+        mockMvc.perform(
+                        get("/api/reports/tickets/throughput")
+                                .param("projectId", "3")
+                                .param("from", "2025-10-01T00:00:00Z")
+                                .param("to", "2025-12-01T00:00:00Z"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.totalTicketsCompleted").value(6))
+                .andExpect(jsonPath("$.averageWeeklyThroughput").value(6.0))
+                .andExpect(jsonPath("$.peakWeekThroughput").value(6))
+                .andExpect(jsonPath("$.trend.length()").value(1))
+                .andExpect(jsonPath("$.trend[0].period").value("2025-W46"))
+                .andExpect(jsonPath("$.trend[0].count").value(6))
+                .andExpect(jsonPath("$.totalTableRows").value(1))
+                .andExpect(jsonPath("$.table[0].period").value("2025-W46"))
+                .andExpect(jsonPath("$.table[0].group").value("All"))
+                .andExpect(jsonPath("$.table[0].count").value(6));
+    }
+
+    @Test
+    @Transactional
+    void testTicketThroughputReportGroupByAssigneeWithPostBody() throws Exception {
+        TicketThroughputQueryDTO query = new TicketThroughputQueryDTO();
+        query.setProjectId(3L);
+        query.setFrom(Instant.parse("2025-10-01T00:00:00Z"));
+        query.setTo(Instant.parse("2025-12-01T00:00:00Z"));
+        query.setGroupBy(TicketThroughputGroupBy.assignee);
+
+        mockMvc.perform(
+                        post("/api/reports/tickets/throughput")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(om.writeValueAsBytes(query)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.totalTicketsCompleted").value(6))
+                .andExpect(jsonPath("$.totalTableRows").value(3))
+                .andExpect(jsonPath("$.table.length()").value(3))
+                .andExpect(jsonPath("$.table[*].group").value(Set.of("John Doe", "Jane Smith", "Alice Johnson")))
+                .andExpect(jsonPath("$.table[*].count").value(Set.of(2, 2, 2)));
+    }
+
+    @Test
+    @Transactional
+    void testTicketThroughputReportCsvExport() throws Exception {
+        mockMvc.perform(
+                        get("/api/reports/tickets/throughput/export")
+                                .param("projectId", "3")
+                                .param("from", "2025-10-01T00:00:00Z")
+                                .param("to", "2025-12-01T00:00:00Z"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith("text/csv"))
+                .andExpect(content().string("period,group,count\n2025-W46,All,6\n"));
+    }
+
+    @Test
+    @Transactional
+    void testTicketThroughputReportExceeds90DaysLimit() throws Exception {
+        mockMvc.perform(
+                        get("/api/reports/tickets/throughput")
+                                .param("projectId", "3")
+                                .param("from", "2025-09-01T00:00:00Z")
+                                .param("to", "2025-12-05T00:00:00Z"))
+                .andExpect(status().isBadRequest());
     }
 }
