@@ -38,6 +38,9 @@ public class SecurityConfiguration {
                                         .permitAll()
                                         .requestMatchers(HttpMethod.POST, "/api/authenticate")
                                         .permitAll()
+                                        .requestMatchers(
+                                                HttpMethod.POST, "/api/integrations/webhook/**")
+                                        .permitAll()
                                         .requestMatchers(HttpMethod.GET, "/api/authenticate")
                                         .permitAll()
                                         .requestMatchers("/api/register")

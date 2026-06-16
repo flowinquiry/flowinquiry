@@ -46,4 +46,56 @@
 			<column name="status" />
 		</createIndex>
 	</changeSet>
+
+    <changeSet id="004:04-create-project-integration-table" author="flowinquiry">
+
+        <createTable tableName="fw_project_integration">
+            <column name="id" type="BIGSERIAL" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="project_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="integration_type" type="VARCHAR(50)" defaultValue="GITHUB">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="config" type="JSONB">
+                <constraints nullable="true"/>
+            </column>
+
+            <column name="enabled" type="BOOLEAN" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="webhook_secret" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="repo_name" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_by" type="BIGINT"/>
+            <column name="created_at" type="TIMESTAMPTZ"/>
+            <column name="modified_by" type="BIGINT"/>
+            <column name="modified_at" type="TIMESTAMPTZ"/>
+
+            <column name="tenant_id" type="UUID"
+                    defaultValue="00000000-0000-0000-0000-000000000001">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="fw_project_integration"
+                baseColumnNames="project_id"
+                referencedTableName="fw_project"
+                referencedColumnNames="id"
+                onDelete="CASCADE"
+                constraintName="fk_project_integration"/>
+
+    </changeSet>
 </databaseChangeLog>
