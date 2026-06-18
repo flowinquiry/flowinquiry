@@ -1,5 +1,6 @@
 package io.flowinquiry.modules.teams.controller;
 
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -11,7 +12,6 @@ import io.flowinquiry.modules.teams.service.dto.TicketThroughputGroupBy;
 import io.flowinquiry.modules.teams.service.dto.TicketThroughputQueryDTO;
 import io.flowinquiry.modules.usermanagement.AuthoritiesConstants;
 import java.time.Instant;
-import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -185,8 +185,8 @@ public class TicketAgingReportControllerIT {
                 .andExpect(jsonPath("$.totalTicketsCompleted").value(6))
                 .andExpect(jsonPath("$.totalTableRows").value(3))
                 .andExpect(jsonPath("$.table.length()").value(3))
-                .andExpect(jsonPath("$.table[*].group").value(Set.of("John Doe", "Jane Smith", "Alice Johnson")))
-                .andExpect(jsonPath("$.table[*].count").value(Set.of(2, 2, 2)));
+                .andExpect(jsonPath("$.table[*].group", containsInAnyOrder("John Doe", "Jane Smith", "Alice Johnson")))
+                .andExpect(jsonPath("$.table[*].count", containsInAnyOrder(2, 2, 2)));
     }
 
     @Test
