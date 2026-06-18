@@ -187,8 +187,10 @@ public class TicketAgingReportControllerIT {
                 .andExpect(jsonPath("$.totalTicketsCompleted").value(6))
                 .andExpect(jsonPath("$.totalTableRows").value(3))
                 .andExpect(jsonPath("$.table.length()").value(3))
+
                 .andExpect(jsonPath("$.table[*].group", containsInAnyOrder("John Doe", "Jane Smith", "Alice Johnson")))
                 .andExpect(jsonPath("$.table[*].count", containsInAnyOrder(2, 2, 2)));
+
     }
 
     @Test
