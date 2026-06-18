@@ -45,8 +45,8 @@ public class TicketAgingReportControllerIT {
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$.groupedTickets.length()").value(3))
                     .andExpect(
-                            jsonPath("$.groupedTickets.keys()")
-                                    .value(Set.of("Alice Johnson", "John Doe", "Jane Smith")))
+                            jsonPath("$.groupedTickets.keys()",
+                                    containsInAnyOrder("Alice Johnson", "John Doe", "Jane Smith")))
                     .andExpect(jsonPath("$.groupedTickets.['Alice Johnson'].length()").value(6))
                     .andExpect(
                             jsonPath("$.groupedTickets.['Alice Johnson'].[0].ticketId").value(35))
@@ -91,8 +91,8 @@ public class TicketAgingReportControllerIT {
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$.groupedTickets.length()").value(3))
                     .andExpect(
-                            jsonPath("$.groupedTickets.keys()")
-                                    .value(Set.of("Alice Johnson", "John Doe", "Jane Smith")))
+                            jsonPath("$.groupedTickets.keys()",
+                                    containsInAnyOrder("Alice Johnson", "John Doe", "Jane Smith")))
                     .andExpect(jsonPath("$.groupedTickets.['Alice Johnson'].length()").value(8))
                     .andExpect(
                             jsonPath("$.groupedTickets.['Alice Johnson'].[1].ticketId").value(36))
@@ -129,7 +129,9 @@ public class TicketAgingReportControllerIT {
                     .andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$.groupedTickets.length()").value(2))
-                    .andExpect(jsonPath("$.groupedTickets.keys()").value(Set.of("High", "Medium")))
+                    .andExpect(
+                            jsonPath("$.groupedTickets.keys()",
+                                    containsInAnyOrder("High", "Medium")))
                     .andExpect(jsonPath("$.groupedTickets.High.length()").value(6))
                     .andExpect(jsonPath("$.groupedTickets.Medium.length()").value(6))
                     .andExpect(jsonPath("$.averageAge").value(15.25))
