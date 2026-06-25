@@ -1,0 +1,751 @@
+{
+  "locale_switcher": {
+    "fr": "फ़्रेंच",
+    "en": "अंग्रेज़ी",
+    "label": "HI"
+  },
+  "common": {
+    "buttons": {
+      "create": "बनाएँ",
+      "creating": "बनाया जा रहा है ...",
+      "clear": "साफ़ करें",
+      "submit": "सबमिट करें",
+      "submitting": "सबमिट हो रहा है ...",
+      "cancel": "रद्द करें",
+      "previous": "पिछला",
+      "next": "अगला",
+      "edit": "संपादित करें",
+      "delete": "हटाएँ",
+      "add": "जोड़ें",
+      "discard": "त्यागें",
+      "reset": "रीसेट करें",
+      "apply": "लागू करें",
+      "close": "बंद करें",
+      "update": "अपडेट करें",
+      "invite": "आमंत्रित करें",
+      "save": "सहेजें",
+      "saving": "सहेजा जा रहा है ...",
+      "remove": "हटाएँ",
+      "new": "नया",
+      "view": "देखें",
+      "go_back": "वापस जाएँ",
+      "loading": "लोड हो रहा है...",
+      "add_comment": "टिप्पणी जोड़ें",
+      "download": "डाउनलोड करें",
+      "save_changes": "बदलाव सहेजें",
+      "saving_changes": "बदलाव सहेजे जा रहे हैं ...",
+      "clear_filters": "फ़िल्टर साफ़ करें"
+    },
+    "misc": {
+      "error": "त्रुटि",
+      "no_results_found": "कोई परिणाम नहीं मिला",
+      "no_data_available": "कोई डेटा उपलब्ध नहीं",
+      "loading_data": "डेटा लोड हो रहा है ...",
+      "completed": "पूर्ण",
+      "fail_to_load_data": "क्षमा करें! डेटा लोड नहीं हो सका। पृष्ठ को रीफ्रेश करके पुनः प्रयास करें",
+      "zoom_in": "ज़ूम इन करें",
+      "zoom_out": "ज़ूम आउट करें",
+      "switch_to_light_mode": "लाइट मोड में जाएँ",
+      "switch_to_dark_mode": "डार्क मोड में जाएँ",
+      "date_select_place_holder": "तारीख चुनें",
+      "comments": "टिप्पणियाँ",
+      "add_comment": "टिप्पणी जोड़ें",
+      "no_comments": "कोई टिप्पणी उपलब्ध नहीं",
+      "attachment_place_holder": "फ़ाइलें अपलोड करने के लिए यहाँ क्लिक करें या खींचें",
+      "attachment_drop_hint": "किसी भी प्रकार की फ़ाइल समर्थित है",
+      "attachment_browse": "फ़ाइलें ब्राउज़ करें",
+      "attachment_file_name": "फ़ाइल का नाम",
+      "attachment_type": "प्रकार",
+      "attachment_size": "आकार",
+      "attachment_uploaded": "अपलोड किया गया",
+      "attachment_no_files": "अभी कोई अनुलग्नक नहीं है।",
+      "download": "डाउनलोड करें",
+      "delete": "हटाएँ",
+      "none": "कोई नहीं",
+      "yes": "हाँ",
+      "no": "नहीं"
+    },
+    "navigation": {
+      "dashboard": "डैशबोर्ड",
+      "teams": "टीमें",
+      "settings": "सेटिंग्स",
+      "users": "उपयोगकर्ता",
+      "authorities": "प्राधिकरण",
+      "workflows": "वर्कफ़्लो",
+      "projects": "परियोजनाएँ",
+      "tickets": "टिकट",
+      "profile": "प्रोफ़ाइल",
+      "members": "सदस्य",
+      "organizations": "संगठन",
+      "mail": "मेल",
+      "my_tickets": "मेरे टिकट",
+      "reports": "रिपोर्ट"
+    },
+    "permission": {
+      "ACCESS": "एक्सेस",
+      "WRITE": "लिखें",
+      "READ": "पढ़ें",
+      "NONE": "कोई नहीं"
+    },
+    "upload": {
+      "can_not_upload_more_than_1_file_desc": "एक बार में 1 से अधिक फ़ाइल अपलोड नहीं की जा सकती",
+      "file_upload_limit_error": "{maxFileCount} से अधिक फ़ाइलें अपलोड नहीं की जा सकतीं",
+      "file_rejected_error": "फ़ाइल {fileName} अस्वीकार कर दी गई",
+      "toast_uploading_description": "कृपया अपलोड पूर्ण होने तक प्रतीक्षा करें",
+      "toast_upload_success": "अपलोड सफल",
+      "remove_file": "फ़ाइल हटाएँ",
+      "drop_file_place_holder": "फ़ाइलें यहाँ छोड़ें"
+    }
+  },
+  "header": {
+    "notifications": {
+      "title": "सूचनाएँ",
+      "no_data": "आप सब कुछ देख चुके हैं!",
+      "clear_all": "सब साफ़ करें"
+    },
+    "my_tickets": {
+      "title": "मेरे टिकट",
+      "description": "आपके द्वारा रिपोर्ट किए गए या सौंपे गए टिकटों को ट्रैक और प्रबंधित करें",
+      "reported_tickets": "मेरे रिपोर्ट किए गए टिकट",
+      "assigned_tickets": "मुझे सौंपे गए टिकट",
+      "reported": "रिपोर्ट किया गया",
+      "assigned": "सौंपा गया"
+    },
+    "nav": {
+      "profile": "प्रोफ़ाइल",
+      "user_guide": "उपयोगकर्ता गाइड",
+      "about": "परिचय",
+      "logout": "लॉगआउट",
+      "intro": "FlowInquiry टीमों के लिए एक शक्तिशाली अनुरोध प्रबंधन समाधान है। यह संगठनों को लचीले वर्कफ़्लो के माध्यम से ग्राहकों की जाँच को ट्रैक, प्रबंधित और अनुकूलित करने में सक्षम बनाता है, जिससे सहयोग और उत्पादकता बढ़ती है।",
+      "copyright": "सर्वाधिकार सुरक्षित"
+    }
+  },
+  "dashboard": {
+    "recent_activities": {
+      "title": "हाल की गतिविधियाँ",
+      "no_data": "कोई गतिविधि लॉग उपलब्ध नहीं"
+    },
+    "notifications": {
+      "title": "सूचनाएँ",
+      "no_data": "कोई सूचना उपलब्ध नहीं",
+      "mark_as_read": "पढ़ा हुआ चिह्नित करें"
+    },
+    "un_resolved_tickets_by_teams": {
+      "title": "टीम के अनुसार अनसुलझे टिकट",
+      "no_data": "प्रदर्शित करने के लिए कोई डेटा उपलब्ध नहीं है।"
+    },
+    "overdue_tickets": {
+      "title": "अतिदेय टिकट ({totalTickets})",
+      "no_data": "कोई अतिदेय टिकट उपलब्ध नहीं",
+      "priority_asc": "प्राथमिकता के अनुसार क्रमबद्ध करें: आरोही",
+      "priority_desc": "प्राथमिकता के अनुसार क्रमबद्ध करें: अवरोही"
+    }
+  },
+  "teams": {
+    "common": {
+      "default_slogan": "मिलकर और मज़बूत",
+      "role": "भूमिका",
+      "select_role_placeholder": "भूमिका चुनें",
+      "project": "परियोजना",
+      "team": "टीम",
+      "modified_at": "संशोधित किया गया",
+      "assigned_to": "सौंपा गया",
+      "priority_sort_ascending": "प्राथमिकता के अनुसार क्रमबद्ध करें: आरोही",
+      "priority_sort_descending": "प्राथमिकता के अनुसार क्रमबद्ध करें: अवरोही",
+      "upload_team_logo": "टीम लोगो अपलोड करें",
+      "no_description": "कोई विवरण नहीं दिया गया।",
+      "member": "सदस्य",
+      "members": "सदस्य"
+    },
+    "roles": {
+      "manager": "प्रबंधक",
+      "member": "सदस्य",
+      "guest": "अतिथि",
+      "none": "कोई नहीं"
+    },
+    "form": {
+      "name": "नाम",
+      "slogan": "नारा",
+      "description": "विवरण",
+      "logo_hint": "टीम लोगो अपलोड करने के लिए अवतार पर क्लिक करें। समर्थित प्रारूप: JPG, PNG, GIF (अधिकतम 5 MB)।",
+      "create_team_title": "टीम बनाएँ",
+      "create_team_description": "नई टीम जोड़ें",
+      "edit_team_title": "टीम {teamName} संपादित करें",
+      "edit_team_description": "टीम संपादित करें"
+    },
+    "dashboard": {
+      "title": "डैशबोर्ड",
+      "description": "आपकी टीम के प्रदर्शन और गतिविधियों का अवलोकन। टीम के टिकट, प्रगति और मुख्य मेट्रिक्स पर एक नज़र में नज़र रखें",
+      "edit_team": "टीम संपादित करें",
+      "actions": "क्रियाएँ",
+      "last_7_days": "पिछले 7 दिन",
+      "last_14_days": "पिछले 14 दिन",
+      "last_30_days": "पिछले 30 दिन",
+      "last_90_days": "पिछले 90 दिन",
+      "custom_range": "कस्टम सीमा",
+      "back_to_presets": "वापस",
+      "start_date": "प्रारंभ तिथि",
+      "end_date": "समाप्ति तिथि",
+      "add_user_dialog": {
+        "title1": "इस टीम में कम से कम एक प्रबंधक होना चाहिए",
+        "description1": "इस टीम में वर्तमान में कोई प्रबंधक नहीं है। आगे बढ़ने से पहले कम से कम एक प्रबंधक नियुक्त करना अनिवार्य है। उपयोगकर्ताओं की खोज के लिए टाइप करना शुरू करें।",
+        "title2": "टीम {teamName} में उपयोगकर्ता जोड़ें",
+        "description2": "उपयोगकर्ता खोजकर उन्हें इस टीम में जोड़ें। सुझाव देखने के लिए टाइप करना शुरू करें।",
+        "users": "उपयोगकर्ता",
+        "user_select_place_holder": "टीम में उपयोगकर्ता जोड़ें..."
+      },
+      "summary": {
+        "total": {
+          "title": "कुल टिकट",
+          "description": "प्राप्त सभी टिकट",
+          "tooltip": "सभी टीम टिकट देखें।"
+        },
+        "pending": {
+          "title": "लंबित टिकट",
+          "description": "जिन टिकटों पर अभी ध्यान देना बाकी है",
+          "tooltip": "लंबित टिकट देखें।"
+        },
+        "completed": {
+          "title": "पूर्ण टिकट",
+          "description": "सफलतापूर्वक हल किए गए टिकट",
+          "tooltip": "हल किए गए टिकट देखें।"
+        },
+        "overdue": {
+          "title": "अतिदेय टिकट",
+          "description": "समय सीमा पार कर चुके टिकट",
+          "tooltip": "ध्यान देने योग्य अतिदेय टिकट देखें।"
+        }
+      },
+      "tickets_times_series": {
+        "title": "दैनिक टिकट रुझान (बनाए गए और बंद किए गए)",
+        "no_data": "कोई टिकट डेटा उपलब्ध नहीं।",
+        "created_tickets": "बनाए गए टिकट",
+        "closed_tickets": "बंद किए गए टिकट"
+      },
+      "recent_activities": {
+        "title": "हाल की गतिविधियाँ",
+        "no_data": "कोई गतिविधि लॉग उपलब्ध नहीं"
+      },
+      "unassigned_tickets": {
+        "title": "असौंपे टिकट ({totalTickets})",
+        "no_data": "कोई असौंपा टिकट उपलब्ध नहीं"
+      },
+      "priority_tickets_distribution": {
+        "title": "टिकट प्राथमिकता वितरण"
+      },
+      "assigned_tickets_per_user": {
+        "title": "प्रति उपयोगकर्ता सौंपे गए टिकट"
+      },
+      "overdue_tickets": {
+        "title": "अतिदेय टिकट ({totalTickets})",
+        "no_data": "कोई अतिदेय टिकट नहीं मिला"
+      },
+      "channel_distribution": {
+        "title": "चैनल के अनुसार टिकट",
+        "no_data": "कोई चैनल डेटा उपलब्ध नहीं"
+      }
+    },
+    "reports": {
+      "title": "रिपोर्ट",
+      "description": "अपनी टीम के लिए चार्ट और विश्लेषण देखें। पूरी रिपोर्ट खोलने के लिए किसी भी कार्ड पर क्लिक करें या भविष्य के संस्करण में आने वाली रिपोर्ट देखें।",
+      "search_placeholder": "रिपोर्ट खोजें…",
+      "categories_heading": "श्रेणियाँ",
+      "categories": {
+        "all": "सभी रिपोर्ट",
+        "tickets": "टिकट",
+        "projects": "परियोजनाएँ",
+        "members": "सदस्य",
+        "custom": "कस्टम"
+      },
+      "status": {
+        "available": "उपलब्ध",
+        "upcoming": "आने वाला"
+      },
+      "upcoming_label": "आने वाले संस्करण में आएगा",
+      "upcoming_not_available": "यह रिपोर्ट अभी उपलब्ध नहीं है",
+      "open_report": "रिपोर्ट खोलें",
+      "viewing": "देख रहे हैं",
+      "no_reports": "आपकी खोज से कोई रिपोर्ट नहीं मिली।",
+      "all_reports": "सभी रिपोर्ट",
+      "chart_types": {
+        "pie": "पाई चार्ट",
+        "bar": "बार चार्ट",
+        "line": "लाइन चार्ट",
+        "table": "तालिका",
+        "funnel": "फ़नल चार्ट",
+        "heatmap": "हीटमैप"
+      },
+      "filters": {
+        "heading": "फ़िल्टर",
+        "reset": "रीसेट करें",
+        "status": {
+          "label": "स्थिति",
+          "open": "खुला",
+          "closed": "बंद",
+          "all": "सभी"
+        },
+        "assignee": {
+          "label": "असाइनी",
+          "all": "सभी सदस्य"
+        },
+        "priority": {
+          "label": "प्राथमिकता",
+          "clear": "चयन साफ़ करें"
+        }
+      }
+    },
+    "list": {
+      "title": "टीमें ({totalElements})",
+      "description": "टीमें प्रबंधित करें",
+      "search_place_holder": "टीमें खोजें ...",
+      "sort_a_z": "नाम के अनुसार क्रमबद्ध करें: A → Z",
+      "sort_z_a": "नाम के अनुसार क्रमबद्ध करें: Z → A",
+      "my_teams_only": "केवल मेरी टीमें",
+      "new_team": "नई टीम",
+      "no_teams": "कोई टीम नहीं मिली। शुरू करने के लिए एक बनाएँ।"
+    },
+    "tickets": {
+      "list": {
+        "title": "टिकट ({count})",
+        "description": "अपनी टीम के टिकट देखें और प्रबंधित करें। असाइनमेंट और प्रगति पर नज़र रखें।",
+        "no_workflow_available": "टीम के लिए कोई वर्कफ़्लो उपलब्ध नहीं है।",
+        "create_workflow_cta": "आप <button><link>यहाँ</link></button> एक नया वर्कफ़्लो बना सकते हैं।",
+        "contact_manager_to_create_workflow": "नया वर्कफ़्लो बनाने के लिए टीम प्रबंधक से संपर्क करें।",
+        "no_ticket_title": "टिकट मौजूद नहीं है।",
+        "no_ticket_description": "फ़िलहाल कोई टिकट उपलब्ध नहीं है। बाद में पुनः जाँच करें या अपने खोज मानदंड समायोजित करें।",
+        "search_place_holder": "टिकट शीर्षक, विवरण खोजें...",
+        "filters": "फ़िल्टर",
+        "sort": "क्रमबद्ध करें",
+        "newest_first": "सबसे नया पहले",
+        "oldest_first": "सबसे पुराना पहले"
+      },
+      "detail": {
+        "next_ticket": "अगला टिकट",
+        "previous_ticket": "पिछला टिकट",
+        "ticket_not_found_title": "टिकट नहीं मिला",
+        "ticket_not_found_description": "अनुरोधित टिकट नहीं मिल सका।",
+        "edit_ticket": "टिकट संपादित करें",
+        "add_comment": "टिप्पणी जोड़ें",
+        "change_status": "स्थिति बदलें",
+        "view_workflow": "वर्कफ़्लो देखें",
+        "no_available_states": "कोई उपलब्ध स्थिति नहीं",
+        "people": "लोग",
+        "unassigned": "असौंपा",
+        "ticker_detail": "टिकट विवरण",
+        "important_dates": "महत्वपूर्ण तिथियाँ",
+        "date_time": "तिथि और समय",
+        "not_set": "निर्धारित नहीं",
+        "not_completed": "पूर्ण नहीं",
+        "attachments": "अनुलग्नक",
+        "watchers": "देखने वाले",
+        "me": "(मैं)",
+        "comments": "टिप्पणियाँ",
+        "changes_history": "बदलाव इतिहास",
+        "timeline": "टाइमलाइन",
+        "click_to_edit": "संपादित करने के लिए क्लिक करें",
+        "open_full_view": "पूर्ण दृश्य खोलें",
+        "people_assignment": "लोग और असाइनमेंट",
+        "state_priority": "स्थिति और प्राथमिकता"
+      },
+      "timeline": {
+        "no_data": "इस टिकट के लिए कोई ट्रांज़िशन नहीं मिला।",
+        "sla_due": "SLA देय",
+        "sla_deadline": "SLA समय सीमा"
+      },
+      "new_dialog": {
+        "title": "नया टिकट बनाएँ",
+        "description": "सहायता प्राप्त करने या कार्य शुरू करने के लिए टीम को टिकट सबमिट करें। टीम को आपके अनुरोध को प्रभावी ढंग से समझने और हल करने में मदद करने के लिए सभी आवश्यक विवरण प्रदान करें।"
+      },
+      "form": {
+        "edit_ticket_title": "टिकट संपादित करें",
+        "edit_ticket_description": "अपने टिकट का विवरण संपादित करें",
+        "name": "नाम",
+        "description": "विवरण",
+        "priority": "प्राथमिकता",
+        "requester": "अनुरोधकर्ता",
+        "assignee": "असाइनी",
+        "user_select_place_holder": "उपयोगकर्ता खोजें...",
+        "user_select_no_data": "कोई उपयोगकर्ता नहीं मिला।",
+        "user_select_no_choose": "कोई नहीं (उपयोगकर्ता हटाएँ)",
+        "user_select_unassigned": "असौंपा",
+        "created_at": "बनाने का समय",
+        "last_modified_at": "अंतिम संशोधन समय",
+        "target_completion_date": "लक्षित समापन तिथि",
+        "actual_completion_date": "वास्तविक समापन तिथि",
+        "state": "स्थिति",
+        "channel": "चैनल",
+        "type": "प्रकार",
+        "channel_place_holder": "चैनल चुनें",
+        "project": "परियोजना",
+        "iteration": "इटरेशन",
+        "epic": "एपिक",
+        "channels": {
+          "email": "ईमेल",
+          "phone": "फ़ोन",
+          "web_portal": "वेब पोर्टल",
+          "chat": "चैट",
+          "social_media": "सोशल मीडिया",
+          "in_person": "व्यक्तिगत रूप से",
+          "mobile_app": "मोबाइल ऐप",
+          "api": "API",
+          "system_generated": "सिस्टम द्वारा निर्मित",
+          "internal": "आंतरिक"
+        },
+        "priorities": {
+          "Critical": "अत्यावश्यक",
+          "High": "उच्च",
+          "Medium": "मध्यम",
+          "Low": "निम्न",
+          "Trivial": "साधारण"
+        }
+      }
+    },
+    "users": {
+      "title": "सदस्य ({count})",
+      "description": "अपनी टीम के सदस्यों को देखें और प्रबंधित करें। भूमिकाएँ, संपर्क जानकारी और अधिक देखें",
+      "add_user": "उपयोगकर्ता जोड़ें",
+      "remove_user": "उपयोगकर्ता हटाएँ",
+      "change_role": "भूमिका बदलें",
+      "change_role_only_manager_error": "भूमिका नहीं बदली जा सकती: यह उपयोगकर्ता टीम का एकमात्र प्रबंधक है।",
+      "no_members": "अभी कोई सदस्य नहीं",
+      "remove_user_from_team": "यह क्रिया टीम <b>{teamName}</b> से उपयोगकर्ता <b>{firstName} {lastName}</b> को हटा देगी।",
+      "remove_only_manager_dialog_error_title": "प्रबंधक भूमिका आवश्यक",
+      "remove_only_manager_dialog_error_description": "आप टीम के एकमात्र प्रबंधक को नहीं हटा सकते"
+    },
+    "projects": {
+      "list": {
+        "title": "परियोजनाएँ ({totalElements})",
+        "description": "अपनी टीम की परियोजनाओं को कुशलतापूर्वक प्रबंधित और ट्रैक करें",
+        "search_place_holder": "परियोजनाएँ खोजें...",
+        "new_project": "नई परियोजना",
+        "no_projects_found": "कोई परियोजना नहीं मिली",
+        "create_project_dialog_title": "नई परियोजना बनाएँ",
+        "create_project_select_team_title": "टीम चुनें",
+        "create_project_select_team_description": "वह टीम चुनें जिससे यह परियोजना संबंधित है। केवल वे टीमें दिखाई जाती हैं जहाँ आप प्रबंधक हैं।",
+        "create_project_no_manager_teams": "आप किसी टीम के प्रबंधक नहीं हैं। परियोजना बनाने के लिए किसी टीम प्रबंधक से अनुरोध करें।",
+        "create_project_back": "टीम चयन पर वापस जाएँ",
+        "no_description": "कोई विवरण नहीं दिया गया।",
+        "status_active": "सक्रिय",
+        "status_closed": "बंद",
+        "close_project": "परियोजना बंद करें",
+        "reopen_project": "परियोजना फिर से खोलें",
+        "delete_project_dialog_title": "परियोजना हटाने की पुष्टि करें",
+        "delete_project_dialog_confirmation": "क्या आप वाकई परियोजना \"{projectName}\" हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।",
+        "kanban": "कानबन बोर्ड",
+        "settings": "सेटिंग्स",
+        "flat_view": "फ्लैट दृश्य",
+        "group_by_team": "टीम के अनुसार समूहित करें",
+        "reports": "रिपोर्ट"
+      },
+      "form": {
+        "name": "नाम",
+        "description": "विवरण",
+        "status": "स्थिति",
+        "short_name": "संक्षिप्त नाम",
+        "short_name_placeholder": "संक्षिप्त नाम दर्ज करें",
+        "short_name_tooltip": "परियोजना URL और टिकट संदर्भों के लिए संक्षिप्त नाम। अद्वितीय, छोटा (1–10 वर्ण) और याद रखने में आसान होना चाहिए।\nउदाहरण: /projects/crm/tickets/42",
+        "start_date": "प्रारंभ तिथि",
+        "end_date": "समाप्ति तिथि",
+        "created_at": "बनाया गया"
+      },
+      "iteration": {
+        "create_dialog_title": "नया इटरेशन बनाएँ",
+        "create_dialog_description": "अपने कार्यों को स्प्रिंट या चरणों में व्यवस्थित करने के लिए एक नया इटरेशन जोड़ें",
+        "edit_dialog_title": "इटरेशन संपादित करें",
+        "edit_dialog_description": "इस इटरेशन का विवरण अपडेट करें",
+        "no_data": "इस परियोजना के लिए कोई इटरेशन नहीं मिला",
+        "select_place_holder": "इटरेशन चुनें",
+        "form": {
+          "name": "नाम",
+          "name_place_holder": "स्प्रिंट 1",
+          "start_date": "प्रारंभ तिथि",
+          "end_date": "समाप्ति तिथि",
+          "description": "विवरण",
+          "description_place_holder": "इस इटरेशन के लक्ष्यों का संक्षिप्त विवरण",
+          "create_iteration": "इटरेशन बनाएँ",
+          "sprint_length_hint": "स्प्रिंट अवधि: {days} दिन — एक तारीख चुनने पर दूसरी स्वतः गणना हो जाती है।"
+        }
+      },
+      "epic": {
+        "create_dialog_title": "नया एपिक बनाएँ",
+        "create_dialog_description": "संबंधित फ़ीचर या बड़े कार्यों को व्यवस्थित करने के लिए एक नया एपिक जोड़ें",
+        "edit_dialog_title": "एपिक संपादित करें",
+        "edit_dialog_description": "इस एपिक का विवरण अपडेट करें",
+        "no_data": "इस परियोजना के लिए कोई एपिक नहीं मिला",
+        "select_place_holder": "एपिक चुनें",
+        "form": {
+          "name": "नाम",
+          "name_place_holder": "उपयोगकर्ता प्रमाणीकरण",
+          "start_date": "प्रारंभ तिथि",
+          "end_date": "समाप्ति तिथि",
+          "description": "विवरण",
+          "description_place_holder": "इस एपिक का दायरा और लक्ष्य बताएँ",
+          "create_epic": "एपिक बनाएँ"
+        }
+      },
+      "view": {
+        "add_new_task_to_state": "{stateName} में नया कार्य जोड़ें",
+        "new_task": "कार्य जोड़ें",
+        "add_task": "कार्य जोड़ें",
+        "actions": "क्रियाएँ",
+        "project_not_found": "परियोजना नहीं मिली",
+        "edit_project": "परियोजना संपादित करें",
+        "duration": "अवधि",
+        "iteration": "इटरेशन",
+        "all_iterations": "सभी इटरेशन",
+        "no_iterations_found": "कोई इटरेशन नहीं मिला",
+        "edit_iteration": "इटरेशन संपादित करें",
+        "add_new_iteration": "नया इटरेशन जोड़ें",
+        "epic": "एपिक",
+        "all_epics": "सभी एपिक",
+        "no_epics_found": "कोई एपिक नहीं मिला",
+        "add_new_epic": "नया एपिक जोड़ें",
+        "edit_epic": "एपिक संपादित करें",
+        "assignee": "असाइनी",
+        "all_members": "सभी सदस्य",
+        "unassigned": "असौंपा",
+        "board": "बोर्ड",
+        "view_kanban": "कानबन",
+        "view_epic": "एपिक",
+        "view_iteration": "इटरेशन",
+        "no_epic": "कोई एपिक नहीं",
+        "no_iteration": "कोई इटरेशन नहीं",
+        "iteration_status_in_progress": "प्रगति में",
+        "iteration_status_planned": "योजनाबद्ध",
+        "iteration_status_completed": "पूर्ण",
+        "iteration_status_not_scheduled": "निर्धारित नहीं",
+        "iteration_status_closed": "बंद",
+        "tasks_done": "पूर्ण",
+        "no_tasks": "कोई कार्य नहीं",
+        "no_tasks_in_epics": "वर्तमान फ़िल्टर से कोई कार्य नहीं मिला",
+        "stat_total": "कुल",
+        "stat_in_progress": "प्रगति में",
+        "stat_done": "पूर्ण",
+        "actions": "क्रियाएँ",
+        "add_task": "कार्य जोड़ें",
+        "show_closed_iterations": "बंद दिखाएँ",
+        "hide_closed_iterations": "बंद छिपाएँ"
+      },
+      "new_dialog": {
+        "new_project": "नई परियोजना",
+        "new_project_description": "हर महान परियोजना पहले कदम से शुरू होती है। चलिए शुरू करते हैं!",
+        "edit_project": "परियोजना संपादित करें",
+        "edit_project_description": "परियोजना का विवरण संशोधित करें"
+      },
+      "settings": {
+        "title": "परियोजना सेटिंग्स",
+        "sprint_length": "स्प्रिंट अवधि (दिन)",
+        "sprint_length_description": "स्प्रिंट की डिफ़ॉल्ट अवधि दिनों में",
+        "default_priority": "डिफ़ॉल्ट प्राथमिकता",
+        "default_priority_description": "नए टिकटों की डिफ़ॉल्ट प्राथमिकता",
+        "default_priority_placeholder": "डिफ़ॉल्ट प्राथमिकता चुनें",
+        "estimation_unit": "अनुमान इकाई",
+        "estimation_unit_description": "कार्य अनुमान के लिए उपयोग की जाने वाली इकाई",
+        "estimation_unit_placeholder": "अनुमान इकाई चुनें",
+        "story_points": "स्टोरी पॉइंट",
+        "days": "दिन",
+        "enable_estimation": "अनुमान सक्षम करें",
+        "enable_estimation_description": "इस परियोजना में टिकट अनुमान की अनुमति दें",
+        "loading": "परियोजना सेटिंग्स लोड हो रही हैं..."
+      }
+    }
+  },
+  "users": {
+    "list": {
+      "title": "उपयोगकर्ता ({totalElements})",
+      "description": "उपयोगकर्ताओं को प्रबंधित करें",
+      "search_place_holder": "उपयोगकर्ता नाम खोजें ...",
+      "sort_a_z": "नाम के अनुसार क्रमबद्ध करें: A → Z",
+      "sort_z_a": "नाम के अनुसार क्रमबद्ध करें: Z → A",
+      "invite_user": "उपयोगकर्ता आमंत्रित करें",
+      "delete_dialog_title": "हटाने की पुष्टि करें",
+      "delete_confirmation": "क्या आप वाकई <strong>{name}</strong> को हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।",
+      "activation_email_sent": "{email} पर एक सक्रियण ईमेल भेजा गया है",
+      "resend_activation_email": "सक्रियण ईमेल पुनः भेजें",
+      "status_all": "सभी",
+      "status_active": "सक्रिय",
+      "status_pending": "लंबित",
+      "no_users": "कोई उपयोगकर्ता नहीं मिला। शुरू करने के लिए किसी को आमंत्रित करें।"
+    },
+    "detail": {},
+    "common": {
+      "org_chart": "संगठन चार्ट",
+      "no_recent_login": "हाल का कोई लॉगिन नहीं",
+      "not_activated": "सक्रिय नहीं"
+    },
+    "form": {
+      "title": "पदनाम",
+      "email": "ईमेल",
+      "last_login_time": "अंतिम लॉगिन समय",
+      "timezone": "समय क्षेत्र",
+      "about": "परिचय",
+      "address": "पता",
+      "city": "शहर",
+      "state": "राज्य",
+      "country": "देश",
+      "report_to": "रिपोर्ट करें",
+      "direct_reports": "प्रत्यक्ष रिपोर्ट",
+      "member_of_teams": "टीमों के सदस्य",
+      "authorities": "प्राधिकरण",
+      "first_name": "पहला नाम",
+      "last_name": "अंतिम नाम",
+      "manager": "प्रबंधक",
+      "identity_section": "पहचान",
+      "location_section": "स्थान",
+      "updating": "अपडेट हो रहा है ...",
+      "inviting": "आमंत्रित किया जा रहा है ...",
+      "create_user": "उपयोगकर्ता बनाएँ",
+      "edit_user": "उपयोगकर्ता {firstName} {lastName} संपादित करें"
+    },
+    "profile": {
+      "title": "प्रोफ़ाइल",
+      "description": "यहाँ अपने खाते की जानकारी प्रबंधित करें। अपनी प्रोफ़ाइल को सटीक और सुरक्षित रखने के लिए ईमेल, प्रोफ़ाइल चित्र, पासवर्ड और अन्य व्यक्तिगत जानकारी अपडेट करें।",
+      "change_password": "पासवर्ड बदलें",
+      "current_password": "वर्तमान पासवर्ड",
+      "new_password": "नया पासवर्ड",
+      "save_success": "प्रोफ़ाइल सफलतापूर्वक सहेजी गई"
+    },
+    "org_chart_view": {
+      "instruction_title": "संगठन चार्ट का उपयोग कैसे करें",
+      "instruction_desc1": "अपना दृश्य समायोजित करने के लिए पूरे संगठन चार्ट को खींचें।",
+      "instruction_desc2": "उस उपयोगकर्ता से संगठन चार्ट देखने के लिए उपयोगकर्ता आइकन पर क्लिक करें।",
+      "instruction_desc3": "उपयोगकर्ता की प्रोफ़ाइल पृष्ठ पर जाने के लिए उपयोगकर्ता लिंक पर क्लिक करें।"
+    }
+  },
+  "authorities": {
+    "common": {
+      "select_place_holder": "प्राधिकरण चुनें",
+      "no_data": "प्राधिकरण लोड नहीं हो सके",
+      "system_role": "सिस्टम भूमिका"
+    },
+    "list": {
+      "title": "प्राधिकरण ({totalElements})",
+      "description": "संसाधनों तक पहुँच नियंत्रित करने के लिए समूहों और उपयोगकर्ताओं की अनुमतियाँ प्रबंधित करें।",
+      "new_authority": "नया प्राधिकरण",
+      "remove_authority": "प्राधिकरण हटाएँ",
+      "remove_authority_tooltip": "यह क्रिया भूमिका हटा देगी और सभी उपयोगकर्ताओं को इस भूमिका से अनसाइन कर देगी।",
+      "remove_dialog_title": "हटाने की पुष्टि करें",
+      "remove_dialog_content": "क्या आप वाकई <strong>{name}</strong> को हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।"
+    },
+    "detail": {
+      "add_user": "उपयोगकर्ता जोड़ें",
+      "remove_user": "उपयोगकर्ता हटाएँ",
+      "remove_user_tooltip": "यह क्रिया चुने गए उपयोगकर्ता की इस प्राधिकरण से जुड़ी पहुँच और अनुमतियाँ रद्द कर देगी",
+      "permissions_title": "संसाधन अनुमतियाँ",
+      "resource": "संसाधन",
+      "permission": "अनुमति",
+      "no_permission": "कोई अनुमति उपलब्ध नहीं",
+      "no_users": "अभी तक कोई उपयोगकर्ता इस प्राधिकरण को नहीं सौंपा गया है। अनुमतियाँ प्रबंधित करने के लिए उपयोगकर्ता जोड़ें।"
+    },
+    "add": {
+      "dialog_title": "प्राधिकरण {authorityName} में उपयोगकर्ता जोड़ें",
+      "dialog_description": "उपयोगकर्ता खोजकर इस प्राधिकरण समूह में जोड़ें। सुझाव देखने के लिए टाइप करना शुरू करें",
+      "users": "उपयोगकर्ता",
+      "users_select_place_holder": "प्राधिकरण में उपयोगकर्ता जोड़ें..."
+    },
+    "form": {
+      "title": "प्राधिकरण विवरण",
+      "permissions_section": "संसाधन अनुमतियाँ",
+      "permission_select_place_holder": "अनुमति चुनें",
+      "name": "नाम",
+      "description": "विवरण"
+    }
+  },
+  "mail": {
+    "title": "मेल",
+    "description": "FlowInquiry के लिए SMTP सर्वर क्रेडेंशियल और ईमेल डिलीवरी विकल्प कॉन्फ़िगर करने के लिए इस फ़ॉर्म का उपयोग करें। ये सेटिंग्स नियंत्रित करती हैं कि सिस्टम पासवर्ड रीसेट, वर्कफ़्लो अपडेट और अलर्ट जैसी सूचनाएँ कैसे भेजता है। आप कनेक्शन पैरामीटर (होस्ट, पोर्ट, प्रोटोकॉल), प्रमाणीकरण क्रेडेंशियल, प्रेषक पहचान और SSL/TLS और डीबग मोड जैसे उन्नत विकल्प कस्टमाइज़ कर सकते हैं।",
+    "smtp_server": "SMTP सर्वर",
+    "authentication": "प्रमाणीकरण",
+    "sender_info": "प्रेषक जानकारी",
+    "advanced_options": "उन्नत विकल्प",
+    "save_successfully": "मेल सेटिंग्स सफलतापूर्वक अपडेट की गईं"
+  },
+  "login": {
+    "form": {
+      "invalid_email": "अमान्य ईमेल",
+      "required_email": "ईमेल आवश्यक है",
+      "required_password": "पासवर्ड आवश्यक है",
+      "login_failed_message": "लॉगिन विफल हुआ। कृपया पुनः प्रयास करें।",
+      "google_login_failed_message": "Google लॉगिन विफल हुआ। कृपया पुनः प्रयास करें।",
+      "title": "ग्राहकों को खुश रखने और टिकटों को ट्रैक पर रखने में आपका साथी",
+      "password": "पासवर्ड",
+      "forgot_password_cta": "पासवर्ड भूल गए",
+      "signin": "साइन इन करें",
+      "signin_google": "Google से साइन इन करें"
+    }
+  },
+  "workflows": {
+    "common": {
+      "state_select_place_holder": "स्थिति चुनें",
+      "no_data": "कोई वर्कफ़्लो नहीं मिला",
+      "select_workflow": "वर्कफ़्लो चुनें",
+      "search_workflow": "वर्कफ़्लो खोजें...",
+      "global": "वैश्विक",
+      "no_description": "कोई विवरण नहीं दिया गया।",
+      "project_workflow": "परियोजना वर्कफ़्लो"
+    },
+    "list": {
+      "title": "वर्कफ़्लो ({totalElements})",
+      "description": "स्पष्ट दृश्यता, टिकट प्रकारों और विवरणों के साथ सभी वर्कफ़्लो को एक ही जगह से आसानी से प्रबंधित करें।",
+      "new_workflow": "नया वर्कफ़्लो",
+      "no_workflows": "कोई वर्कफ़्लो नहीं मिला। शुरू करने के लिए एक बनाएँ।",
+      "sort_a_z": "वर्कफ़्लो नाम A → Z क्रमबद्ध करें",
+      "sort_z_a": "वर्कफ़्लो नाम Z → A क्रमबद्ध करें",
+      "delete_workflow": "वर्कफ़्लो हटाएँ",
+      "delete_workflow_tooltip_1": "यह क्रिया टीम {teamName} से वर्कफ़्लो {workflowName} हटा देगी"
+    },
+    "detail": {
+      "cancel_edit": "संपादन रद्द करें",
+      "customize_workflow": "वर्कफ़्लो कस्टमाइज़ करें",
+      "ticket_type_label": "टिकट प्रकार: {requestName}",
+      "error_loading": "वर्कफ़्लो विवरण लोड करने में त्रुटि"
+    },
+    "review": {
+      "state_transitions": "ट्रांज़िशन",
+      "no_transitions": "कोई ट्रांज़िशन परिभाषित नहीं।",
+      "sla_hours": "{hours}h SLA",
+      "no_sla": "कोई SLA नहीं",
+      "escalates": "एस्केलेट करता है"
+    },
+    "add": {
+      "title": "नया वर्कफ़्लो बनाएँ",
+      "description": "वर्कफ़्लो बनाने का तरीका चुनें",
+      "transitions": "ट्रांज़िशन",
+      "add_transition": "ट्रांज़िशन जोड़ें",
+      "escalate": "एस्केलेट करें",
+      "sla_duration": "SLA अवधि (घंटे)",
+      "event_name": "इवेंट नाम",
+      "source_state": "स्रोत स्थिति",
+      "source_state_place_holder": "स्रोत स्थिति चुनें",
+      "target_state": "लक्ष्य स्थिति",
+      "target_state_place_holder": "लक्ष्य स्थिति चुनें",
+      "add_state": "स्थिति जोड़ें",
+      "final": "अंतिम",
+      "initial": "प्रारंभिक",
+      "state_name": "स्थिति नाम",
+      "states": "स्थितियाँ",
+      "name": "नाम",
+      "ticket_type": "टिकट प्रकार",
+      "field_description": "विवरण",
+      "edit_workflow": "वर्कफ़्लो संपादित करें",
+      "no_global_workflow": "चयन के लिए कोई वैश्विक वर्कफ़्लो उपलब्ध नहीं है",
+      "create_workflow_from_reference": "संदर्भ से वर्कफ़्लो बनाएँ",
+      "create_workflow_from_reference_description": "एक वैश्विक वर्कफ़्लो से लिंक करें ताकि यह साझा अपडेट के साथ समन्वयित रहे",
+      "create_workflow_by_cloning": "क्लोनिंग द्वारा वर्कफ़्लो बनाएँ",
+      "create_workflow_by_cloning_description": "एक वैश्विक वर्कफ़्लो की प्रति बनाएँ और इसे अपनी टीम के लिए कस्टमाइज़ करें",
+      "create_option": "एक विकल्प चुनें",
+      "create_workflow_from_scratch_title": "खुद से बनाएँ",
+      "create_workflow_from_scratch_description": "शुरू से नया वर्कफ़्लो बनाएँ",
+      "clone_workflow_title": "वैश्विक वर्कफ़्लो से क्लोन करें",
+      "clone_workflow_description": "एक वैश्विक वर्कफ़्लो की प्रति बनाएँ और कस्टमाइज़ करें",
+      "select_workflow_place_holder": "वर्कफ़्लो चुनें",
+      "workflow_reference": "वर्कफ़्लो संदर्भ",
+      "create_workflow": "वर्कफ़्लो बनाएँ"
+    }
+  },
+  "settings": {
+    "list": {
+      "description": "अपने संगठन की जरूरतों के अनुसार प्लेटफ़ॉर्म को तैयार करने के लिए सभी सिस्टम सेटिंग्स एक ही जगह पर कॉन्फ़िगर और प्रबंधित करें।"
+    }
+  }
+}
