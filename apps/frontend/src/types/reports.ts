@@ -72,3 +72,34 @@ export type ReportDefinition = {
    */
   filterConfig?: ReportFilterConfig;
 };
+
+// ── Workload Balance Report ───────────────────────────────────────────────────
+
+export type WorkloadBalanceQueryDTO = {
+  projectId: number;
+  iterationId?: number;
+  from?: string; // ISO 8601
+  to?: string;
+  status?: string[];
+  priorities?: string[];
+  assigneeId?: number[];
+};
+
+export type WorkloadBalanceMemberDTO = {
+  userId: number | null;
+  userName: string;
+  avatarUrl: string | null;
+  openCount: number;
+  closedCount: number;
+  overdueCount: number;
+  avgAgeInDays: number;
+  priorityBreakdown: Record<string, number>;
+};
+
+export type WorkloadBalanceReportDTO = {
+  totalOpenTickets: number;
+  averagePerMember: number;
+  topOverloadedMember: string | null;
+  members: WorkloadBalanceMemberDTO[];
+};
+
