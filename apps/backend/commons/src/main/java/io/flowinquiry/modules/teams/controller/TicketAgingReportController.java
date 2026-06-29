@@ -5,6 +5,8 @@ import io.flowinquiry.modules.teams.service.dto.TicketAgingReportDTO;
 import io.flowinquiry.modules.teams.service.dto.TicketQueryParams;
 import io.flowinquiry.modules.teams.service.dto.TicketThroughputQueryDTO;
 import io.flowinquiry.modules.teams.service.dto.TicketThroughputReportDTO;
+import io.flowinquiry.modules.teams.service.dto.WorkloadBalanceQueryDTO;
+import io.flowinquiry.modules.teams.service.dto.WorkloadBalanceReportDTO;
 import io.flowinquiry.query.AggregationQuery;
 import io.flowinquiry.query.AggregationResult;
 import io.flowinquiry.query.ReportEngine;
@@ -88,6 +90,78 @@ public class TicketAgingReportController {
     public TicketThroughputReportDTO postTicketThroughput(
             @Valid @RequestBody TicketThroughputQueryDTO query) {
         return service.getThroughputReport(query);
+    }
+
+    // ── Workload Balance ──────────────────────────────────────────────────────
+
+    @Operation(
+            summary = "Get workload balance report",
+            description =
+                    "Retrieves how tickets are distributed among team members for a project. "
+                            + "Returns per-member open/closed/overdue counts, average age, "
+                            + "priority breakdown and KPI summaries.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully retrieved workload balance report",
+                        content = @Content(mediaType = "application/json")),
+                @ApiResponse(
+                        responseCode = "400",
+                        description = "Invalid query",
+                        content = @Content)
+            })
+    @GetMapping("/tickets/workload-balance")
+    public WorkloadBalanceReportDTO getWorkloadBalance(
+            @Valid @ModelAttribute WorkloadBalanceQueryDTO query) {
+        return service.getWorkloadBalanceReport(query);
+    }
+
+    @Operation(
+            summary = "Get workload balance report (POST)",
+            description =
+                    "Same as GET /tickets/workload-balance but uses a request body for "
+                            + "flexible filtering without a long query parameter list.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully retrieved workload balance report",
+                        content = @Content(mediaType = "application/json")),
+                @ApiResponse(
+                        responseCode = "400",
+                        description = "Invalid query",
+                        content = @Content)
+            })
+    @PostMapping("/tickets/workload-balance")
+    public WorkloadBalanceReportDTO postWorkloadBalance(
+            @Valid @RequestBody WorkloadBalanceQueryDTO query) {
+        return service.getWorkloadBalanceReport(query);
+    }
+
+    @Operation(
+            summary = "Export workload balance report as CSV",
+            description = "Exports the workload balance table as a CSV file.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "CSV file with member workload data",
+                        content = @Content(mediaType = "text/csv")),
+                @ApiResponse(
+                        responseCode = "400",
+                        description = "Invalid query",
+                        content = @Content)
+            })
+    @GetMapping(value = "/tickets/workload-balance/export", produces = "text/csv")
+    public ResponseEntity<String> exportWorkloadBalance(
+            @Valid @ModelAttribute WorkloadBalanceQueryDTO query) {
+        return ResponseEntity.ok()
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"workload-balance.csv\"")
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .body(service.exportWorkloadBalanceCsv(query));
     }
 
     @Operation(

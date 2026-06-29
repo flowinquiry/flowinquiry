@@ -7,6 +7,7 @@ import {
   Layers,
   PieChart,
   RadioTower,
+  Scale,
   Shield,
   TrendingUp,
   Users,
@@ -17,6 +18,7 @@ import TicketChannelPieChart from "@/components/teams/team-tickets-channel-chart
 import TicketDistributionChart from "@/components/teams/team-tickets-distribution-chart";
 import TicketPriorityPieChart from "@/components/teams/team-tickets-priority-chart";
 import TicketCreationByDaySeriesChart from "@/components/teams/tickets-creation-timeseries-chart";
+import WorkloadBalanceChart from "@/components/teams/reports/workload-balance-chart";
 import { ReportDefinition } from "@/types/reports";
 
 /**
@@ -162,6 +164,17 @@ export const REPORT_REGISTRY: ReportDefinition[] = [
 
   // ── Members ──────────────────────────────────────────────────────────────
 
+  {
+    id: "workload-balance",
+    category: "members",
+    status: "available",
+    title: "Workload Balance",
+    description:
+      "Visualise how tickets are distributed across team members. Spot overloaded or underutilised members with priority breakdown, overdue counts, and average ticket age.",
+    icon: Scale,
+    chartType: "bar",
+    component: WorkloadBalanceChart,
+  },
   {
     id: "member-activity",
     category: "members",
