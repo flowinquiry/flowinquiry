@@ -1,7 +1,9 @@
-import { post } from "@/lib/actions/commons.action";
+import { get, post } from "@/lib/actions/commons.action";
 import { HttpError } from "@/lib/errors";
 import { AggregationQuery, AggregationResult } from "@/types/query";
 import {
+  TicketAgingQueryParams,
+  TicketAgingReportDTO,
   WorkloadBalanceQueryDTO,
   WorkloadBalanceReportDTO,
 } from "@/types/reports";
@@ -45,6 +47,22 @@ export const getWorkloadBalanceReport = async (
   return post<WorkloadBalanceQueryDTO, WorkloadBalanceReportDTO>(
     `/api/reports/tickets/workload-balance`,
     query,
+    setError,
+  );
+};
+
+export const getTicketAgingReport = async (
+  params: TicketAgingQueryParams,
+  setError?: (error: HttpError | string | null) => void,
+): Promise<TicketAgingReportDTO | null> => {
+  const searchParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      searchParams.append(key, String(value));
+    }
+  });
+  return get<TicketAgingReportDTO>(
+    `/api/reports/tickets/ageing?${searchParams.toString()}`,
     setError,
   );
 };
