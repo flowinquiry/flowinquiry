@@ -58,6 +58,30 @@ public class TicketAgingReportService {
     public TicketHealthDistributionDTO getHealthDistributionReport(
             TicketHealthQueryParams params) {
 
+        List<TicketConversationHealth> records =
+                healthRepository.findAll(buildHealthSpec(params));
+
+        Map<String, Long> distribution =
+                records.stream()
+                        .collect(
+                                Collectors.groupingBy(
+                                        h -> resolveHealthLevel(h).toJson(),
+                                        LinkedHashMap::new,
+                                        Collectors.counting()));
+
+        long total = records.size();
+        long criticalCount = distribution.getOrDefault(TicketHealthLevel.CRITICAL.toJson(), 0L);
+        String dominant =
+                distribution.entrySet().stream()
+                        .max(Map.Entry.comparingByValue())
+                        .map(Map.Entry::getKey)
+                        .orElse(null);
+
+        return new TicketHealthDistributionDTO(distribution, total, dominant, criticalCount);
+    }
+
+    private Specification<TicketConversationHealth> buildHealthSpec(
+            TicketHealthQueryParams params) {
         List<Filter> filters = new ArrayList<>();
         filters.add(new Filter("ticket.project.id", FilterOperator.EQ, params.getProjectId()));
         filters.add(new Filter("ticket.isDeleted", FilterOperator.EQ, false));
@@ -98,27 +122,7 @@ public class TicketAgingReportService {
         groupFilter.setLogicalOperator(LogicalOperator.AND);
         groupFilter.setFilters(filters);
         queryDTO.setGroups(List.of(groupFilter));
-
-        List<TicketConversationHealth> records =
-                healthRepository.findAll(createSpecification(queryDTO));
-
-        Map<String, Long> distribution =
-                records.stream()
-                        .collect(
-                                Collectors.groupingBy(
-                                        h -> resolveHealthLevel(h).toJson(),
-                                        LinkedHashMap::new,
-                                        Collectors.counting()));
-
-        long total = records.size();
-        long criticalCount = distribution.getOrDefault(TicketHealthLevel.CRITICAL.toJson(), 0L);
-        String dominant =
-                distribution.entrySet().stream()
-                        .max(Map.Entry.comparingByValue())
-                        .map(Map.Entry::getKey)
-                        .orElse(null);
-
-        return new TicketHealthDistributionDTO(distribution, total, dominant, criticalCount);
+        return createSpecification(queryDTO);
     }
 
     private TicketHealthLevel resolveHealthLevel(TicketConversationHealth h) {
