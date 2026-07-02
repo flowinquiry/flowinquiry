@@ -133,3 +133,20 @@ export type TicketAgingReportDTO = {
   totalTickets: number;
 };
 
+export type TicketHealthQueryParams = {
+  projectId: number;
+  assignUserId?: number[];
+  priority?: string[];
+  createdFrom?: string;
+  createdTo?: string;
+  includeClosed?: boolean;
+};
+
+export type TicketHealthDistributionDTO = {
+  distribution: Record<string, number>;
+  totalTickets: number;
+  dominantHealthLevel: string | null;
+  criticalCount: number;
+};
+
+

@@ -4,6 +4,8 @@ import { AggregationQuery, AggregationResult } from "@/types/query";
 import {
   TicketAgingQueryParams,
   TicketAgingReportDTO,
+  TicketHealthDistributionDTO,
+  TicketHealthQueryParams,
   WorkloadBalanceQueryDTO,
   WorkloadBalanceReportDTO,
 } from "@/types/reports";
@@ -66,4 +68,25 @@ export const getTicketAgingReport = async (
     setError,
   );
 };
+
+export const getTicketHealthDistribution = async (
+  params: TicketHealthQueryParams,
+  setError?: (error: HttpError | string | null) => void,
+): Promise<TicketHealthDistributionDTO | null> => {
+  const searchParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      if (Array.isArray(value)) {
+        value.forEach((v) => searchParams.append(key, String(v)));
+      } else {
+        searchParams.append(key, String(value));
+      }
+    }
+  });
+  return get<TicketHealthDistributionDTO>(
+    `/api/reports/tickets/health-distribution?${searchParams.toString()}`,
+    setError,
+  );
+};
+
 

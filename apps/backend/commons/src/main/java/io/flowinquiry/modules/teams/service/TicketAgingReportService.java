@@ -4,10 +4,15 @@ import static io.flowinquiry.query.QueryUtils.createSpecification;
 import static java.util.Objects.nonNull;
 
 import io.flowinquiry.modules.teams.domain.Ticket;
+import io.flowinquiry.modules.teams.domain.TicketConversationHealth;
 import io.flowinquiry.modules.teams.domain.TicketPriority;
+import io.flowinquiry.modules.teams.repository.TicketConversationHealthRepository;
 import io.flowinquiry.modules.teams.repository.TicketRepository;
 import io.flowinquiry.modules.teams.service.dto.TicketAgingDTO;
 import io.flowinquiry.modules.teams.service.dto.TicketAgingReportDTO;
+import io.flowinquiry.modules.teams.service.dto.TicketHealthDistributionDTO;
+import io.flowinquiry.modules.teams.service.dto.TicketHealthLevel;
+import io.flowinquiry.modules.teams.service.dto.TicketHealthQueryParams;
 import io.flowinquiry.modules.teams.service.dto.TicketQueryParams;
 import io.flowinquiry.modules.teams.service.dto.TicketThroughputBucketDTO;
 import io.flowinquiry.modules.teams.service.dto.TicketThroughputGranularity;
@@ -44,8 +49,87 @@ public class TicketAgingReportService {
 
     private final TicketMapper ticketMapper;
 
+    private final TicketConversationHealthRepository healthRepository;
+
     private static final List<String> DEFAULT_COMPLETED_STATUS_ALIASES =
             List.of("RESOLVED", "CLOSED");
+
+    @Transactional(readOnly = true)
+    public TicketHealthDistributionDTO getHealthDistributionReport(
+            TicketHealthQueryParams params) {
+
+        List<Filter> filters = new ArrayList<>();
+        filters.add(new Filter("ticket.project.id", FilterOperator.EQ, params.getProjectId()));
+        filters.add(new Filter("ticket.isDeleted", FilterOperator.EQ, false));
+
+        if (!params.isIncludeClosed()) {
+            filters.add(new Filter("ticket.isCompleted", FilterOperator.EQ, false));
+        }
+        if (params.getAssignUserId() != null && !params.getAssignUserId().isEmpty()) {
+            filters.add(
+                    new Filter("ticket.assignUser.id", FilterOperator.IN, params.getAssignUserId()));
+        }
+        if (params.getPriority() != null && !params.getPriority().isEmpty()) {
+            filters.add(new Filter("ticket.priority", FilterOperator.IN, params.getPriority()));
+        }
+        if (params.getCreatedFrom() != null) {
+            filters.add(
+                    new Filter(
+                            "ticket.createdAt",
+                            FilterOperator.GTE,
+                            params.getCreatedFrom()
+                                    .atTime(LocalTime.MIN)
+                                    .atZone(ZoneOffset.UTC)
+                                    .toInstant()));
+        }
+        if (params.getCreatedTo() != null) {
+            filters.add(
+                    new Filter(
+                            "ticket.createdAt",
+                            FilterOperator.LTE,
+                            params.getCreatedTo()
+                                    .atTime(LocalTime.MAX)
+                                    .atZone(ZoneOffset.UTC)
+                                    .toInstant()));
+        }
+
+        QueryDTO queryDTO = new QueryDTO();
+        GroupFilter groupFilter = new GroupFilter();
+        groupFilter.setLogicalOperator(LogicalOperator.AND);
+        groupFilter.setFilters(filters);
+        queryDTO.setGroups(List.of(groupFilter));
+
+        List<TicketConversationHealth> records =
+                healthRepository.findAll(createSpecification(queryDTO));
+
+        Map<String, Long> distribution =
+                records.stream()
+                        .collect(
+                                Collectors.groupingBy(
+                                        h -> resolveHealthLevel(h).toJson(),
+                                        LinkedHashMap::new,
+                                        Collectors.counting()));
+
+        long total = records.size();
+        long criticalCount = distribution.getOrDefault(TicketHealthLevel.CRITICAL.toJson(), 0L);
+        String dominant =
+                distribution.entrySet().stream()
+                        .max(Map.Entry.comparingByValue())
+                        .map(Map.Entry::getKey)
+                        .orElse(null);
+
+        return new TicketHealthDistributionDTO(distribution, total, dominant, criticalCount);
+    }
+
+    private TicketHealthLevel resolveHealthLevel(TicketConversationHealth h) {
+        Float score = h.getConversationHealth();
+        if (score == null) return TicketHealthLevel.CRITICAL;
+        if (score >= 0.8f) return TicketHealthLevel.EXCELLENT;
+        if (score > 0.6f) return TicketHealthLevel.GOOD;
+        if (score > 0.4f) return TicketHealthLevel.FAIR;
+        if (score > 0.2f) return TicketHealthLevel.POOR;
+        return TicketHealthLevel.CRITICAL;
+    }
 
     @Transactional(readOnly = true)
     public TicketAgingReportDTO getAgingTicketsReport(TicketQueryParams queryParams) {

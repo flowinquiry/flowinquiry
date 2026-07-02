@@ -2,6 +2,8 @@ package io.flowinquiry.modules.teams.controller;
 
 import io.flowinquiry.modules.teams.service.TicketAgingReportService;
 import io.flowinquiry.modules.teams.service.dto.TicketAgingReportDTO;
+import io.flowinquiry.modules.teams.service.dto.TicketHealthDistributionDTO;
+import io.flowinquiry.modules.teams.service.dto.TicketHealthQueryParams;
 import io.flowinquiry.modules.teams.service.dto.TicketQueryParams;
 import io.flowinquiry.modules.teams.service.dto.TicketThroughputQueryDTO;
 import io.flowinquiry.modules.teams.service.dto.TicketThroughputReportDTO;
@@ -187,6 +189,28 @@ public class TicketAgingReportController {
                         "attachment; filename=\"ticket-throughput.csv\"")
                 .contentType(MediaType.parseMediaType("text/csv"))
                 .body(service.exportThroughputReportCsv(query));
+    }
+
+    @Operation(
+            summary = "Get ticket health distribution report",
+            description =
+                    "Retrieves the count of tickets grouped by conversation health level "
+                            + "(Excellent, Good, Fair, Poor, Critical) for a given project.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully retrieved ticket health distribution",
+                        content = @Content(mediaType = "application/json")),
+                @ApiResponse(
+                        responseCode = "400",
+                        description = "Invalid query",
+                        content = @Content)
+            })
+    @GetMapping("/tickets/health-distribution")
+    public TicketHealthDistributionDTO getHealthDistribution(
+            @Valid @ModelAttribute TicketHealthQueryParams params) {
+        return service.getHealthDistributionReport(params);
     }
 
     @Operation(

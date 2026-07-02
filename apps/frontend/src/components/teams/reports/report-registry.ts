@@ -19,6 +19,7 @@ import TicketDistributionChart from "@/components/teams/team-tickets-distributio
 import TicketPriorityPieChart from "@/components/teams/team-tickets-priority-chart";
 import TicketCreationByDaySeriesChart from "@/components/teams/tickets-creation-timeseries-chart";
 import TicketAgingChart from "@/components/teams/reports/ticket-aging-chart";
+import TicketHealthDistributionChart from "@/components/teams/reports/ticket-health-distribution-chart";
 import WorkloadBalanceChart from "@/components/teams/reports/workload-balance-chart";
 import { ReportDefinition } from "@/types/reports";
 
@@ -129,13 +130,13 @@ export const REPORT_REGISTRY: ReportDefinition[] = [
   {
     id: "health-distribution",
     category: "tickets",
-    status: "upcoming",
+    status: "available",
     title: "Ticket Health Distribution",
     description:
       "Donut chart of active tickets by conversation health level (Excellent → Critical).",
     icon: FlameKindling,
     chartType: "pie",
-    component: null,
+    component: TicketHealthDistributionChart,
   },
 
   // ── Projects ─────────────────────────────────────────────────────────────
