@@ -18,6 +18,8 @@ import TicketChannelPieChart from "@/components/teams/team-tickets-channel-chart
 import TicketDistributionChart from "@/components/teams/team-tickets-distribution-chart";
 import TicketPriorityPieChart from "@/components/teams/team-tickets-priority-chart";
 import TicketCreationByDaySeriesChart from "@/components/teams/tickets-creation-timeseries-chart";
+import TicketAgingChart from "@/components/teams/reports/ticket-aging-chart";
+import TicketHealthDistributionChart from "@/components/teams/reports/ticket-health-distribution-chart";
 import WorkloadBalanceChart from "@/components/teams/reports/workload-balance-chart";
 import { ReportDefinition } from "@/types/reports";
 
@@ -82,6 +84,17 @@ export const REPORT_REGISTRY: ReportDefinition[] = [
     component: TicketDistributionChart,
   },
   {
+    id: "ticket-aging",
+    category: "tickets",
+    status: "available",
+    title: "Ticket Aging",
+    description:
+      "See how long tickets have been open. Identify stuck work and SLA risks with age bucket distributions grouped by assignee, priority, or status.",
+    icon: Clock,
+    chartType: "bar",
+    component: TicketAgingChart,
+  },
+  {
     id: "workflow-funnel",
     category: "tickets",
     status: "upcoming",
@@ -117,13 +130,13 @@ export const REPORT_REGISTRY: ReportDefinition[] = [
   {
     id: "health-distribution",
     category: "tickets",
-    status: "upcoming",
+    status: "available",
     title: "Ticket Health Distribution",
     description:
       "Donut chart of active tickets by conversation health level (Excellent → Critical).",
     icon: FlameKindling,
     chartType: "pie",
-    component: null,
+    component: TicketHealthDistributionChart,
   },
 
   // ── Projects ─────────────────────────────────────────────────────────────

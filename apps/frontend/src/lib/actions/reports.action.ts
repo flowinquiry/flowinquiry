@@ -1,7 +1,11 @@
-import { post } from "@/lib/actions/commons.action";
+import { get, post } from "@/lib/actions/commons.action";
 import { HttpError } from "@/lib/errors";
 import { AggregationQuery, AggregationResult } from "@/types/query";
 import {
+  TicketAgingQueryParams,
+  TicketAgingReportDTO,
+  TicketHealthDistributionDTO,
+  TicketHealthQueryParams,
   WorkloadBalanceQueryDTO,
   WorkloadBalanceReportDTO,
 } from "@/types/reports";
@@ -48,4 +52,41 @@ export const getWorkloadBalanceReport = async (
     setError,
   );
 };
+
+export const getTicketAgingReport = async (
+  params: TicketAgingQueryParams,
+  setError?: (error: HttpError | string | null) => void,
+): Promise<TicketAgingReportDTO | null> => {
+  const searchParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      searchParams.append(key, String(value));
+    }
+  });
+  return get<TicketAgingReportDTO>(
+    `/api/reports/tickets/ageing?${searchParams.toString()}`,
+    setError,
+  );
+};
+
+export const getTicketHealthDistribution = async (
+  params: TicketHealthQueryParams,
+  setError?: (error: HttpError | string | null) => void,
+): Promise<TicketHealthDistributionDTO | null> => {
+  const searchParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      if (Array.isArray(value)) {
+        value.forEach((v) => searchParams.append(key, String(v)));
+      } else {
+        searchParams.append(key, String(value));
+      }
+    }
+  });
+  return get<TicketHealthDistributionDTO>(
+    `/api/reports/tickets/health-distribution?${searchParams.toString()}`,
+    setError,
+  );
+};
+
 

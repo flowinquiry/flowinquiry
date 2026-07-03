@@ -103,3 +103,50 @@ export type WorkloadBalanceReportDTO = {
   members: WorkloadBalanceMemberDTO[];
 };
 
+export type TicketAgingQueryParams = {
+  projectId: number;
+  iterationId?: number;
+  status?: string;
+  priority?: string;
+  assignUserId?: string;
+  groupBy?: "assignee" | "priority" | "status";
+  includeClosed?: boolean;
+};
+
+export type TicketAgingDTO = {
+  ticketId: number;
+  ticketKey: string;
+  title: string;
+  priority: string | null;
+  status: string | null;
+  assignee: string | null;
+  ageInDays: number;
+  createdDate: string;
+  completionDate?: string;
+};
+
+export type TicketAgingReportDTO = {
+  groupedTickets: Record<string, TicketAgingDTO[]>;
+  averageAge: number;
+  maxAge: number;
+  minAge: number;
+  totalTickets: number;
+};
+
+export type TicketHealthQueryParams = {
+  projectId: number;
+  assignUserId?: number[];
+  priority?: string[];
+  createdFrom?: string;
+  createdTo?: string;
+  includeClosed?: boolean;
+};
+
+export type TicketHealthDistributionDTO = {
+  distribution: Record<string, number>;
+  totalTickets: number;
+  dominantHealthLevel: string | null;
+  criticalCount: number;
+};
+
+
