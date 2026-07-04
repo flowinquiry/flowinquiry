@@ -12,7 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import io.flowinquiry.it.IntegrationTest;
+import io.flowinquiry.it.AuthenticatedIntegrationTest;
 import io.flowinquiry.it.WithMockFwUser;
 import io.flowinquiry.modules.teams.domain.*;
 import io.flowinquiry.modules.teams.repository.ProjectEpicRepository;
@@ -40,7 +40,7 @@ import tools.jackson.databind.ObjectMapper;
 @WithMockFwUser(
         userId = 1L,
         authorities = {AuthoritiesConstants.ADMIN})
-@IntegrationTest
+@AuthenticatedIntegrationTest
 @Transactional
 class ProjectControllerIT {
 

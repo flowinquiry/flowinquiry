@@ -7,7 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import io.flowinquiry.it.IntegrationTest;
+import io.flowinquiry.it.AuthenticatedIntegrationTest;
 import io.flowinquiry.modules.usermanagement.AuthoritiesConstants;
 import io.flowinquiry.modules.usermanagement.domain.User;
 import io.flowinquiry.modules.usermanagement.repository.UserRepository;
@@ -24,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /** Integration tests for the {@link PublicUserController} REST controller. */
 @WithMockUser(authorities = AuthoritiesConstants.ADMIN)
-@IntegrationTest
+@AuthenticatedIntegrationTest
 class PublicUserControllerIT {
 
     @Autowired private UserRepository userRepository;

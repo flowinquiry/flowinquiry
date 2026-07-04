@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import io.flowinquiry.it.IntegrationTest;
+import io.flowinquiry.it.AuthenticatedIntegrationTest;
 import io.flowinquiry.it.WithMockFwUser;
 import io.flowinquiry.modules.teams.domain.Project;
 import io.flowinquiry.modules.teams.domain.ProjectIteration;
@@ -31,7 +31,7 @@ import tools.jackson.databind.ObjectMapper;
 @WithMockFwUser(
         userId = 1L,
         authorities = {AuthoritiesConstants.ADMIN})
-@IntegrationTest
+@AuthenticatedIntegrationTest
 @Transactional
 public class ProjectIterationControllerIT {
 
@@ -174,7 +174,7 @@ public class ProjectIterationControllerIT {
                         post("/api/project-iterations/{id}/close", 3L)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(5L))
+                .andExpect(jsonPath("$.id").value(6L))
                 .andExpect(jsonPath("$.name").value("Iteration 4"))
                 .andExpect(jsonPath("$.status").value(ProjectIterationStatus.ACTIVE.toString()));
 

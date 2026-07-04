@@ -10,7 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import io.flowinquiry.it.IntegrationTest;
+import io.flowinquiry.it.AuthenticatedIntegrationTest;
 import io.flowinquiry.modules.usermanagement.AuthoritiesConstants;
 import io.flowinquiry.modules.usermanagement.domain.User;
 import io.flowinquiry.modules.usermanagement.domain.UserStatus;
@@ -36,7 +36,7 @@ import tools.jackson.databind.ObjectMapper;
 
 /** Integration tests for the {@link UserController} REST controller. */
 @WithMockUser(authorities = AuthoritiesConstants.ADMIN)
-@IntegrationTest
+@AuthenticatedIntegrationTest
 class UserControllerIT {
 
     private static final Long DEFAULT_ID = 1L;

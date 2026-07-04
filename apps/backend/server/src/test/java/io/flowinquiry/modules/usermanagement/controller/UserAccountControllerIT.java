@@ -90,7 +90,12 @@ class UserAccountControllerIT {
         restAccountMockMvc
                 .perform(
                         get("/api/authenticate")
-                                .with(request -> request)
+                                .with(
+                                        WithMockFwUser.MockMvcJwt.jwt(
+                                                1L,
+                                                TEST_USER_LOGIN_EMAIL,
+                                                WithMockFwUser.DEFAULT_TENANT_ID,
+                                                AuthoritiesConstants.ADMIN))
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().string(TEST_USER_LOGIN_EMAIL));
@@ -110,7 +115,15 @@ class UserAccountControllerIT {
         userService.createUser(user);
 
         restAccountMockMvc
-                .perform(get("/api/account").accept(MediaType.APPLICATION_JSON))
+                .perform(
+                        get("/api/account")
+                                .with(
+                                        WithMockFwUser.MockMvcJwt.jwt(
+                                                1L,
+                                                TEST_USER_LOGIN_EMAIL,
+                                                WithMockFwUser.DEFAULT_TENANT_ID,
+                                                AuthoritiesConstants.ADMIN))
+                                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(jsonPath("$.firstName").value("john"))
@@ -391,6 +404,12 @@ class UserAccountControllerIT {
         restAccountMockMvc
                 .perform(
                         post("/api/account")
+                                .with(
+                                        WithMockFwUser.MockMvcJwt.jwt(
+                                                1L,
+                                                "save-account@example.com",
+                                                WithMockFwUser.DEFAULT_TENANT_ID,
+                                                AuthoritiesConstants.ADMIN))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(om.writeValueAsBytes(userDTO)))
                 .andExpect(status().is(200));
@@ -434,6 +453,12 @@ class UserAccountControllerIT {
         restAccountMockMvc
                 .perform(
                         post("/api/account")
+                                .with(
+                                        WithMockFwUser.MockMvcJwt.jwt(
+                                                1L,
+                                                "save-invalid-email@example.com",
+                                                WithMockFwUser.DEFAULT_TENANT_ID,
+                                                AuthoritiesConstants.ADMIN))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(om.writeValueAsBytes(userDTO)))
                 .andExpect(status().isBadRequest());
@@ -470,6 +495,12 @@ class UserAccountControllerIT {
         restAccountMockMvc
                 .perform(
                         post("/api/account")
+                                .with(
+                                        WithMockFwUser.MockMvcJwt.jwt(
+                                                1L,
+                                                "save-existing-email@example.com",
+                                                WithMockFwUser.DEFAULT_TENANT_ID,
+                                                AuthoritiesConstants.ADMIN))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(om.writeValueAsBytes(userDTO)))
                 .andExpect(status().is(500));
@@ -499,6 +530,12 @@ class UserAccountControllerIT {
         restAccountMockMvc
                 .perform(
                         post("/api/account")
+                                .with(
+                                        WithMockFwUser.MockMvcJwt.jwt(
+                                                1L,
+                                                "save-existing-email-and-login@example.com",
+                                                WithMockFwUser.DEFAULT_TENANT_ID,
+                                                AuthoritiesConstants.ADMIN))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(om.writeValueAsBytes(userDTO)))
                 .andExpect(status().is(200));
@@ -524,6 +561,12 @@ class UserAccountControllerIT {
         restAccountMockMvc
                 .perform(
                         post("/api/account/change-password")
+                                .with(
+                                        WithMockFwUser.MockMvcJwt.jwt(
+                                                1L,
+                                                "change-password-wrong-existing-password@example.com",
+                                                WithMockFwUser.DEFAULT_TENANT_ID,
+                                                AuthoritiesConstants.ADMIN))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(
                                         om.writeValueAsBytes(
@@ -560,6 +603,12 @@ class UserAccountControllerIT {
         restAccountMockMvc
                 .perform(
                         post("/api/account/change-password")
+                                .with(
+                                        WithMockFwUser.MockMvcJwt.jwt(
+                                                1L,
+                                                "change-password@example.com",
+                                                WithMockFwUser.DEFAULT_TENANT_ID,
+                                                AuthoritiesConstants.ADMIN))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(
                                         om.writeValueAsBytes(
@@ -591,6 +640,12 @@ class UserAccountControllerIT {
         restAccountMockMvc
                 .perform(
                         post("/api/account/change-password")
+                                .with(
+                                        WithMockFwUser.MockMvcJwt.jwt(
+                                                1L,
+                                                "change-password-too-small@example.com",
+                                                WithMockFwUser.DEFAULT_TENANT_ID,
+                                                AuthoritiesConstants.ADMIN))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(
                                         om.writeValueAsBytes(
@@ -622,6 +677,12 @@ class UserAccountControllerIT {
         restAccountMockMvc
                 .perform(
                         post("/api/account/change-password")
+                                .with(
+                                        WithMockFwUser.MockMvcJwt.jwt(
+                                                1L,
+                                                "change-password-too-long@example.com",
+                                                WithMockFwUser.DEFAULT_TENANT_ID,
+                                                AuthoritiesConstants.ADMIN))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(
                                         om.writeValueAsBytes(
@@ -651,6 +712,12 @@ class UserAccountControllerIT {
         restAccountMockMvc
                 .perform(
                         post("/api/account/change-password")
+                                .with(
+                                        WithMockFwUser.MockMvcJwt.jwt(
+                                                1L,
+                                                "change-password-empty@example.com",
+                                                WithMockFwUser.DEFAULT_TENANT_ID,
+                                                AuthoritiesConstants.ADMIN))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(
                                         om.writeValueAsBytes(

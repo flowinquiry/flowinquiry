@@ -4,7 +4,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import io.flowinquiry.it.IntegrationTest;
+import io.flowinquiry.it.AuthenticatedIntegrationTest;
 import io.flowinquiry.it.WithMockFwUser;
 import io.flowinquiry.modules.teams.service.dto.WorkloadBalanceQueryDTO;
 import io.flowinquiry.modules.usermanagement.AuthoritiesConstants;
@@ -18,7 +18,7 @@ import tools.jackson.databind.ObjectMapper;
 @WithMockFwUser(
         userId = 1L,
         authorities = {AuthoritiesConstants.ADMIN})
-@IntegrationTest
+@AuthenticatedIntegrationTest
 @Transactional
 public class WorkloadBalanceReportControllerIT {
 

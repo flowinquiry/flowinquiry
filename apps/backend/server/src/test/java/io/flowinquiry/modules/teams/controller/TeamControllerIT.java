@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import io.flowinquiry.it.IntegrationTest;
+import io.flowinquiry.it.AuthenticatedIntegrationTest;
 import io.flowinquiry.it.WithMockFwUser;
 import io.flowinquiry.modules.teams.domain.Team;
 import io.flowinquiry.modules.teams.repository.TeamRepository;
@@ -35,7 +35,7 @@ import tools.jackson.databind.ObjectMapper;
 @WithMockFwUser(
         userId = 1L,
         authorities = {AuthoritiesConstants.ADMIN})
-@IntegrationTest
+@AuthenticatedIntegrationTest
 class TeamControllerIT {
 
     private static final String DEFAULT_NAME = "Test Team";
