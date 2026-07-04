@@ -44,7 +44,7 @@ public interface WorkflowRepository
         @QueryHint(name = "org.hibernate.cacheRegion", value = "queryWorkflows")
     })
     @Query(
-            """
+"""
     SELECT w
     FROM Workflow w
     LEFT JOIN TeamWorkflowSelection tws

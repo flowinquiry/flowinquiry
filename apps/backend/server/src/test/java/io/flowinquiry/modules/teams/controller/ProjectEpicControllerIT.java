@@ -9,7 +9,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.flowinquiry.it.IntegrationTest;
 import io.flowinquiry.it.WithMockFwUser;
 import io.flowinquiry.modules.teams.domain.ProjectEpic;
@@ -21,13 +20,12 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.ObjectMapper;
 
 /** Integration tests for the {@link ProjectEpicController} REST controller. */
-@AutoConfigureMockMvc
 @WithMockFwUser(
         userId = 1L,
         authorities = {AuthoritiesConstants.ADMIN})

@@ -17,7 +17,7 @@ public interface ProjectRepository
     Optional<Project> findByShortName(String shortName);
 
     @Query(
-            """
+"""
     SELECT p
     FROM Project p
     WHERE p.team IN (

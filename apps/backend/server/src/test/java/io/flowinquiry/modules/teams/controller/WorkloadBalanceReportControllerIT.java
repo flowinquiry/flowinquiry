@@ -4,19 +4,17 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.flowinquiry.it.IntegrationTest;
 import io.flowinquiry.it.WithMockFwUser;
 import io.flowinquiry.modules.teams.service.dto.WorkloadBalanceQueryDTO;
 import io.flowinquiry.modules.usermanagement.AuthoritiesConstants;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.ObjectMapper;
 
-@AutoConfigureMockMvc
 @WithMockFwUser(
         userId = 1L,
         authorities = {AuthoritiesConstants.ADMIN})
@@ -95,9 +93,7 @@ public class WorkloadBalanceReportControllerIT {
     @Test
     @Transactional
     void testExportWorkloadBalanceCsv() throws Exception {
-        mockMvc.perform(
-                        get("/api/reports/tickets/workload-balance/export")
-                                .param("projectId", "3"))
+        mockMvc.perform(get("/api/reports/tickets/workload-balance/export").param("projectId", "3"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith("text/csv"))
                 .andExpect(

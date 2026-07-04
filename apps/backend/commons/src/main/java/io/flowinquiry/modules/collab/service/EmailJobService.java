@@ -1,11 +1,11 @@
 package io.flowinquiry.modules.collab.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.flowinquiry.modules.collab.domain.EmailJob;
 import io.flowinquiry.modules.collab.domain.EmailJobStatus;
 import io.flowinquiry.modules.collab.repository.EmailJobRepository;
 import jakarta.annotation.Nullable;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.JsonNode;
 
 @Service
 public class EmailJobService {

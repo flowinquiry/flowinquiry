@@ -1,14 +1,14 @@
 package io.flowinquiry.modules.teams.domain;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import java.io.IOException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 @JsonSerialize(using = TicketChannel.TicketChannelSerializer.class)
 @JsonDeserialize(using = TicketChannel.TicketChannelDeserializer.class)
@@ -47,19 +47,19 @@ public enum TicketChannel {
         throw new IllegalArgumentException("Unknown display name: " + displayName);
     }
 
-    public static class TicketChannelSerializer extends JsonSerializer<TicketChannel> {
+    public static class TicketChannelSerializer extends ValueSerializer<TicketChannel> {
         @Override
         public void serialize(
-                TicketChannel value, JsonGenerator gen, SerializerProvider serializers)
-                throws IOException {
+                TicketChannel value, JsonGenerator gen, SerializationContext serializers)
+                throws JacksonException {
             gen.writeString(value.getDisplayName()); // Serialize the human-readable value
         }
     }
 
-    public static class TicketChannelDeserializer extends JsonDeserializer<TicketChannel> {
+    public static class TicketChannelDeserializer extends ValueDeserializer<TicketChannel> {
         @Override
         public TicketChannel deserialize(JsonParser p, DeserializationContext ctxt)
-                throws IOException {
+                throws JacksonException {
             String value = p.getText();
             return TicketChannel.fromDisplayName(value); // Use the method from the enum
         }

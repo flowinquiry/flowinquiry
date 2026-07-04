@@ -19,7 +19,7 @@
     "eslint-plugin-unused-imports": "^4.4.1",
     "globals": "^16.5.0",
     "prettier": "^3.8.1",
-    "turbo": "^2.8.16"
+    "turbo": "^2.10.2"
   },
   "scripts": {
     "dev": "turbo run dev",

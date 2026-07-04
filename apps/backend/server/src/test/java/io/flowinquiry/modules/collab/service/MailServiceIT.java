@@ -11,6 +11,7 @@ import com.icegreen.greenmail.configuration.GreenMailConfiguration;
 import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.util.ServerSetupTest;
 import io.flowinquiry.it.IntegrationTest;
+import io.flowinquiry.modules.collab.service.event.MailSettingsUpdatedEvent;
 import io.flowinquiry.modules.shared.Constants;
 import io.flowinquiry.modules.usermanagement.service.dto.UserDTO;
 import jakarta.mail.Multipart;
@@ -41,6 +42,7 @@ class MailServiceIT {
     private static final String TEST_CONTENT = "testContent";
 
     @MockitoBean private JavaMailSender javaMailSender;
+    @Autowired private AppSettingService appSettingService;
     @Autowired private MailService mailService;
 
     @RegisterExtension
@@ -55,6 +57,22 @@ class MailServiceIT {
     public void setup() {
         doNothing().when(javaMailSender).send(any(MimeMessage.class));
         when(javaMailSender.createMimeMessage()).thenReturn(new MimeMessage((Session) null));
+
+        // Align dynamic SMTP test settings with the GreenMail instance started for this test
+        // method.
+        appSettingService.updateValue(MailService.HOST_SETTING, "localhost");
+        appSettingService.updateValue(
+                MailService.PORT_SETTING, String.valueOf(greenMail.getSmtp().getPort()));
+        appSettingService.updateValue(MailService.USERNAME_SETTING, "user");
+        appSettingService.updateValue(MailService.PASSWORD_SETTING, "pass");
+        appSettingService.updateValue(MailService.PROTOCOL_SETTING, "smtp");
+        appSettingService.updateValue(MailService.SMTP_AUTH_SETTING, "true");
+        appSettingService.updateValue(MailService.SMTP_STARTTLS_SETTING, "false");
+        appSettingService.updateValue(MailService.DEBUG_SETTING, "false");
+        appSettingService.updateValue(MailService.FROM_SETTING, "noreply@example.com");
+
+        // GreenMail starts per method; reload mail sender now so MailService binds to live SMTP.
+        mailService.onMailSettingsUpdated(new MailSettingsUpdatedEvent(this));
     }
 
     @Test

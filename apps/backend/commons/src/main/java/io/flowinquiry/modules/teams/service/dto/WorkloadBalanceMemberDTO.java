@@ -29,8 +29,8 @@ public class WorkloadBalanceMemberDTO {
     private double avgAgeInDays;
 
     /**
-     * Breakdown of open tickets by priority (e.g. {"Critical":2,"High":5,...})
-     * Keys are TicketPriority enum name strings.
+     * Breakdown of open tickets by priority (e.g. {"Critical":2,"High":5,...}) Keys are
+     * TicketPriority enum name strings.
      */
     private Map<String, Long> priorityBreakdown;
 }

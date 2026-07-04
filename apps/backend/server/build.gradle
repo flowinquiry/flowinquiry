@@ -83,14 +83,8 @@ tasks.register('jacocoIntegrationTestReport', JacocoReport) {
     )
 
     reports {
-        xml {
-            required = true
-            destination = file("${buildDir}/reports/jacoco/jacocoIntegrationTestReport/jacocoIntegrationTestReport.xml")
-        }
-        html {
-            required = true
-            destination = file("${buildDir}/reports/jacoco/jacocoIntegrationTestReport")
-        }
+        xml.required = true
+        html.required = true
         csv.required = false
     }
 
@@ -98,34 +92,34 @@ tasks.register('jacocoIntegrationTestReport', JacocoReport) {
 }
 
 // Configure the main JaCoCo report task to include both test and integrationTest data
-jacocoTestReport {
-    dependsOn test, integrationTest
-
-    // Include both test and integration test execution data
-    executionData files("${buildDir}/jacoco/test.exec", "${buildDir}/jacoco/integrationTest.exec")
-
-    sourceDirectories.from = files(
-        project.sourceSets.main.java.srcDirs,
-        project(":apps:backend:commons").sourceSets.main.java.srcDirs
-    )
-
-    classDirectories.from = files(
-        project.sourceSets.main.output.classesDirs,
-        project(":apps:backend:commons").sourceSets.main.output.classesDirs
-    )
-
-    reports {
-        xml {
-            required = true
-            destination = file("${buildDir}/reports/jacoco/test/jacocoTestReport.xml")
-        }
-        html {
-            required = true
-            destination = file("${buildDir}/reports/jacoco/test")
-        }
-        csv.required = false
-    }
-}
+//jacocoTestReport {
+//    dependsOn test, integrationTest
+//
+//    // Include both test and integration test execution data
+//    executionData files("${buildDir}/jacoco/test.exec", "${buildDir}/jacoco/integrationTest.exec")
+//
+//    sourceDirectories.from = files(
+//        project.sourceSets.main.java.srcDirs,
+//        project(":apps:backend:commons").sourceSets.main.java.srcDirs
+//    )
+//
+//    classDirectories.from = files(
+//        project.sourceSets.main.output.classesDirs,
+//        project(":apps:backend:commons").sourceSets.main.output.classesDirs
+//    )
+//
+//    reports {
+//        xml {
+//            required = true
+//            destination = file("${buildDir}/reports/jacoco/test/jacocoTestReport.xml")
+//        }
+//        html {
+//            required = true
+//            destination = file("${buildDir}/reports/jacoco/test")
+//        }
+//        csv.required = false
+//    }
+//}
 
 // The jacocoCombinedReport task has been removed as jacocoTestReport now handles both test and integrationTest
 
@@ -134,22 +128,21 @@ check.dependsOn jacocoTestReport
 
 configurations {
     providedRuntime
-    implementation.exclude module: "spring-boot-starter-tomcat"
 }
 
 dependencies {
     implementation( project(":apps:backend:commons"))
 
     testImplementation(libs.greenmail.junit5)
-    testImplementation("org.testcontainers:jdbc")
-    testImplementation("org.testcontainers:junit-jupiter")
-    testImplementation("org.testcontainers:testcontainers")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-web")
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.springframework.security:spring-security-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
     testImplementation(libs.assertJ)
-    testImplementation(libs.testcontainers.spring)
-    testImplementation(libs.testcontainers.postgresql)
+    testImplementation(libs.tc.postgresql)
+    testImplementation(libs.tc.junit.jupiter)
 }
 
 task cleanResources(type: Delete) {

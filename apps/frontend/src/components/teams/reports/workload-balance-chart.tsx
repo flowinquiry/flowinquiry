@@ -104,7 +104,9 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 const WorkloadBalanceChart: React.FC<Props> = ({ teamId }) => {
   const { setError } = useError();
   const [tab, setTab] = useState<"chart" | "table">("chart");
-  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(
+    null,
+  );
 
   // Load projects for this team so the user can pick one
   const { data: projectsPage, isValidating: loadingProjects } = useSWR(
@@ -198,7 +200,9 @@ const WorkloadBalanceChart: React.FC<Props> = ({ teamId }) => {
     return (
       <div className="flex flex-col items-center justify-center h-64">
         <Spinner className="h-8 w-8 mb-4" />
-        <span className="text-sm text-muted-foreground">Loading workload data…</span>
+        <span className="text-sm text-muted-foreground">
+          Loading workload data…
+        </span>
       </div>
     );
   }

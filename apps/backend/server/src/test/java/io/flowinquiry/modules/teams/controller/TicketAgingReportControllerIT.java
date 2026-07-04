@@ -5,7 +5,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.flowinquiry.it.IntegrationTest;
 import io.flowinquiry.it.WithMockFwUser;
 import io.flowinquiry.modules.teams.service.dto.TicketThroughputGroupBy;
@@ -16,12 +15,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.ObjectMapper;
 
-@AutoConfigureMockMvc
 @WithMockFwUser(
         userId = 1L,
         authorities = {AuthoritiesConstants.ADMIN})
@@ -45,7 +43,8 @@ public class TicketAgingReportControllerIT {
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$.groupedTickets.length()").value(3))
                     .andExpect(
-                            jsonPath("$.groupedTickets.keys()",
+                            jsonPath(
+                                    "$.groupedTickets.keys()",
                                     containsInAnyOrder("Alice Johnson", "John Doe", "Jane Smith")))
                     .andExpect(jsonPath("$.groupedTickets.['Alice Johnson'].length()").value(6))
                     .andExpect(
@@ -91,7 +90,8 @@ public class TicketAgingReportControllerIT {
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$.groupedTickets.length()").value(3))
                     .andExpect(
-                            jsonPath("$.groupedTickets.keys()",
+                            jsonPath(
+                                    "$.groupedTickets.keys()",
                                     containsInAnyOrder("Alice Johnson", "John Doe", "Jane Smith")))
                     .andExpect(jsonPath("$.groupedTickets.['Alice Johnson'].length()").value(8))
                     .andExpect(
@@ -130,7 +130,8 @@ public class TicketAgingReportControllerIT {
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$.groupedTickets.length()").value(2))
                     .andExpect(
-                            jsonPath("$.groupedTickets.keys()",
+                            jsonPath(
+                                    "$.groupedTickets.keys()",
                                     containsInAnyOrder("High", "Medium")))
                     .andExpect(jsonPath("$.groupedTickets.High.length()").value(6))
                     .andExpect(jsonPath("$.groupedTickets.Medium.length()").value(6))
@@ -187,10 +188,11 @@ public class TicketAgingReportControllerIT {
                 .andExpect(jsonPath("$.totalTicketsCompleted").value(6))
                 .andExpect(jsonPath("$.totalTableRows").value(3))
                 .andExpect(jsonPath("$.table.length()").value(3))
-
-                .andExpect(jsonPath("$.table[*].group", containsInAnyOrder("John Doe", "Jane Smith", "Alice Johnson")))
+                .andExpect(
+                        jsonPath(
+                                "$.table[*].group",
+                                containsInAnyOrder("John Doe", "Jane Smith", "Alice Johnson")))
                 .andExpect(jsonPath("$.table[*].count", containsInAnyOrder(2, 2, 2)));
-
     }
 
     @Test

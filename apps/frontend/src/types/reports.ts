@@ -148,5 +148,3 @@ export type TicketHealthDistributionDTO = {
   dominantHealthLevel: string | null;
   criticalCount: number;
 };
-
-
