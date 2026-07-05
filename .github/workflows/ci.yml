@@ -59,7 +59,7 @@ jobs:
           ./gradlew :apps:backend:server:jacocoTestReport
 
       - name: Generate Coverage Report Summary
-        uses: danielpalme/ReportGenerator-GitHub-Action@5.4.7
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.5.10
         with:
           reports: apps/backend/server/build/reports/jacoco/test/jacocoTestReport.xml
           targetdir: coveragereport
