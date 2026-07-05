@@ -1,10 +1,5 @@
 export type ResourceId =
-  | "users"
-  | "teams"
-  | "organizations"
-  | "authorities"
-  | "workflows"
-  | "mail";
+  "users" | "teams" | "organizations" | "authorities" | "workflows" | "mail";
 
 export type PermissionLevel = "NONE" | "READ" | "WRITE" | "ACCESS";
 

@@ -53,15 +53,24 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Run Unit and Integration Tests
+        run: ./gradlew :apps:backend:server:test :apps:backend:server:integrationTest :apps:backend:server:jacocoTestReport
+
+      - name: Locate JaCoCo XML report
+        id: jacoco-report
         run: |
-          ./gradlew :apps:backend:server:test
-          ./gradlew :apps:backend:server:integrationTest
-          ./gradlew :apps:backend:server:jacocoTestReport
+          report_path="$(find apps/backend/server/build/reports/jacoco -type f -name '*.xml' | head -n 1)"
+          if [ -z "$report_path" ]; then
+            echo "No JaCoCo XML report found under apps/backend/server/build/reports/jacoco"
+            find apps/backend/server/build/reports -type f | sort || true
+            exit 1
+          fi
+          echo "Using JaCoCo report at: $report_path"
+          echo "report_path=$report_path" >> "$GITHUB_OUTPUT"
 
       - name: Generate Coverage Report Summary
         uses: danielpalme/ReportGenerator-GitHub-Action@5.5.10
         with:
-          reports: apps/backend/server/build/reports/jacoco/test/jacocoTestReport.xml
+          reports: ${{ steps.jacoco-report.outputs.report_path }}
           targetdir: coveragereport
           reporttypes: Html;MarkdownSummary
           classfilters: '+*'

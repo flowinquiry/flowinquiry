@@ -232,16 +232,14 @@ export function MailSettings() {
             ...formValues,
             ...loadedValues,
             "mail.smtp.auth": (loadedValues["mail.smtp.auth"] || "true") as
-              | "true"
-              | "false",
+              "true" | "false",
             "mail.smtp.starttls.enable": (loadedValues[
               "mail.smtp.starttls.enable"
             ] || "true") as "true" | "false",
             "mail.smtp.ssl.enable": (loadedValues["mail.smtp.ssl.enable"] ||
               "false") as "true" | "false",
             "mail.debug": (loadedValues["mail.debug"] || "false") as
-              | "true"
-              | "false",
+              "true" | "false",
             "mail.protocol": loadedValues["mail.protocol"] || "smtp",
           };
 
