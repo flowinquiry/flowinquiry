@@ -1,4 +1,4 @@
-export type IconProps = React.SVGProps<SVGSVGElement>;
+export type IconProps = React.ComponentPropsWithoutRef<"svg">;
 
 export const Icons = {
   spinner: (props: IconProps) => (
