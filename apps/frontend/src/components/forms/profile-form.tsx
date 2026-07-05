@@ -221,8 +221,9 @@ export const ProfileForm = () => {
                       />
                     ) : (
                       <div
-                        className="relative group cursor-pointer"
-                        {...getRootProps()}
+                        {...(getRootProps({
+                          className: "relative group cursor-pointer",
+                        }) as React.HTMLAttributes<HTMLDivElement>)}
                       >
                         <input
                           {...getInputProps()}
