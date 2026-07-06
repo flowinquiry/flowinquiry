@@ -55,11 +55,9 @@ public class TicketAgingReportService {
             List.of("RESOLVED", "CLOSED");
 
     @Transactional(readOnly = true)
-    public TicketHealthDistributionDTO getHealthDistributionReport(
-            TicketHealthQueryParams params) {
+    public TicketHealthDistributionDTO getHealthDistributionReport(TicketHealthQueryParams params) {
 
-        List<TicketConversationHealth> records =
-                healthRepository.findAll(buildHealthSpec(params));
+        List<TicketConversationHealth> records = healthRepository.findAll(buildHealthSpec(params));
 
         Map<String, Long> distribution =
                 records.stream()
@@ -91,7 +89,8 @@ public class TicketAgingReportService {
         }
         if (params.getAssignUserId() != null && !params.getAssignUserId().isEmpty()) {
             filters.add(
-                    new Filter("ticket.assignUser.id", FilterOperator.IN, params.getAssignUserId()));
+                    new Filter(
+                            "ticket.assignUser.id", FilterOperator.IN, params.getAssignUserId()));
         }
         if (params.getPriority() != null && !params.getPriority().isEmpty()) {
             filters.add(new Filter("ticket.priority", FilterOperator.IN, params.getPriority()));
@@ -280,22 +279,25 @@ public class TicketAgingReportService {
                                         TreeMap::new,
                                         Collectors.counting()));
 
-        Map<String, Map<String, Long>> tableCounts = completedTickets.stream()
-                .collect(
-                        Collectors.groupingBy(
-                                ticket -> resolvePeriod(ticket, normalizedQuery),
-                                TreeMap::new,
+        Map<String, Map<String, Long>> tableCounts =
+                completedTickets.stream()
+                        .collect(
                                 Collectors.groupingBy(
-                                        ticket -> resolveGroup(ticket, normalizedQuery),
+                                        ticket -> resolvePeriod(ticket, normalizedQuery),
                                         TreeMap::new,
-                                        Collectors.counting())));
+                                        Collectors.groupingBy(
+                                                ticket -> resolveGroup(ticket, normalizedQuery),
+                                                TreeMap::new,
+                                                Collectors.counting())));
 
         List<TicketThroughputBucketDTO> tableRows = new ArrayList<>();
-        tableCounts.forEach((period, groupMap) ->
-                groupMap.forEach((group, count) ->
-                        tableRows.add(new TicketThroughputBucketDTO(period, group, count))
-                )
-        );
+        tableCounts.forEach(
+                (period, groupMap) ->
+                        groupMap.forEach(
+                                (group, count) ->
+                                        tableRows.add(
+                                                new TicketThroughputBucketDTO(
+                                                        period, group, count))));
 
         TicketThroughputReportDTO report = new TicketThroughputReportDTO();
         report.setTotalTicketsCompleted(completedTickets.size());
@@ -337,18 +339,23 @@ public class TicketAgingReportService {
         List<Ticket> tickets = ticketRepository.findAll(buildWorkloadSpec(query));
 
         // Group all tickets by assignee name
-        Map<String, List<Ticket>> byMember = tickets.stream()
-                .collect(Collectors.groupingBy(this::resolveAssigneeName));
+        Map<String, List<Ticket>> byMember =
+                tickets.stream().collect(Collectors.groupingBy(this::resolveAssigneeName));
 
         Instant now = Instant.now();
-        List<WorkloadBalanceMemberDTO> members = byMember.entrySet().stream()
-                .map(entry -> buildMemberDTO(entry.getKey(), entry.getValue(), now))
-                .sorted(Comparator.comparingLong(WorkloadBalanceMemberDTO::getOpenCount).reversed())
-                .toList();
+        List<WorkloadBalanceMemberDTO> members =
+                byMember.entrySet().stream()
+                        .map(entry -> buildMemberDTO(entry.getKey(), entry.getValue(), now))
+                        .sorted(
+                                Comparator.comparingLong(WorkloadBalanceMemberDTO::getOpenCount)
+                                        .reversed())
+                        .toList();
 
         long totalOpen = members.stream().mapToLong(WorkloadBalanceMemberDTO::getOpenCount).sum();
-        double avg = members.isEmpty() ? 0 :
-                Math.round((double) totalOpen / members.size() * 100.0) / 100.0;
+        double avg =
+                members.isEmpty()
+                        ? 0
+                        : Math.round((double) totalOpen / members.size() * 100.0) / 100.0;
         String top = members.isEmpty() ? null : members.get(0).getUserName();
 
         WorkloadBalanceReportDTO report = new WorkloadBalanceReportDTO();
@@ -362,21 +369,34 @@ public class TicketAgingReportService {
     @Transactional(readOnly = true)
     public String exportWorkloadBalanceCsv(WorkloadBalanceQueryDTO query) {
         WorkloadBalanceReportDTO report = getWorkloadBalanceReport(query);
-        StringBuilder csv = new StringBuilder(
-                "member,open,closed,overdue,avg_age_days,critical,high,medium,low,trivial\n");
-        report.getMembers().forEach(m -> {
-            Map<String, Long> pb = m.getPriorityBreakdown();
-            csv.append(escapeCsv(m.getUserName())).append(',')
-                    .append(m.getOpenCount()).append(',')
-                    .append(m.getClosedCount()).append(',')
-                    .append(m.getOverdueCount()).append(',')
-                    .append(String.format("%.1f", m.getAvgAgeInDays())).append(',')
-                    .append(pb.getOrDefault("Critical", 0L)).append(',')
-                    .append(pb.getOrDefault("High", 0L)).append(',')
-                    .append(pb.getOrDefault("Medium", 0L)).append(',')
-                    .append(pb.getOrDefault("Low", 0L)).append(',')
-                    .append(pb.getOrDefault("Trivial", 0L)).append('\n');
-        });
+        StringBuilder csv =
+                new StringBuilder(
+                        "member,open,closed,overdue,avg_age_days,critical,high,medium,low,trivial\n");
+        report.getMembers()
+                .forEach(
+                        m -> {
+                            Map<String, Long> pb = m.getPriorityBreakdown();
+                            csv.append(escapeCsv(m.getUserName()))
+                                    .append(',')
+                                    .append(m.getOpenCount())
+                                    .append(',')
+                                    .append(m.getClosedCount())
+                                    .append(',')
+                                    .append(m.getOverdueCount())
+                                    .append(',')
+                                    .append(String.format("%.1f", m.getAvgAgeInDays()))
+                                    .append(',')
+                                    .append(pb.getOrDefault("Critical", 0L))
+                                    .append(',')
+                                    .append(pb.getOrDefault("High", 0L))
+                                    .append(',')
+                                    .append(pb.getOrDefault("Medium", 0L))
+                                    .append(',')
+                                    .append(pb.getOrDefault("Low", 0L))
+                                    .append(',')
+                                    .append(pb.getOrDefault("Trivial", 0L))
+                                    .append('\n');
+                        });
         return csv.toString();
     }
 
@@ -389,36 +409,48 @@ public class TicketAgingReportService {
 
         // Overdue: open tickets whose estimated completion date is in the past
         LocalDate today = LocalDate.now(ZoneOffset.UTC);
-        long overdueCount = open.stream()
-                .filter(t -> t.getEstimatedCompletionDate() != null
-                        && t.getEstimatedCompletionDate().isBefore(today))
-                .count();
+        long overdueCount =
+                open.stream()
+                        .filter(
+                                t ->
+                                        t.getEstimatedCompletionDate() != null
+                                                && t.getEstimatedCompletionDate().isBefore(today))
+                        .count();
 
         // Average age of open tickets (days from createdAt to now)
-        double avgAge = open.isEmpty() ? 0 :
-                open.stream()
-                        .mapToLong(t -> ChronoUnit.DAYS.between(t.getCreatedAt(), now))
-                        .average()
-                        .orElse(0);
+        double avgAge =
+                open.isEmpty()
+                        ? 0
+                        : open.stream()
+                                .mapToLong(t -> ChronoUnit.DAYS.between(t.getCreatedAt(), now))
+                                .average()
+                                .orElse(0);
 
         // Priority breakdown for open tickets
-        Map<String, Long> priorityBreakdown = open.stream()
-                .collect(Collectors.groupingBy(
-                        t -> t.getPriority() != null ? t.getPriority().name() : "None",
-                        Collectors.counting()));
+        Map<String, Long> priorityBreakdown =
+                open.stream()
+                        .collect(
+                                Collectors.groupingBy(
+                                        t ->
+                                                t.getPriority() != null
+                                                        ? t.getPriority().name()
+                                                        : "None",
+                                        Collectors.counting()));
 
         // Derive userId and avatarUrl from the first ticket that has an assignee
-        Long userId = tickets.stream()
-                .filter(t -> t.getAssignUser() != null)
-                .findFirst()
-                .map(t -> t.getAssignUser().getId())
-                .orElse(null);
+        Long userId =
+                tickets.stream()
+                        .filter(t -> t.getAssignUser() != null)
+                        .findFirst()
+                        .map(t -> t.getAssignUser().getId())
+                        .orElse(null);
 
-        String avatarUrl = tickets.stream()
-                .filter(t -> t.getAssignUser() != null)
-                .findFirst()
-                .map(t -> t.getAssignUser().getImageUrl())
-                .orElse(null);
+        String avatarUrl =
+                tickets.stream()
+                        .filter(t -> t.getAssignUser() != null)
+                        .findFirst()
+                        .map(t -> t.getAssignUser().getImageUrl())
+                        .orElse(null);
 
         return WorkloadBalanceMemberDTO.builder()
                 .userId(userId)
@@ -434,8 +466,8 @@ public class TicketAgingReportService {
 
     private String resolveAssigneeName(Ticket ticket) {
         if (ticket.getAssignUser() == null) return "Unassigned";
-        return (ticket.getAssignUser().getFirstName()
-                + " " + ticket.getAssignUser().getLastName()).trim();
+        return (ticket.getAssignUser().getFirstName() + " " + ticket.getAssignUser().getLastName())
+                .trim();
     }
 
     private Specification<Ticket> buildWorkloadSpec(WorkloadBalanceQueryDTO query) {
@@ -514,15 +546,15 @@ public class TicketAgingReportService {
             LocalDate toDate = LocalDate.ofInstant(query.getTo(), ZoneOffset.UTC);
             filters.add(new Filter("actualCompletionDate", FilterOperator.LTE, toDate));
         }
-        
+
         addInFilterIfNotEmpty(filters, "priority", query.getPriorities());
 
         if (query.getIterationId() != null) {
             filters.add(new Filter("iteration.id", FilterOperator.EQ, query.getIterationId()));
         }
-        
+
         addInFilterIfNotEmpty(filters, "assignUser.id", query.getAssigneeId());
-        
+
         if (shouldFilterCurrentState(query.getStatus())) {
             filters.add(new Filter("currentState.stateName", FilterOperator.IN, query.getStatus()));
         }
@@ -573,7 +605,9 @@ public class TicketAgingReportService {
         return switch (query.getGroupBy()) {
             case assignee -> resolveAssigneeGroup(ticket);
             case priority ->
-                    Optional.ofNullable(ticket.getPriority()).map(TicketPriority::name).orElse("None");
+                    Optional.ofNullable(ticket.getPriority())
+                            .map(TicketPriority::name)
+                            .orElse("None");
             case none -> "All";
         };
     }

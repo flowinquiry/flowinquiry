@@ -1,7 +1,5 @@
 package io.flowinquiry.modules.collab.service.job;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.flowinquiry.modules.collab.domain.EmailJob;
 import io.flowinquiry.modules.collab.domain.EmailJobStatus;
 import io.flowinquiry.modules.collab.domain.RenderedEmail;
@@ -22,6 +20,8 @@ import org.springframework.data.domain.Limit;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.context.Context;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 @Slf4j
 @Profile("!test")

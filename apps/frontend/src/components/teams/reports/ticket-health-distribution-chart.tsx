@@ -1,8 +1,21 @@
 "use client";
 
-import { AlertTriangle, Download, FolderOpen, Heart, ShieldAlert } from "lucide-react";
+import {
+  AlertTriangle,
+  Download,
+  FolderOpen,
+  Heart,
+  ShieldAlert,
+} from "lucide-react";
 import React, { useMemo, useState } from "react";
-import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import {
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+} from "recharts";
 import useSWR from "swr";
 
 import { Spinner } from "@/components/ui/spinner";
@@ -72,7 +85,9 @@ const CustomTooltip = ({ active, payload }: any) => {
 const TicketHealthDistributionChart: React.FC<Props> = ({ teamId }) => {
   const { setError } = useError();
   const [tab, setTab] = useState<"chart" | "table">("chart");
-  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(
+    null,
+  );
   const [includeClosed, setIncludeClosed] = useState(false);
 
   const { data: projectsPage, isValidating: loadingProjects } = useSWR(
@@ -99,16 +114,21 @@ const TicketHealthDistributionChart: React.FC<Props> = ({ teamId }) => {
   const { data, isValidating } = useSWR(
     projectId ? ["ticket-health-distribution", projectId, includeClosed] : null,
     () =>
-      getTicketHealthDistribution({ projectId: projectId!, includeClosed }, setError),
+      getTicketHealthDistribution(
+        { projectId: projectId!, includeClosed },
+        setError,
+      ),
   );
 
   const chartData = useMemo(() => {
     if (!data?.distribution) return [];
-    return HEALTH_ORDER.filter((level) => level in data.distribution).map((level) => ({
-      name: level,
-      value: data.distribution[level],
-      fill: HEALTH_COLORS[level] ?? "#94a3b8",
-    }));
+    return HEALTH_ORDER.filter((level) => level in data.distribution).map(
+      (level) => ({
+        name: level,
+        value: data.distribution[level],
+        fill: HEALTH_COLORS[level] ?? "#94a3b8",
+      }),
+    );
   }, [data]);
 
   const exportCsv = () => {
@@ -139,7 +159,9 @@ const TicketHealthDistributionChart: React.FC<Props> = ({ teamId }) => {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3 text-center">
         <FolderOpen className="h-10 w-10 text-muted-foreground/40" />
-        <p className="text-sm text-muted-foreground">No projects found for this team.</p>
+        <p className="text-sm text-muted-foreground">
+          No projects found for this team.
+        </p>
       </div>
     );
   }
@@ -148,7 +170,9 @@ const TicketHealthDistributionChart: React.FC<Props> = ({ teamId }) => {
     return (
       <div className="flex flex-col items-center justify-center h-64">
         <Spinner className="h-8 w-8 mb-4" />
-        <span className="text-sm text-muted-foreground">Loading health data…</span>
+        <span className="text-sm text-muted-foreground">
+          Loading health data…
+        </span>
       </div>
     );
   }
@@ -157,7 +181,9 @@ const TicketHealthDistributionChart: React.FC<Props> = ({ teamId }) => {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center gap-4">
         <div className="flex items-center gap-2">
-          <label className="text-sm font-medium text-muted-foreground">Project:</label>
+          <label className="text-sm font-medium text-muted-foreground">
+            Project:
+          </label>
           <select
             className="rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             value={projectId ?? ""}
@@ -289,7 +315,9 @@ const TicketHealthDistributionChart: React.FC<Props> = ({ teamId }) => {
                           {row.name}
                         </span>
                       </TableCell>
-                      <TableCell className="text-right font-semibold">{row.value}</TableCell>
+                      <TableCell className="text-right font-semibold">
+                        {row.value}
+                      </TableCell>
                       <TableCell className="text-right text-muted-foreground">
                         {((row.value / data.totalTickets) * 100).toFixed(1)}%
                       </TableCell>

@@ -15,20 +15,15 @@ spring:
       chat:
         enabled: false
   datasource:
-    type: com.zaxxer.hikari.HikariDataSource
     hikari:
       auto-commit: false
       poolName: Hikari
-      maximum-pool-size: 5
+      maximum-pool-size: 1
   jpa:
     open-in-view: false
     show-sql: true
-    hibernate:
-      ddl-auto: none
-      naming:
-        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
-        implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
     properties:
+      hibernate.default_schema: flowinquiry
       hibernate.id.new_generator_mappings: true
       hibernate.connection.provider_disables_autocommit: true
       hibernate.cache.use_second_level_cache: false
@@ -52,4 +47,10 @@ spring:
             client-name: Google
 flowinquiry:
   edition: community
-  version: 1.2.1
+  version: 1.2.4
+  security:
+    authentication:
+      jwt:
+        base64-secret: dGVzdC1zZWNyZXQtdGhhdC1pcy1iYXNlNjQtZW5jb2Rpbmctc28tY2FuLWJlLXVzZWQtZm9yLXRlc3RpbmctandzLXRva2Vucw==
+        token-validity-in-seconds: 86400
+        token-validity-in-seconds-for-remember-me: 2592000

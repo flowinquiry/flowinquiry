@@ -14,13 +14,13 @@ import {
   Zap,
 } from "lucide-react";
 
+import TicketAgingChart from "@/components/teams/reports/ticket-aging-chart";
+import TicketHealthDistributionChart from "@/components/teams/reports/ticket-health-distribution-chart";
+import WorkloadBalanceChart from "@/components/teams/reports/workload-balance-chart";
 import TicketChannelPieChart from "@/components/teams/team-tickets-channel-chart";
 import TicketDistributionChart from "@/components/teams/team-tickets-distribution-chart";
 import TicketPriorityPieChart from "@/components/teams/team-tickets-priority-chart";
 import TicketCreationByDaySeriesChart from "@/components/teams/tickets-creation-timeseries-chart";
-import TicketAgingChart from "@/components/teams/reports/ticket-aging-chart";
-import TicketHealthDistributionChart from "@/components/teams/reports/ticket-health-distribution-chart";
-import WorkloadBalanceChart from "@/components/teams/reports/workload-balance-chart";
 import { ReportDefinition } from "@/types/reports";
 
 /**

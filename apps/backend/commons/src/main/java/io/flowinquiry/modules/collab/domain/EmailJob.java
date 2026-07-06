@@ -1,6 +1,5 @@
 package io.flowinquiry.modules.collab.domain;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.flowinquiry.utils.JsonNodeConverter;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
@@ -17,6 +16,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import tools.jackson.databind.JsonNode;
 
 @Entity
 @Table(name = "fw_email_job")

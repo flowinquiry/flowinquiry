@@ -1,6 +1,12 @@
 "use client";
 
-import { AlertTriangle, Clock, Download, FolderOpen, Timer } from "lucide-react";
+import {
+  AlertTriangle,
+  Clock,
+  Download,
+  FolderOpen,
+  Timer,
+} from "lucide-react";
 import React, { useMemo, useState } from "react";
 import {
   Bar,
@@ -106,7 +112,9 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 const TicketAgingChart: React.FC<Props> = ({ teamId }) => {
   const { setError } = useError();
   const [tab, setTab] = useState<"chart" | "table">("chart");
-  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(
+    null,
+  );
   const [groupBy, setGroupBy] = useState<GroupBy>("assignee");
   const [includeClosed, setIncludeClosed] = useState(false);
 
@@ -148,7 +156,9 @@ const TicketAgingChart: React.FC<Props> = ({ teamId }) => {
     if (!data) return [];
     return Object.entries(data.groupedTickets).map(([group, tickets]) => {
       const buckets = bucketTickets(tickets);
-      const row: Record<string, string | number> = { name: group || "Unassigned" };
+      const row: Record<string, string | number> = {
+        name: group || "Unassigned",
+      };
       buckets.forEach((b) => (row[b.label] = b.count));
       return row;
     });
@@ -189,7 +199,9 @@ const TicketAgingChart: React.FC<Props> = ({ teamId }) => {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3 text-center">
         <FolderOpen className="h-10 w-10 text-muted-foreground/40" />
-        <p className="text-sm text-muted-foreground">No projects found for this team.</p>
+        <p className="text-sm text-muted-foreground">
+          No projects found for this team.
+        </p>
       </div>
     );
   }
@@ -198,7 +210,9 @@ const TicketAgingChart: React.FC<Props> = ({ teamId }) => {
     return (
       <div className="flex flex-col items-center justify-center h-64">
         <Spinner className="h-8 w-8 mb-4" />
-        <span className="text-sm text-muted-foreground">Loading aging data…</span>
+        <span className="text-sm text-muted-foreground">
+          Loading aging data…
+        </span>
       </div>
     );
   }
@@ -207,27 +221,35 @@ const TicketAgingChart: React.FC<Props> = ({ teamId }) => {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center gap-4">
         <div className="flex items-center gap-2">
-          <label className="text-sm font-medium text-muted-foreground">Project:</label>
+          <label className="text-sm font-medium text-muted-foreground">
+            Project:
+          </label>
           <select
             className="rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             value={projectId ?? ""}
             onChange={(e) => setSelectedProjectId(Number(e.target.value))}
           >
             {projects.map((p) => (
-              <option key={p.id} value={p.id}>{p.name}</option>
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
             ))}
           </select>
         </div>
 
         <div className="flex items-center gap-2">
-          <label className="text-sm font-medium text-muted-foreground">Group by:</label>
+          <label className="text-sm font-medium text-muted-foreground">
+            Group by:
+          </label>
           <select
             className="rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             value={groupBy}
             onChange={(e) => setGroupBy(e.target.value as GroupBy)}
           >
             {GROUP_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>{o.label}</option>
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
             ))}
           </select>
         </div>
@@ -305,7 +327,11 @@ const TicketAgingChart: React.FC<Props> = ({ teamId }) => {
                   barSize={26}
                 >
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 12 }} />
+                  <XAxis
+                    type="number"
+                    allowDecimals={false}
+                    tick={{ fontSize: 12 }}
+                  />
                   <YAxis
                     type="category"
                     dataKey="name"
@@ -315,7 +341,12 @@ const TicketAgingChart: React.FC<Props> = ({ teamId }) => {
                   <Tooltip content={<CustomTooltip />} />
                   <Legend wrapperStyle={{ fontSize: 12 }} />
                   {BUCKETS.map((b) => (
-                    <Bar key={b.label} dataKey={b.label} stackId="a" name={b.label}>
+                    <Bar
+                      key={b.label}
+                      dataKey={b.label}
+                      stackId="a"
+                      name={b.label}
+                    >
                       {bucketChartData.map((_, i) => (
                         <Cell key={i} fill={b.color} />
                       ))}

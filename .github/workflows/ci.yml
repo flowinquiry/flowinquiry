@@ -38,7 +38,7 @@ jobs:
     if: needs.detect-changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -53,15 +53,24 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Run Unit and Integration Tests
+        run: ./gradlew :apps:backend:server:test :apps:backend:server:integrationTest :apps:backend:server:jacocoTestReport
+
+      - name: Locate JaCoCo XML report
+        id: jacoco-report
         run: |
-          ./gradlew :apps:backend:server:test
-          ./gradlew :apps:backend:server:integrationTest
-          ./gradlew :apps:backend:server:jacocoTestReport
+          report_path="$(find apps/backend/server/build/reports/jacoco -type f -name '*.xml' | head -n 1)"
+          if [ -z "$report_path" ]; then
+            echo "No JaCoCo XML report found under apps/backend/server/build/reports/jacoco"
+            find apps/backend/server/build/reports -type f | sort || true
+            exit 1
+          fi
+          echo "Using JaCoCo report at: $report_path"
+          echo "report_path=$report_path" >> "$GITHUB_OUTPUT"
 
       - name: Generate Coverage Report Summary
-        uses: danielpalme/ReportGenerator-GitHub-Action@5.4.7
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.5.10
         with:
-          reports: apps/backend/server/build/reports/jacoco/test/jacocoTestReport.xml
+          reports: ${{ steps.jacoco-report.outputs.report_path }}
           targetdir: coveragereport
           reporttypes: Html;MarkdownSummary
           classfilters: '+*'
@@ -92,12 +101,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [20.x]
+        node-version: [22.x]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+        uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
@@ -115,11 +124,11 @@ jobs:
     environment:
       name: github-pages
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'pnpm'
       - run: pnpm install
       - name: Clean .next folder

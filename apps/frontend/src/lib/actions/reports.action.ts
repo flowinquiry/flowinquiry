@@ -88,5 +88,3 @@ export const getTicketHealthDistribution = async (
     setError,
   );
 };
-
-

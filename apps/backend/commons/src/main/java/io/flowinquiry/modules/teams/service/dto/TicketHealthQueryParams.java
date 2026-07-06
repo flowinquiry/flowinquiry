@@ -8,8 +8,7 @@ import java.util.List;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
-@Valid
-@Data
+@Valid @Data
 public class TicketHealthQueryParams {
     @NotNull private String projectId;
     private List<String> assignUserId;

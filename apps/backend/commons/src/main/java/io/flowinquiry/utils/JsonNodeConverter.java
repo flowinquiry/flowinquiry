@@ -1,11 +1,10 @@
 package io.flowinquiry.utils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
-import java.io.IOException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 @Converter
 public class JsonNodeConverter implements AttributeConverter<JsonNode, String> {
@@ -16,7 +15,7 @@ public class JsonNodeConverter implements AttributeConverter<JsonNode, String> {
     public String convertToDatabaseColumn(JsonNode attribute) {
         try {
             return objectMapper.writeValueAsString(attribute);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new IllegalArgumentException("Could not serialize JSON", e);
         }
     }
@@ -25,7 +24,7 @@ public class JsonNodeConverter implements AttributeConverter<JsonNode, String> {
     public JsonNode convertToEntityAttribute(String dbData) {
         try {
             return objectMapper.readTree(dbData);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new IllegalArgumentException("Could not deserialize JSON", e);
         }
     }

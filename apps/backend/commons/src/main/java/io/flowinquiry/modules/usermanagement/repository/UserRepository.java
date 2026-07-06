@@ -104,7 +104,7 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     List<Object[]> findResourcesWithHighestPermissionsByUserId(@Param("userId") Long userId);
 
     @Query(
-            """
+"""
     SELECT new io.flowinquiry.modules.usermanagement.service.dto.UserHierarchyDTO(
         u.id,
         CONCAT(u.firstName, ' ', u.lastName),

@@ -42,6 +42,11 @@ task integrationTest(type: Test) {
     useJUnitPlatform()
     description = "Execute integration tests."
     group = "verification"
+
+    // Use the test source set and ensure compiled classes are on classpath
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+
     include "**/*IT*", "**/*IntTest*"
     testLogging {
         events 'FAILED', 'SKIPPED'

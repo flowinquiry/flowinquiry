@@ -53,7 +53,7 @@ spring:
       ddl-auto: none
       naming:
         physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
-        implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
+        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl
   liquibase:
     enabled: false
   messages:
@@ -125,4 +125,4 @@ flowinquiry:
   slack:
     token: ${SLACK_TOKEN_ID:}
   edition: community
-  version: 1.2.3
+  version: 1.2.4
