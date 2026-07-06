@@ -42,5 +42,10 @@
     "docker:deploy": "sh -c './gradlew :apps:backend:server:jib -Djib.dockerClient.executable=/usr/local/bin/docker && tools/build-frontend-image.sh $TAG'",
     "generate-docs": "redocly build-docs http://localhost:8080/v3/api-docs.yaml --config .redocly.yaml -o apps/docs/public/api-docs/index.html"
   },
+  "pnpm": {
+    "patchedDependencies": {
+      "nextra-theme-docs@4.6.1": "patches/nextra-theme-docs@4.6.1.patch"
+    }
+  },
   "packageManager": "pnpm@10.32.1"
 }
