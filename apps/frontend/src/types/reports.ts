@@ -148,3 +148,28 @@ export type TicketHealthDistributionDTO = {
   dominantHealthLevel: string | null;
   criticalCount: number;
 };
+
+// ── Sprint Burndown Report ───────────────────────────────────────────────────
+
+export type BurndownProjectedStatus = "AHEAD" | "BEHIND" | "ON_TRACK";
+
+export type BurndownQueryParams = {
+  projectId: number;
+  iterationId: number;
+  measure: "tickets" | "story_points";
+};
+
+export type BurndownDayDTO = {
+  date: string; // LocalDate (YYYY-MM-DD)
+  remainingValue: number | null;
+  idealValue: number;
+  completedValue: number | null;
+};
+
+export type BurndownReportDTO = {
+  days: BurndownDayDTO[];
+  plannedWork: number;
+  completedWork: number;
+  remainingWork: number;
+  projectedStatus: BurndownProjectedStatus;
+};

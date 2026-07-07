@@ -9,6 +9,8 @@ import io.flowinquiry.modules.teams.service.dto.TicketThroughputQueryDTO;
 import io.flowinquiry.modules.teams.service.dto.TicketThroughputReportDTO;
 import io.flowinquiry.modules.teams.service.dto.WorkloadBalanceQueryDTO;
 import io.flowinquiry.modules.teams.service.dto.WorkloadBalanceReportDTO;
+import io.flowinquiry.modules.teams.service.dto.BurndownQueryParams;
+import io.flowinquiry.modules.teams.service.dto.BurndownReportDTO;
 import io.flowinquiry.query.AggregationQuery;
 import io.flowinquiry.query.AggregationResult;
 import io.flowinquiry.query.ReportEngine;
@@ -211,6 +213,26 @@ public class TicketAgingReportController {
     public TicketHealthDistributionDTO getHealthDistribution(
             @Valid @ModelAttribute TicketHealthQueryParams params) {
         return service.getHealthDistributionReport(params);
+    }
+
+    @Operation(
+            summary = "Get sprint burndown report",
+            description = "Retrieves burndown data (remaining vs ideal work) for a project iteration")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successfully retrieved burndown report",
+                        content = @Content(mediaType = "application/json")),
+                @ApiResponse(
+                        responseCode = "400",
+                        description = "Invalid query",
+                        content = @Content)
+            })
+    @GetMapping("/tickets/burndown")
+    public BurndownReportDTO getBurndown(
+            @Valid @ModelAttribute BurndownQueryParams params) {
+        return service.getBurndownReport(params);
     }
 
     @Operation(

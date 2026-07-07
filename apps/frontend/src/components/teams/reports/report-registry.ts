@@ -17,6 +17,7 @@ import {
 import TicketAgingChart from "@/components/teams/reports/ticket-aging-chart";
 import TicketHealthDistributionChart from "@/components/teams/reports/ticket-health-distribution-chart";
 import WorkloadBalanceChart from "@/components/teams/reports/workload-balance-chart";
+import BurndownChart from "@/components/teams/reports/burndown-chart";
 import TicketChannelPieChart from "@/components/teams/team-tickets-channel-chart";
 import TicketDistributionChart from "@/components/teams/team-tickets-distribution-chart";
 import TicketPriorityPieChart from "@/components/teams/team-tickets-priority-chart";
@@ -144,13 +145,13 @@ export const REPORT_REGISTRY: ReportDefinition[] = [
   {
     id: "sprint-burndown",
     category: "projects",
-    status: "upcoming",
+    status: "available",
     title: "Sprint Burndown",
     description:
       "Classic burndown chart showing remaining tickets vs. the ideal completion line over an iteration.",
     icon: Zap,
     chartType: "line",
-    component: null,
+    component: BurndownChart,
   },
   {
     id: "epic-progress",

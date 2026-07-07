@@ -3,6 +3,12 @@ package io.flowinquiry.modules.teams.service;
 import static io.flowinquiry.query.QueryUtils.createSpecification;
 import static java.util.Objects.nonNull;
 
+import io.flowinquiry.modules.teams.domain.ProjectIteration;
+import io.flowinquiry.modules.teams.domain.BurndownProjectedStatus;
+import io.flowinquiry.modules.teams.repository.ProjectIterationRepository;
+import io.flowinquiry.modules.teams.service.dto.BurndownQueryParams;
+import io.flowinquiry.modules.teams.service.dto.BurndownDayDTO;
+import io.flowinquiry.modules.teams.service.dto.BurndownReportDTO;
 import io.flowinquiry.modules.teams.domain.Ticket;
 import io.flowinquiry.modules.teams.domain.TicketConversationHealth;
 import io.flowinquiry.modules.teams.domain.TicketPriority;
@@ -50,6 +56,8 @@ public class TicketAgingReportService {
     private final TicketMapper ticketMapper;
 
     private final TicketConversationHealthRepository healthRepository;
+
+    private final ProjectIterationRepository projectIterationRepository;
 
     private static final List<String> DEFAULT_COMPLETED_STATUS_ALIASES =
             List.of("RESOLVED", "CLOSED");
@@ -663,5 +671,123 @@ public class TicketAgingReportService {
             return "\"" + value.replace("\"", "\"\"") + "\"";
         }
         return value;
+    }
+
+    @Transactional(readOnly = true)
+    public BurndownReportDTO getBurndownReport(BurndownQueryParams params) {
+        ProjectIteration iteration = projectIterationRepository.findById(params.getIterationId())
+                .orElseThrow(() -> new IllegalArgumentException("Iteration not found"));
+
+        LocalDate start = iteration.getStartDate().atZone(ZoneOffset.UTC).toLocalDate();
+        LocalDate end = iteration.getEndDate().atZone(ZoneOffset.UTC).toLocalDate();
+
+        List<Ticket> tickets = ticketRepository.findAll(buildIterationSpec(params.getProjectId(), params.getIterationId()));
+
+        boolean usePoints = "story_points".equalsIgnoreCase(params.getMeasure());
+
+        double plannedWork = 0.0;
+        for (Ticket ticket : tickets) {
+            plannedWork += getTicketWeight(ticket, usePoints);
+        }
+
+        List<BurndownDayDTO> days = new ArrayList<>();
+        long totalDays = ChronoUnit.DAYS.between(start, end) + 1;
+
+        LocalDate today = LocalDate.now(ZoneOffset.UTC);
+        LocalDate last = today.isBefore(end) ? today : end;
+        if (last.isBefore(start)) {
+            last = start;
+        }
+
+        double remainingWork = plannedWork;
+        double completedWork = 0.0;
+
+        for (LocalDate date = start; !date.isAfter(end); date = date.plusDays(1)) {
+            double completedOnDate = 0.0;
+            for (Ticket ticket : tickets) {
+                if (ticket.getIsCompleted() != null && ticket.getIsCompleted() && ticket.getActualCompletionDate() != null) {
+                    if (ticket.getActualCompletionDate().equals(date)) {
+                        completedOnDate += getTicketWeight(ticket, usePoints);
+                    }
+                }
+            }
+
+            long dayIndex = ChronoUnit.DAYS.between(start, date);
+            double idealValue = plannedWork - (dayIndex * (plannedWork / (double) (totalDays - 1)));
+            if (dayIndex == totalDays - 1) {
+                idealValue = 0.0;
+            }
+
+            Double remainingValueForDay = null;
+            Double completedValueForDay = null;
+
+            if (!date.isAfter(last)) {
+                double completedSoFar = 0.0;
+                for (Ticket ticket : tickets) {
+                    if (ticket.getIsCompleted() != null && ticket.getIsCompleted() && ticket.getActualCompletionDate() != null) {
+                        if (!ticket.getActualCompletionDate().isAfter(date)) {
+                            completedSoFar += getTicketWeight(ticket, usePoints);
+                        }
+                    }
+                }
+                remainingValueForDay = Math.max(0.0, plannedWork - completedSoFar);
+                completedValueForDay = completedOnDate;
+
+                if (date.equals(last)) {
+                    remainingWork = remainingValueForDay;
+                    completedWork = completedSoFar;
+                }
+            }
+
+            days.add(BurndownDayDTO.builder()
+                    .date(date)
+                    .remainingValue(remainingValueForDay)
+                    .idealValue(idealValue)
+                    .completedValue(completedValueForDay)
+                    .build());
+        }
+
+        BurndownProjectedStatus projectedStatus = BurndownProjectedStatus.ON_TRACK;
+        if (plannedWork > 0.0) {
+            double idealAtLast = plannedWork - (ChronoUnit.DAYS.between(start, last) * (plannedWork / (double) (totalDays - 1)));
+            if (ChronoUnit.DAYS.between(start, last) == totalDays - 1) {
+                idealAtLast = 0.0;
+            }
+
+            if (remainingWork < idealAtLast) {
+                projectedStatus = BurndownProjectedStatus.AHEAD;
+            } else if (remainingWork > idealAtLast) {
+                projectedStatus = BurndownProjectedStatus.BEHIND;
+            }
+        }
+
+        return BurndownReportDTO.builder()
+                .days(days)
+                .plannedWork(plannedWork)
+                .completedWork(completedWork)
+                .remainingWork(remainingWork)
+                .projectedStatus(projectedStatus)
+                .build();
+    }
+
+    private double getTicketWeight(Ticket ticket, boolean usePoints) {
+        if (usePoints) {
+            return ticket.getEstimate() != null ? ticket.getEstimate().doubleValue() : 0.0;
+        }
+        return 1.0;
+    }
+
+    private Specification<Ticket> buildIterationSpec(Long projectId, Long iterationId) {
+        List<Filter> filters = new ArrayList<>();
+        filters.add(new Filter("project.id", FilterOperator.EQ, projectId));
+        filters.add(new Filter("iteration.id", FilterOperator.EQ, iterationId));
+        filters.add(new Filter("isDeleted", FilterOperator.EQ, false));
+
+        QueryDTO queryDTO = new QueryDTO();
+        GroupFilter groupFilter = new GroupFilter();
+        groupFilter.setLogicalOperator(LogicalOperator.AND);
+        groupFilter.setFilters(filters);
+        queryDTO.setGroups(List.of(groupFilter));
+        return createSpecification(queryDTO);
     }
 }
