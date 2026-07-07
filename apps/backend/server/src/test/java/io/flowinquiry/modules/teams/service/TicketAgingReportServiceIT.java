@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.flowinquiry.it.IntegrationTest;
 import io.flowinquiry.modules.teams.domain.TicketPriority;
+import io.flowinquiry.modules.teams.domain.BurndownProjectedStatus;
 import io.flowinquiry.modules.teams.service.dto.*;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -310,5 +311,62 @@ public class TicketAgingReportServiceIT {
                     .toList()
                     .forEach(item -> assertThat(item.getStatus()).isIn("Backlog", "Ready"));
         }
+    }
+
+    @Test
+    public void testGetBurndownReportTicketsMeasure() {
+        BurndownQueryParams params = BurndownQueryParams.builder()
+                .projectId(3L)
+                .iterationId(2L)
+                .measure("tickets")
+                .build();
+
+        BurndownReportDTO report = ticketAgingReportService.getBurndownReport(params);
+
+        assertThat(report).isNotNull();
+        assertThat(report.getPlannedWork()).isEqualTo(24.0); // 24 tickets in iteration 2
+        assertThat(report.getDays()).hasSize(14); // 2025-07-15 to 2025-07-28 is 14 days
+        assertThat(report.getProjectedStatus()).isEqualTo(BurndownProjectedStatus.BEHIND); // since no tickets were completed on 2025-07-15
+    }
+
+    @Test
+    public void testGetBurndownReportStoryPointsMeasure() {
+        BurndownQueryParams params = BurndownQueryParams.builder()
+                .projectId(3L)
+                .iterationId(2L)
+                .measure("story_points")
+                .build();
+
+        BurndownReportDTO report = ticketAgingReportService.getBurndownReport(params);
+
+        assertThat(report).isNotNull();
+        // Sum of estimate for tickets 13 to 36 is:
+        // 13: 1 (S)
+        // 14: 2 (M)
+        // 15: 3 (L)
+        // 16: 1 (S) -> completed
+        // 17: 1 (S)
+        // 18: 2 (M)
+        // 19: 3 (L)
+        // 20: 1 (S) -> completed
+        // 21: 1 (S)
+        // 22: 2 (M)
+        // 23: 3 (L)
+        // 24: 1 (S) -> completed
+        // 25: 1 (S)
+        // 26: 2 (M)
+        // 27: 3 (L)
+        // 28: 1 (S) -> completed
+        // 29: 1 (S)
+        // 30: 2 (M)
+        // 31: 3 (L)
+        // 32: 1 (S) -> completed
+        // 33: 1 (S)
+        // 34: 2 (M)
+        // 35: 3 (L)
+        // 36: 1 (S) -> completed
+        // Total = (1+2+3+1)*6 = 7*6 = 42
+        assertThat(report.getPlannedWork()).isEqualTo(42.0);
+        assertThat(report.getDays()).hasSize(14);
     }
 }

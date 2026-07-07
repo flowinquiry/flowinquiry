@@ -218,4 +218,19 @@ public class TicketAgingReportControllerIT {
                                 .param("to", "2025-12-05T00:00:00Z"))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    @Transactional
+    void testGetBurndownReport() throws Exception {
+        mockMvc.perform(
+                        get("/api/reports/tickets/burndown")
+                                .param("projectId", "3")
+                                .param("iterationId", "2")
+                                .param("measure", "tickets"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.plannedWork").value(24.0))
+                .andExpect(jsonPath("$.days.length()").value(14))
+                .andExpect(jsonPath("$.projectedStatus").value("BEHIND"));
+    }
 }

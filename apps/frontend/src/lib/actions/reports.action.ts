@@ -8,6 +8,8 @@ import {
   TicketHealthQueryParams,
   WorkloadBalanceQueryDTO,
   WorkloadBalanceReportDTO,
+  BurndownQueryParams,
+  BurndownReportDTO,
 } from "@/types/reports";
 
 /**
@@ -85,6 +87,22 @@ export const getTicketHealthDistribution = async (
   });
   return get<TicketHealthDistributionDTO>(
     `/api/reports/tickets/health-distribution?${searchParams.toString()}`,
+    setError,
+  );
+};
+
+export const getBurndownReport = async (
+  params: BurndownQueryParams,
+  setError?: (error: HttpError | string | null) => void,
+): Promise<BurndownReportDTO | null> => {
+  const searchParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      searchParams.append(key, String(value));
+    }
+  });
+  return get<BurndownReportDTO>(
+    `/api/reports/tickets/burndown?${searchParams.toString()}`,
     setError,
   );
 };
