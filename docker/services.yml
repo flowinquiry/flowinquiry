@@ -2,7 +2,7 @@
 name: flowinquiry
 services:
   postgresql:
-    image: postgres:16.3
+    image: postgres:17.10-trixie
     volumes:
       - ./volumes/postgresql/:/var/lib/postgresql/data/
     environment:
