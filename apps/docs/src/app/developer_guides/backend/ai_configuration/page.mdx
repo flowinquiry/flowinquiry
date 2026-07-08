@@ -1,0 +1,201 @@
+---
+description: Learn how to configure AI providers (OpenAI and Ollama) for FlowInquiry. This guide covers environment setup, service configuration, and provider selection.
+---
+
+import { Callout, Tabs } from "nextra/components";
+
+# AI Configuration
+
+FlowInquiry integrates with AI providers to enhance various features. The application supports two AI providers out of the box:
+
+- **OpenAI** - Cloud-based AI service using GPT models
+- **Ollama** - Self-hosted AI service for running local LLMs
+
+## Architecture Overview
+
+FlowInquiry uses Spring AI to abstract the chat model interactions. The `ChatModelService` interface provides a unified API for calling different AI providers:
+
+```java
+public interface ChatModelService {
+    String call(String input);
+    String call(Prompt prompt);
+}
+```
+
+Two implementations are available:
+
+- `OpenAiChatModelService` - For OpenAI integration
+- `OllamaChatModelService` - For Ollama integration
+
+The services are conditionally loaded based on the environment variables you provide.
+
+## Configuration
+
+### OpenAI Setup
+
+To enable OpenAI as your AI provider, set the following environment variables in your `.env.local` file:
+
+```bash
+OPEN_AI_API_KEY=your-openai-api-key
+OPEN_AI_CHAT_MODEL=your-preferred-model
+```
+
+<Callout type="info">
+  You can obtain an API key from the [OpenAI
+  Platform](https://platform.openai.com/api-keys). The `OPEN_AI_CHAT_MODEL` can
+  be any model supported by OpenAI. Refer to the [OpenAI Models
+  documentation](https://platform.openai.com/docs/models) for the latest
+  available models.
+</Callout>
+
+The Spring configuration in `application-dev.yml` maps these environment variables:
+
+```yaml
+spring:
+  ai:
+    openai:
+      api-key: ${OPEN_AI_API_KEY}
+      chat:
+        options:
+          model: ${OPEN_AI_CHAT_MODEL}
+```
+
+### Ollama Setup
+
+To use Ollama for local AI inference, first install and run Ollama on your machine:
+
+```bash
+# Install Ollama (macOS)
+brew install ollama
+
+# Start Ollama service
+ollama serve
+
+# Pull a model
+ollama pull <model-name>
+```
+
+Then set the following environment variables:
+
+```bash
+OLLAMA_API_KEY=your-ollama-key
+OLLAMA_CHAT_MODEL=your-preferred-model
+```
+
+<Callout type="warning">
+  Make sure the Ollama service is running on `http://localhost:11434` before
+  starting the FlowInquiry server. Refer to the [Ollama
+  Library](https://ollama.com/library) for available models.
+</Callout>
+
+The default Ollama configuration in `application-dev.yml`:
+
+```yaml
+spring:
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        options:
+          model: ${OLLAMA_CHAT_MODEL}
+```
+
+## Service Activation
+
+The AI services are conditionally activated based on the presence of environment variables:
+
+<Tabs items={['OpenAI', 'Ollama']}>
+  <Tabs.Tab>
+    `OpenAiChatModelService` is activated when both `OPEN_AI_API_KEY` and `OPEN_AI_CHAT_MODEL` environment variables are set:
+
+    ```java
+    @Service
+    @ConditionalOnProperty(
+            name = {"OPEN_AI_CHAT_MODEL", "OPEN_AI_API_KEY"},
+            matchIfMissing = false)
+    public class OpenAiChatModelService implements ChatModelService {
+        // Implementation
+    }
+    ```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+    `OllamaChatModelService` is activated when both `OLLAMA_CHAT_MODEL` and `OLLAMA_API_KEY` environment variables are set:
+
+    ```java
+    @Service
+    @ConditionalOnProperty(
+            name = {"OLLAMA_CHAT_MODEL", "OLLAMA_API_KEY"},
+            matchIfMissing = false)
+    public class OllamaChatModelService implements ChatModelService {
+        // Implementation
+    }
+    ```
+
+  </Tabs.Tab>
+</Tabs>
+
+## Provider Priority
+
+When both providers are configured, the `ChatModelConfiguration` class determines which service to use as the primary bean:
+
+```java
+@Configuration
+public class ChatModelConfiguration {
+
+    @Bean
+    @Primary
+    @ConditionalOnBean({OllamaChatModelService.class, OpenAiChatModelService.class})
+    public ChatModelService chatModel(
+            Optional<OllamaChatModelService> ollamaChatModelService,
+            Optional<OpenAiChatModelService> openAiChatModelService) {
+        if (ollamaChatModelService.isPresent()) {
+            return ollamaChatModelService.get();
+        } else if (openAiChatModelService.isPresent()) {
+            return openAiChatModelService.get();
+        }
+        return null;
+    }
+}
+```
+
+<Callout type="info">
+  If both providers are configured, **Ollama takes priority** over OpenAI. This
+  allows developers to use a local LLM during development while using OpenAI in
+  production.
+</Callout>
+
+## Environment Variables Summary
+
+| Variable             | Description         | Required For |
+| -------------------- | ------------------- | ------------ |
+| `OPEN_AI_API_KEY`    | Your OpenAI API key | OpenAI       |
+| `OPEN_AI_CHAT_MODEL` | OpenAI model name   | OpenAI       |
+| `OLLAMA_API_KEY`     | Ollama API key      | Ollama       |
+| `OLLAMA_CHAT_MODEL`  | Ollama model name   | Ollama       |
+
+## Troubleshooting
+
+### No AI service available
+
+If you see errors related to missing `ChatModelService` bean, ensure that:
+
+1. At least one set of AI provider environment variables is configured
+2. The environment variables are loaded correctly in your `.env.local` file
+3. For Ollama, verify the service is running with `curl http://localhost:11434/api/tags`
+
+### OpenAI rate limiting
+
+If you encounter rate limiting errors from OpenAI:
+
+1. Check your API usage on the [OpenAI dashboard](https://platform.openai.com/usage)
+2. Consider using a model with higher rate limits
+3. Implement retry logic in your application code
+
+### Ollama connection issues
+
+If Ollama fails to connect:
+
+1. Verify Ollama is running: `ollama list`
+2. Check the base URL matches your configuration
+3. Ensure the model is downloaded: `ollama pull <model-name>`
