@@ -11,9 +11,14 @@
 spring:
   ai:
     openai:
-      api-key: ${OPEN_AI_API_KEY}
+      api-key: ${OPEN_AI_API_KEY:dummy}
       chat:
         enabled: false
+    google:
+      genai:
+        api-key: ${GEMINI_API_KEY:dummy}
+        chat:
+          enabled: false
   datasource:
     hikari:
       auto-commit: false

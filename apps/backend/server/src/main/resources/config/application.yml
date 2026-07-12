@@ -108,6 +108,17 @@ spring:
   output:
     ansi:
       console-available: true
+  # ===================================================================
+  # Spring AI - Google Gemini (GenAI) configuration
+  # Activate by setting GEMINI_API_KEY and GEMINI_CHAT_MODEL env vars.
+  # ===================================================================
+  ai:
+    google:
+      genai:
+        api-key: ${GEMINI_API_KEY:}
+        chat:
+          options:
+            model: ${GEMINI_CHAT_MODEL:gemini-2.0-flash}
 
 server:
   servlet:

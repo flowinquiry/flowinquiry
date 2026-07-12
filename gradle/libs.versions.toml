@@ -52,6 +52,7 @@ shedlock-jdbc-provider = {module="net.javacrumbs.shedlock:shedlock-provider-jdbc
 splotless-plugin = { module = "com.diffplug.spotless:spotless-plugin-gradle", version = "8.8.0" }
 spring-ai-openai = {module = "org.springframework.ai:spring-ai-starter-model-openai", version.ref="springAiVersion"}
 spring-ai-ollama = {module = "org.springframework.ai:spring-ai-starter-model-ollama", version.ref="springAiVersion"}
+spring-ai-google-genai = {module = "org.springframework.ai:spring-ai-starter-model-google-genai", version.ref="springAiVersion"}
 slack = {module="com.slack.api:slack-api-client", version.ref="slackClientVersion"}
 greenmail-junit5 = { module = "com.icegreen:greenmail-junit5", version.ref = "greenmailJunit5Version" }
 junit-bom-platform = { module = "org.junit:junit-bom", version.ref = "junitVersion" }
@@ -75,7 +76,7 @@ junit = ["junit-jupiter-api", "junit-jupiter-engine"]
 mockito = ["mockito", "mockito-junit"]
 json = ["json-api", "parsson"]
 shedlock = ["shedlock", "shedlock-jdbc-provider"]
-spring-ai = ["spring-ai-openai", "spring-ai-ollama"]
+spring-ai = ["spring-ai-openai", "spring-ai-ollama", "spring-ai-google-genai"]
 caffeine-cache = ["caffeine", "caffeine-jcache"]
 slack = ["slack"]
 springdoc-openapi = ["springdoc-openapi-ui", "springdoc-openapi-security"]
