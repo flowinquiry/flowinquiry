@@ -22,6 +22,7 @@ import org.springframework.ai.chat.prompt.Prompt;
  * <ul>
  *   <li>{@link OpenAiChatModelService}
  *   <li>{@link OllamaChatModelService}
+ *   <li>{@link GeminiChatModelService}
  * </ul>
  *
  * <h3>Thread-Safety</h3>

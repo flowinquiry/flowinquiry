@@ -126,3 +126,21 @@ flowinquiry:
     token: ${SLACK_TOKEN_ID:}
   edition: community
   version: 1.2.4
+
+# ===================================================================
+# Spring AI – Google Gemini (GenAI) configuration
+# Activate by setting GEMINI_API_KEY and GEMINI_CHAT_MODEL env vars.
+# For local dev with a mock server, set spring.ai.openai.chat.base-url
+# to your mock URL and use dummy keys.
+# ===================================================================
+GEMINI_CHAT_MODEL: ${GEMINI_CHAT_MODEL:}
+GEMINI_API_KEY: ${GEMINI_API_KEY:}
+
+spring:
+  ai:
+    google:
+      genai:
+        api-key: ${GEMINI_API_KEY:}
+        chat:
+          options:
+            model: ${GEMINI_CHAT_MODEL:gemini-2.0-flash}
